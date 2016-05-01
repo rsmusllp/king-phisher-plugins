@@ -1,11 +1,13 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
 
 # King Phisher Plugins
-Plugins for the King Phisher Phishing Campaign Toolkit.
+Plugins for the King Phisher Phishing Campaign Toolkit. Plugin support will be
+available for clients in the upcoming v1.3 release. Server plugin support will
+be available after that.
 
 These files are provided for use with [King Phisher][king-phisher-repo].
 
-## Installation
+## Client Plugin Installation
 Client plugins can be placed in the `$HOME/.config/king-phisher/plugins`
 directory, then loaded and enabled with the plugin manager.
 
