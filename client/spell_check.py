@@ -13,7 +13,7 @@ class Plugin(plugins.ClientPlugin):
 	After being loaded, the language can be changed from the default of en_US
 	via the context menu (available when right clicking in the text view).
 	"""
-	homepage = 'https://github.com/securestate/king-phisher'
+	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	def initialize(self):
 		self.checker = GtkSpell.Checker()
 		self.checker.set_language(self.config.get('language', 'en_US'))
