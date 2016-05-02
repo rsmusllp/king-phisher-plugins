@@ -1,8 +1,13 @@
 import king_phisher.client.plugins as plugins
 
 import gi
-gi.require_version('GtkSpell', '3.0')
-from gi.repository import GtkSpell
+try:
+	gi.require_version('GtkSpell', '3.0')
+	from gi.repository import GtkSpell
+except (ImportError, ValueError):
+	has_gtkspell = False
+else:
+	has_gtkspell = True
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
@@ -14,6 +19,10 @@ class Plugin(plugins.ClientPlugin):
 	via the context menu (available when right clicking in the text view).
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	req_packages = {
+		'gi.repository.GtkSpell': has_gtkspell
+	}
+	version = '1.1'
 	def initialize(self):
 		self.checker = GtkSpell.Checker()
 		self.checker.set_language(self.config.get('language', 'en_US'))
