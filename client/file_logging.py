@@ -2,8 +2,8 @@ import logging
 import os
 
 import king_phisher.client.application as application
-import king_phisher.client.plugins as plugins
 import king_phisher.client.gui_utilities as gui_utilities
+import king_phisher.client.plugins as plugins
 
 # logger name value
 LOGGER_NAME = ''
@@ -13,10 +13,9 @@ LOG_FILE_SIZE = 10
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Zach Janice']
-	title = 'Logger'
+	title = 'File Logging'
 	description = """
-	Keep logs of campaign feedback and results. The directory
-	of the logged file(s) is $HOME/.config/king-phisher.
+	Write the client's logs to a file in the users data directory.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 
@@ -34,14 +33,13 @@ class Plugin(plugins.ClientPlugin):
 		logger = logging.getLogger(LOGGER_NAME)
 
 		# set up the handler and formatter for the logger, and attach the components
-		handler = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'client_log.log'), maxBytes=file_size, backupCount=2)
+		handler = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'king-phisher.log'), maxBytes=file_size, backupCount=2)
 		formatter = logging.Formatter('%(asctime)s %(name)-50s %(levelname)-8s %(message)s')
 		handler.setFormatter(formatter)
 		logger.addHandler(handler)
 
 		# keep reference of handler as an attribute
 		self.handler = handler
-
 		return True
 
 	# this is a cleanup method to allow the plugin to close any open resources
@@ -51,4 +49,3 @@ class Plugin(plugins.ClientPlugin):
 		logger.removeHandler(self.handler)
 		self.handler.flush()
 		self.handler.close()
-
