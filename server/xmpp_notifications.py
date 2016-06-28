@@ -29,7 +29,17 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 		self.room = room
 
 	def send_notification(self, message):
-		self.send_message(mto=self.room, mbody=message, mtype='groupchat')
+		ET = sleekxmpp.xmlstream.ET
+		xhtml = ET.Element('span')
+		xhtml.set('style', 'font-family: Monospace')
+		message_lines = message.split('\n')
+		for line in message_lines[:-1]:
+			p = ET.SubElement(xhtml, 'p')
+			p.text = line
+			ET.SubElement(xhtml, 'br')
+		p = ET.SubElement(xhtml, 'p')
+		p.text = message_lines[-1]
+		self.send_message(mto=self.room, mbody=message, mtype='groupchat', mhtml=xhtml)
 
 	def on_kp_db_new_campaign(self, sender, targets, session):
 		for campaign in targets:
