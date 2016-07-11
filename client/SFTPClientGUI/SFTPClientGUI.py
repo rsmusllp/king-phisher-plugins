@@ -42,7 +42,6 @@ class Plugin(plugins.ClientPlugin):
 		self.window.show_all()
 
 class Logger(object):
-
 	def __init__(self, builder, *args, **kwargs):
 		self.builder = builder
 		self.scroll = self.builder.get_object('scrolledwindow2')
@@ -58,15 +57,13 @@ class Logger(object):
 		self._tvmodel = Gtk.ListStore(str)
 		self.treeview_transfer.connect('size-allocate', self._treeview_changed)
 		self.treeview_transfer.set_model(self._tvmodel)
-
 		self.treeview_transfer.connect('button_press_event', self._signal_treeview_button_pressed)
+
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.MenuItem.new_with_label('Clear')
 		menu_item.connect('activate', self.clear_log)
 		self.popup_menu.append(menu_item)
-
 		self.popup_menu.show_all()
-
 
 	def _signal_treeview_button_pressed(self, _, event):
 		if event.button == 3:
@@ -95,15 +92,11 @@ class Logger(object):
 		elif isFolder:
 			string = 'Uploading folder ' + path + ' and all its children...'
 			self._tvmodel.prepend((string,))
-
 		else:
 			string = 'Uploading ' + path
 			self._tvmodel.prepend((string,))
 
-
-
 class LocalDirectory(object):
-
 	def __init__(self, treeview, logger, *args, **kwargs):
 		self.logger = logger
 		self.treeview_local = treeview
@@ -140,18 +133,16 @@ class LocalDirectory(object):
 		self.load_dirs(os.path.abspath(os.sep))
 		self.treeview_local.set_model(self._tvmodel)
 		self.treeview_local.connect('button_press_event', self._signal_treeview_button_pressed)
+
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
 		menu_item.connect('toggled', self.hidden_files)
 		self.hidden_files = menu_item
 		self.popup_menu.append(menu_item)
-
 		menu_item = Gtk.MenuItem.new_with_label('Upload Selected')
 		menu_item.connect('activate', self.upload)
 		self.popup_menu.append(menu_item)
-
 		self.popup_menu.show_all()
-
 
 	def _signal_treeview_button_pressed(self, _, event):
 		if event.button == 3:
@@ -197,7 +188,6 @@ class LocalDirectory(object):
 		newPath = self._tvmodel[treeiter][2]  # pylint: disable=unsubscriptable-object
 		self.load_dirs(newPath, treeiter)
 		self._tvmodel.remove(self._tvmodel.iter_children(treeiter))
-
 
 	def collapse_row(self, _, treeiter, treepath):
 		current = self._tvmodel.iter_children(treeiter)
@@ -302,14 +292,15 @@ class RemoteDirectory(LocalDirectory):
 		self.ftp = ssh.open_sftp()
 		self.local_hidden = True
 		self.load_dirs('/var/www/')
+
 		self.treeview_local.set_model(self._tvmodel)
 		self.treeview_local.connect('button_press_event', self._signal_treeview_button_pressed)
+
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
 		menu_item.connect('toggled', self.hidden_files)
 		self.hidden_files = menu_item
 		self.popup_menu.append(menu_item)
-
 		menu_item = Gtk.MenuItem.new_with_label('Download Selected')
 		menu_item.connect('activate', self.upload)
 		self.popup_menu.append(menu_item)
