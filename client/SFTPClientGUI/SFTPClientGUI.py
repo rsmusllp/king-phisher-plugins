@@ -40,7 +40,7 @@ class Plugin(plugins.ClientPlugin):
 			manager = FileManager(target_file, self.application, ftp)  #pylint: disable=unused-variable
 			self.sftp_window = manager.window
 		self.sftp_window.show()
-		self.sftp_window.get_focus()
+		self.sftp_window.present()
 
 class Logger(object):
 	def __init__(self, builder, *args, **kwargs):
@@ -159,8 +159,7 @@ class DirectoryBase(object):
 
 	def load_dirs(self, path, parent=None):
 		counter = 0
-		dir_list = self._yield_dir_list(path)
-		for name in dir_list:
+		for name in self._yield_dir_list(path):
 			if self.local_hidden and name.startswith('.'):
 				continue
 			fullname = path + '/' + name
@@ -235,10 +234,8 @@ class LocalDirectory(DirectoryBase):
 		return perm
 
 	def _yield_dir_list(self, path):
-		names = []
 		for name in os.listdir(path):
-			names.append(name)
-		return names
+			yield(name)
 
 	def _get_raw_time(self, fullname):
 		return os.path.getmtime(fullname)
@@ -284,10 +281,8 @@ class RemoteDirectory(DirectoryBase):
 		return perm
 
 	def _yield_dir_list(self, path):
-		names = []
 		for name in self.ftp.listdir(path):
-			names.append(name)
-		return names
+			yield(name)
 
 	def _get_raw_time(self, fullname):
 		lstatout = self.ftp.lstat(fullname)
