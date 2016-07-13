@@ -31,7 +31,7 @@ class Plugin(plugins.ClientPlugin):
 		self.sftp_window = None
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
 		return True
- 
+
 	def finalize(self):
 		if self.sftp_window is not None:
 			self.sftp_window.destroy()
@@ -157,7 +157,7 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Create Folder')
 		menu_item.connect('activate', self.signal_menu_activate_create_folder)
 		self.popup_menu.append(menu_item)
-		
+
 		menu_item = Gtk.SeparatorMenuItem()
 		self.popup_menu.append(menu_item)
 
@@ -193,7 +193,7 @@ class DirectoryBase(object):
 				fullname = path + name
 			else:
 				fullname = path + '/' + name
-			try: 
+			try:
 				perm = self._check_perm(fullname)
 				raw_time = self._get_raw_time(fullname)
 				time = datetime.datetime.fromtimestamp(raw_time)
@@ -201,7 +201,7 @@ class DirectoryBase(object):
 				is_folder = self._get_is_folder(fullname)
 			except OSError:
 				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-				self._tvmodel.append([parent, name, icon, fullname, None, None, None])
+				self._tvmodel.append(parent, [name, icon, fullname, None, None, None, None])
 				continue
 			if is_folder:
 				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
@@ -301,7 +301,7 @@ class RemoteDirectory(DirectoryBase):
 		self.treeview_local.set_model(self._tvmodel)
 
 	def _check_perm(self, fullname):
-		lstatout = self.ftp.lstat(fullname)
+		lstatout = self.ftp.stat(fullname)
 		mode = lstatout.st_mode
 		perm = '   '
 		_file = self.ftp.file(fullname)
