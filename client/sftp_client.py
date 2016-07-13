@@ -1,9 +1,12 @@
 import os
-import time
+import datetime
 import stat
 import shutil
 
 import king_phisher.client.plugins as plugins
+from king_phisher import utilities
+from king_phisher.client import gui_utilities
+from king_phisher import its
 
 from gi.repository import Gtk
 from gi.repository.GdkPixbuf import Pixbuf
@@ -13,9 +16,14 @@ from gi.repository import GObject
 import boltons.strutils
 import boltons.timeutils
 
+if its.py_v2:
+	_long = long
+else:
+	_long = int
+
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob']
-	title = 'SFTP Client GUI'
+	title = 'SFTP Client'
 	description = """
 	How many foos could fu foo is fu fooed fu foos on foo.
 	"""
@@ -120,7 +128,7 @@ class DirectoryBase(object):
 
 		self.treeview_local.connect('row-expanded', self.signal_expand_row)
 		self.treeview_local.connect('row-collapsed', self.signal_collapse_row)
-		self._tvmodel = Gtk.TreeStore(str, Pixbuf, str, str, str, int, str)
+		self._tvmodel = Gtk.TreeStore(str, Pixbuf, str, str, str, _long, str)
 
 		self.local_hidden = True
 		self._get_popup_menu()
@@ -137,6 +145,11 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Delete')
 		menu_item.connect('activate', self.signal_menu_activate_delete_prompt)
 		self.popup_menu.append(menu_item)
+
+		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
+		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
+		self.popup_menu.append(menu_item)
+
 		self.popup_menu.show_all()
 
 	def _signal_treeview_button_pressed(self, _, event):
@@ -158,14 +171,17 @@ class DirectoryBase(object):
 		self._tvmodel.append(treeiter, [None, None, None, None, None, None, None])
 
 	def load_dirs(self, path, parent=None):
-		counter = 0
 		for name in self._yield_dir_list(path):
 			if self.local_hidden and name.startswith('.'):
 				continue
-			fullname = path + '/' + name
+			if path.endswith('/'):
+				fullname = path + name
+			else:
+				fullname = path + '/' + name
 			perm = self._check_perm(fullname)
 			raw_time = self._get_raw_time(fullname)
-			date_modified = '   ' + time.strftime('%y-%m-%d %H:%M:%S', time.localtime(raw_time))
+			time = datetime.datetime.fromtimestamp(raw_time)
+			date_modified = '   ' + utilities.format_datetime(time)
 			is_folder = self._get_is_folder(fullname)
 			if is_folder:
 				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
@@ -177,17 +193,17 @@ class DirectoryBase(object):
 				hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
 				if perm[3] != 'r' and perm[5] != 'x':
 					icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-				icon = Gtk.IconTheme.get_default().load_icon('empty', 12.5, 0)
+				icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
 				current = self._tvmodel.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
 			if is_folder and perm[3] == 'r' and perm[5] == 'x':
 				self._tvmodel.append(current, [None, None, None, None, None, None, None])
-			counter += 1
-		if counter < 1:
-			self._tvmodel.append(parent, [None, None, None, None, None, None, None])
 
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
 		self.local_hidden = not self.local_hidden
 		self.refresh()
+
+	def signal_menu_activate_collapse_all(self, _):
+		self.treeview_local.collapse_all()
 
 	def refresh(self):
 		model = self._tvmodel
@@ -200,26 +216,18 @@ class DirectoryBase(object):
 	def signal_menu_activate_delete_prompt(self, _):
 		selection = self.treeview_local.get_selection()
 		model, treeiter = selection.get_selected()
-		dialog = Gtk.Dialog('Warning')
-		label = "Are you sure\n you want to delete this {0}?\n".format('directory' if model[treeiter][5] == -1 else 'file')
-		label = Gtk.Label(label)
-		label.set_justify(Gtk.Justification.CENTER)
-		dialog.vbox.pack_start(label, True, True, 0)
-		label.show()
-		dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
-		dialog.add_button(Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
-		response_id = dialog.run()
-		dialog.destroy()
-		if response_id == Gtk.ResponseType.ACCEPT:
+		delete = gui_utilities.show_dialog_yes_no("Delete selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file'), self.application.get_active_window())
+		if delete:
 			self.delete(model, treeiter)
 
 class LocalDirectory(DirectoryBase):
 	treeview_name = 'treeview_local'
-	def __init__(self, builder, logger, upload_button):
+	def __init__(self, builder, logger, upload_button, application):
+		self.application = application
 		_treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
 		super(LocalDirectory, self).__init__(_treeview, logger)
 		self.upload_button = upload_button
-		init_dir = os.getcwd()
+		init_dir = os.path.abspath(os.sep)
 		self.load_dirs(init_dir)
 		self.treeview_local.set_model(self._tvmodel)
 
@@ -235,7 +243,7 @@ class LocalDirectory(DirectoryBase):
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
-			yield(name)
+			yield name
 
 	def _get_raw_time(self, fullname):
 		return os.path.getmtime(fullname)
@@ -252,10 +260,11 @@ class LocalDirectory(DirectoryBase):
 				shutil.rmtree(model[treeiter][2])
 			else:
 				os.remove(model[treeiter][2])
-			self.logger.log_generic('Successfully deleted ' + model[treeiter][2])
-			self.refresh()
 		except OSError:
 			self.logger.log_generic('Permissions Error Deleting File')
+		else:
+			self.logger.log_generic('Successfully deleted ' + model[treeiter][2])
+			self.refresh()
 
 class RemoteDirectory(DirectoryBase):
 	treeview_name = 'treeview_remote'
@@ -282,7 +291,7 @@ class RemoteDirectory(DirectoryBase):
 
 	def _yield_dir_list(self, path):
 		for name in self.ftp.listdir(path):
-			yield(name)
+			yield name
 
 	def _get_raw_time(self, fullname):
 		lstatout = self.ftp.lstat(fullname)
@@ -314,7 +323,7 @@ class FileManager(object):
 		upload_button = self.builder.get_object('button_upload')
 		download_button = self.builder.get_object('button_download')
 		self.logger = Logger(self.builder)
-		self.local = LocalDirectory(self.builder, self.logger, upload_button)  # pylint: disable=unused-variable
+		self.local = LocalDirectory(self.builder, self.logger, upload_button, self.application)  # pylint: disable=unused-variable
 		self.remote = RemoteDirectory(self.builder, self.logger, download_button, self.application, ftp)  # pylint: disable=unused-variable
 		self.local.upload_button.connect('button-press-event', self.upload)
 		self.remote.download_button.connect('button-press-event', self.download)
@@ -352,7 +361,7 @@ class FileManager(object):
 			return
 		local_file = model[treeiter][2]
 		if dest_treeiter is None:
-			dest_dir = os.getcwd()
+			dest_dir = os.path.abspath(os.sep)
 		elif dest_model[dest_treeiter][5] != -1:
 			return
 		else:
