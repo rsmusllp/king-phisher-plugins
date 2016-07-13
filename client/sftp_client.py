@@ -16,16 +16,14 @@ from gi.repository import GObject
 import boltons.strutils
 import boltons.timeutils
 
-if its.py_v2:
-	_long = long
-else:
-	_long = int
+GTYPE_LONG = GObject.type_from_name('glong')
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob']
 	title = 'SFTP Client'
 	description = """
-	How many foos could fu foo is fu fooed fu foos on foo.
+	Secure File Transfer Protocol Client that can be used to upload,
+	download, create, and delete local and remte files.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 
@@ -33,6 +31,10 @@ class Plugin(plugins.ClientPlugin):
 		self.sftp_window = None
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
 		return True
+ 
+	def finalize(self):
+		if self.sftp_window is not None:
+			self.sftp_window.destroy()
 
 	def signal_sftp_start(self, _):
 		GObject.signal_stop_emission_by_name(self.application, 'sftp-client-start')
@@ -47,8 +49,12 @@ class Plugin(plugins.ClientPlugin):
 			self.logger.debug('loading gtk builder file from: ' + target_file)
 			manager = FileManager(target_file, self.application, ftp)  #pylint: disable=unused-variable
 			self.sftp_window = manager.window
+			self.sftp_window.connect('destroy', self.signal_window_destroy)
 		self.sftp_window.show()
 		self.sftp_window.present()
+
+	def signal_window_destroy(self, window):
+		self.sftp_window = None
 
 class Logger(object):
 	def __init__(self, builder, *args, **kwargs):
@@ -57,7 +63,7 @@ class Logger(object):
 		self.treeview_transfer = self.builder.get_object('SFTPClientGUI.treeview_transfer')
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
-		col = Gtk.TreeViewColumn('Transfer')
+		col = Gtk.TreeViewColumn('Transfers')
 		col_text = Gtk.CellRendererText()
 		col.pack_start(col_text, True)
 		col.add_attribute(col_text, "text", 0)
@@ -103,11 +109,13 @@ class DirectoryBase(object):
 		col = Gtk.TreeViewColumn('Files')
 		self.logger = logger
 		self.treeview_local = treeview
+		self.col_name = Gtk.CellRendererText()
+		self.col_name.connect('edited', self.signal_text_edited)
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
 		col.pack_start(col_img, False)
-		col.pack_start(col_text, True)
-		col.add_attribute(col_text, 'text', 0)
+		col.pack_start(self.col_name, True)
+		col.add_attribute(self.col_name, 'text', 0)
 		col.add_attribute(col_img, 'pixbuf', 1)
 		col.set_sort_column_id(0)
 		col_perm = Gtk.TreeViewColumn('Permissions')
@@ -128,7 +136,7 @@ class DirectoryBase(object):
 
 		self.treeview_local.connect('row-expanded', self.signal_expand_row)
 		self.treeview_local.connect('row-collapsed', self.signal_collapse_row)
-		self._tvmodel = Gtk.TreeStore(str, Pixbuf, str, str, str, _long, str)
+		self._tvmodel = Gtk.TreeStore(str, Pixbuf, str, str, str, GTYPE_LONG, str)
 
 		self.local_hidden = True
 		self._get_popup_menu()
@@ -142,12 +150,19 @@ class DirectoryBase(object):
 		self.signal_menu_toggled_hidden_files = menu_item
 		self.popup_menu.append(menu_item)
 
-		menu_item = Gtk.MenuItem.new_with_label('Delete')
-		menu_item.connect('activate', self.signal_menu_activate_delete_prompt)
-		self.popup_menu.append(menu_item)
-
 		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
+		self.popup_menu.append(menu_item)
+
+		menu_item = Gtk.MenuItem.new_with_label('Create Folder')
+		menu_item.connect('activate', self.signal_menu_activate_create_folder)
+		self.popup_menu.append(menu_item)
+		
+		menu_item = Gtk.SeparatorMenuItem()
+		self.popup_menu.append(menu_item)
+
+		menu_item = Gtk.MenuItem.new_with_label('Delete')
+		menu_item.connect('activate', self.signal_menu_activate_delete_prompt)
 		self.popup_menu.append(menu_item)
 
 		self.popup_menu.show_all()
@@ -178,25 +193,32 @@ class DirectoryBase(object):
 				fullname = path + name
 			else:
 				fullname = path + '/' + name
-			perm = self._check_perm(fullname)
-			raw_time = self._get_raw_time(fullname)
-			time = datetime.datetime.fromtimestamp(raw_time)
-			date_modified = '   ' + utilities.format_datetime(time)
-			is_folder = self._get_is_folder(fullname)
+			try: 
+				perm = self._check_perm(fullname)
+				raw_time = self._get_raw_time(fullname)
+				time = datetime.datetime.fromtimestamp(raw_time)
+				date_modified = '   ' + utilities.format_datetime(time)
+				is_folder = self._get_is_folder(fullname)
+			except OSError:
+				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
+				self._tvmodel.append([parent, name, icon, fullname, None, None, None])
+				continue
 			if is_folder:
 				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
-				if perm[3] != 'r' and perm[5] != 'x':
-					icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
 				current = self._tvmodel.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
 			else:
 				file_size = self._get_file_size(fullname)
 				hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
-				if perm[3] != 'r' and perm[5] != 'x':
-					icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
 				icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
 				current = self._tvmodel.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
 			if is_folder and perm[3] == 'r' and perm[5] == 'x':
 				self._tvmodel.append(current, [None, None, None, None, None, None, None])
+
+	def signal_text_edited(self, renderer, path, text):
+		raise NotImplementedError('Parent create folder function not overriden')
+
+	def signal_menu_activate_create_folder(self, _):
+		raise NotImplementedError('Parent create folder function not overriden')
 
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
 		self.local_hidden = not self.local_hidden
@@ -261,9 +283,9 @@ class LocalDirectory(DirectoryBase):
 			else:
 				os.remove(model[treeiter][2])
 		except OSError:
-			self.logger.log_generic('Permissions Error Deleting File')
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
 		else:
-			self.logger.log_generic('Successfully deleted ' + model[treeiter][2])
+			gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
 			self.refresh()
 
 class RemoteDirectory(DirectoryBase):
