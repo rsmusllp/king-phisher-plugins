@@ -194,21 +194,45 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="logger_scroll">
-            <property name="width_request">500</property>
-            <property name="height_request">175</property>
+          <object class="GtkBox" id="box1">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="shadow_type">in</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkTreeView" id="SFTPClientGUI.treeview_transfer">
+              <object class="GtkLabel" id="label3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Transfers</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="logger_scroll">
+                <property name="width_request">500</property>
+                <property name="height_request">175</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="vscroll_policy">natural</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection" id="treeview-selection3"/>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTreeView" id="SFTPClientGUI.treeview_transfer">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="vscroll_policy">natural</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection3"/>
+                    </child>
+                  </object>
                 </child>
               </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
