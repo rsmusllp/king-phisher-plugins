@@ -66,7 +66,6 @@ class Plugin(plugins.ClientPlugin):
 				)
 				return
 			ssh = connection.client
-			ftp = ssh.open_sftp()
 			target_file = os.path.splitext(__file__)[0] + '.ui'
 			self.logger.debug('loading gtk builder file from: ' + target_file)
 			manager = FileManager(target_file, self.application, ssh)  # pylint: disable=unused-variable
@@ -102,10 +101,10 @@ class Logger(object):
 		self.counter = 0
 		for column in [col, col_src, col_dest, col_stat, col_bar]:
 			self.treeview_transfer.append_column(column)
-		self._tvmodel = Gtk.ListStore(str, str, str, str, int)
-		self.treeview_transfer.connect('size-allocate', self.signal_treeview_size_allocate)
-		self.treeview_transfer.set_model(self._tvmodel)
-		self.treeview_transfer.connect('button_press_event', self.signal_treeview_button_pressed)
+		self._tv_model = Gtk.ListStore(str, str, str, str, int)
+		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
+		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
+		self.treeview_transfer.set_model(self._tv_model)
 
 		self.treeview_transfer.show_all()
 
@@ -116,20 +115,20 @@ class Logger(object):
 		self.popup_menu.show_all()
 
 	def signal_menu_activate_clear(self, _):
-		self._tvmodel.clear()
+		self._tv_model.clear()
 
-	def signal_treeview_button_pressed(self, _, event):
+	def signal_tv_button_pressed(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
 
-	def signal_treeview_size_allocate(self, widget, event, data=None):
+	def signal_tv_size_allocate(self, widget, event, data=None):
 		adj = self.scroll.get_vadjustment()
 		adj.set_value(0)
 
 	def log_transfer(self, direction, src, dest, stat, bar):
-		return self._tvmodel.prepend([direction, src, dest, stat, bar])
+		return self._tv_model.prepend([direction, src, dest, stat, bar])
 
 class DirectoryBase(object):
 	def __init__(self, treeview, logger):
@@ -156,20 +155,28 @@ class DirectoryBase(object):
 		self.treeview.append_column(col_size)
 		self.treeview.append_column(col_date)
 
-		self.treeview.connect('row-expanded', self.signal_expand_row)
-		self.treeview.connect('row-collapsed', self.signal_collapse_row)
-		self._tvmodel = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
-		tm_sort = Gtk.TreeModelSort(model=self._tvmodel)
-		# default sort is ascending by file / directory name
-		tm_sort.set_sort_column_id(0, Gtk.SortType.ASCENDING)
-		self.treeview.set_model(tm_sort)
+		self.treeview.connect('button_press_event', self.signal_tv_button_press)
+		self.treeview.connect('key-press-event', self.signal_tv_key_press)
+		self.treeview.connect('row-expanded', self.signal_tv_expand_row)
+		self.treeview.connect('row-collapsed', self.signal_tv_collapse_row)
+		self._tv_model = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
+		self.treeview.set_model(self._tv_model)
 
 		self.local_hidden = True
 		self._get_popup_menu()
 
-	def _get_popup_menu(self):
-		self.treeview.connect('button_press_event', self._signal_treeview_button_pressed)
+	def _delete_selection(self):
+		selection = self.treeview.get_selection()
+		model, treeiter = selection.get_selected()
+		confirmed = gui_utilities.show_dialog_yes_no(
+			'Confirm Delete',
+			self.application.get_active_window(),
+			"Are you sure you want to delete the selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file')
+		)
+		if confirmed:
+			self.delete(model, treeiter)
 
+	def _get_popup_menu(self):
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
 		menu_item.connect('toggled', self.signal_menu_toggled_hidden_files)
@@ -201,21 +208,37 @@ class DirectoryBase(object):
 
 		self.popup_menu.show_all()
 
-	def _signal_treeview_button_pressed(self, _, event):
+	def _rename_selection(self):
+		selection = self.treeview.get_selection()
+		model, treeiter = selection.get_selected()
+		self.rename(treeiter)
+
+	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
 
-	def rename(self, path):
-		_iter = self._tvmodel.get_iter(path)
-		fullname = self._tvmodel[path][2]
-		parent = self._tvmodel.iter_parent(_iter)
+	def signal_tv_key_press(self, treeview, event):
+		if event.type != Gdk.EventType.KEY_PRESS:
+			return
+		keyval = event.get_keyval()[1]
+		if keyval == Gdk.KEY_F2:
+			self._rename_selection()
+		elif keyval == Gdk.KEY_F5:
+			self.refresh()
+		elif keyval == Gdk.KEY_Delete:
+			self._delete_selection()
+
+	def rename(self, treeiter):
+		path = self._tv_model.get_path(treeiter)
+		fullname = self._tv_model[path][2]
+		parent = self._tv_model.iter_parent(treeiter)
 		if parent is None:
 			parent_name = self.def_dir
 		else:
-			parent_name = self._tvmodel[parent][2]
-		if self._tvmodel[_iter][2] is not None:
+			parent_name = self._tv_model[parent][2]
+		if self._tv_model[treeiter][2] is not None:
 			perm = self._check_perm(parent_name)
 			w_perm = True if perm[4] == 'w' else False
 			if not w_perm:
@@ -227,22 +250,19 @@ class DirectoryBase(object):
 		self.col_name.set_property('editable', False)
 
 	def signal_menu_activate_rename(self, _):
-		selection = self.treeview.get_selection()
-		model, treeiter = selection.get_selected()
-		_iter = self._tvmodel.get_path(treeiter)
-		self.rename(_iter)
+		self._rename_selection()
 
-	def signal_expand_row(self, _, treeiter, treepath):
-		new_path = self._tvmodel[treeiter][2]  # pylint: disable=unsubscriptable-object
-		self.load_dirs(new_path, treeiter)
-		self._tvmodel.remove(self._tvmodel.iter_children(treeiter))
-
-	def signal_collapse_row(self, _, treeiter, treepath):
-		current = self._tvmodel.iter_children(treeiter)
+	def signal_tv_collapse_row(self, _, treeiter, treepath):
+		current = self._tv_model.iter_children(treeiter)
 		while current:
-			self._tvmodel.remove(current)
-			current = self._tvmodel.iter_children(treeiter)
-		self._tvmodel.append(treeiter, [None, None, None, None, None, None, None])
+			self._tv_model.remove(current)
+			current = self._tv_model.iter_children(treeiter)
+		self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
+
+	def signal_tv_expand_row(self, _, treeiter, treepath):
+		new_path = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
+		self.load_dirs(new_path, treeiter)
+		self._tv_model.remove(self._tv_model.iter_children(treeiter))
 
 	def load_dirs(self, path, parent=None):
 		for name in self._yield_dir_list(path):
@@ -260,18 +280,18 @@ class DirectoryBase(object):
 				is_folder = self._get_is_folder(fullname)
 			except (OSError, IOError):
 				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-				self._tvmodel.append(parent, [name, icon, fullname, None, None, None, None])
+				self._tv_model.append(parent, [name, icon, fullname, None, None, None, None])
 				continue
 			if is_folder:
 				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
-				current = self._tvmodel.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
+				current = self._tv_model.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
 			else:
 				file_size = self._get_file_size(fullname)
 				hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
 				icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
-				current = self._tvmodel.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
+				current = self._tv_model.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
 			if is_folder and perm[3] == 'r' and perm[5] == 'x':
-				self._tvmodel.append(current, [None, None, None, None, None, None, None])
+				self._tv_model.append(current, [None, None, None, None, None, None, None])
 
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
 		self.local_hidden = not self.local_hidden
@@ -281,7 +301,7 @@ class DirectoryBase(object):
 		self.treeview.collapse_all()
 
 	def refresh(self):
-		model = self._tvmodel
+		model = self._tv_model
 		exp_lines = []
 		model.foreach(lambda model, path, iter: exp_lines.append(path) if self.treeview.row_expanded(path) else 0)
 		self.treeview.collapse_all()
@@ -291,16 +311,13 @@ class DirectoryBase(object):
 	def signal_menu_activate_transfer(self, _):
 		pass
 
-	def _treeview_changed(self, widget, event, data=None):
-		adj = self.scroll.get_vadjustment()
-		adj.set_value(0)
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		fullname = model[treeiter][2]
 		dir_name = 'New Folder'
 		new_path = fullname + '/' + dir_name
-		path = self._tvmodel.get_path(treeiter)
+		path = self._tv_model.get_path(treeiter)
 		perm = self._check_perm(fullname)
 		w_perm = True if perm[4] == 'w' else False
 		if not w_perm:
@@ -308,42 +325,37 @@ class DirectoryBase(object):
 			return
 		if not self.treeview.row_expanded(path):
 			self.treeview.expand_row(path, False)
-		if self._tvmodel.iter_children(treeiter) is None:
-			self._tvmodel.append(treeiter,[None, None, None, None, None, None, None])
-			current = self._tvmodel.append(treeiter,[' ', None, None, None, None, None, None])
+		if self._tv_model.iter_children(treeiter) is None:
+			self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 			self.treeview.expand_row(path, False)
 		else:
-			current = self._tvmodel.append(treeiter,[' ', None, None, None, None, None, None])
-		current_path = self._tvmodel.get_path(current)
-		self.rename(current_path)
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
+		self.rename(current)
 
 	def signal_text_edited(self, renderer, path, text):
-		_iter = self._tvmodel.get_iter(path)
-		parent = self._tvmodel.iter_parent(_iter)
+		_iter = self._tv_model.get_iter(path)
+		parent = self._tv_model.iter_parent(_iter)
 		if parent is None:
 			new_path = self.def_dir + '/' + text
 		else:
-			new_path = self._tvmodel[parent][2] + '/' + text
-		if text == ' ' or text == self._tvmodel[_iter][0]:
+			new_path = self._tv_model[parent][2] + '/' + text
+		if text == ' ' or text == self._tv_model[_iter][0]:
 			self.refresh()
 			return
 		if self._already_exists(new_path):
 			gui_utilities.show_dialog_error('Unable to make directory', self.application.get_active_window(), "Directory: {0} already exists".format(new_path))
 			self.refresh()
 			return
-		if self._tvmodel[_iter][2] is not None:
+		if self._tv_model[_iter][2] is not None:
 			self._rename_file(_iter, new_path)
 		else:
-			self._tvmodel.remove(_iter)
+			self._tv_model.remove(_iter)
 			self._make_file(new_path)
 		self.refresh()
 
 	def signal_menu_activate_delete_prompt(self, _):
-		selection = self.treeview.get_selection()
-		model, treeiter = selection.get_selected()
-		delete = gui_utilities.show_dialog_yes_no("Delete selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file'), self.application.get_active_window())
-		if delete:
-			self.delete(model, treeiter)
+		self._delete_selection()
 
 class LocalDirectory(DirectoryBase):
 	treeview_name = 'treeview_local'
@@ -373,7 +385,7 @@ class LocalDirectory(DirectoryBase):
 		return os.path.isdir(path)
 
 	def _rename_file(self, _iter, path):
-		os.rename(self._tvmodel[_iter][2], path)
+		os.rename(self._tv_model[_iter][2], path)
 
 	def _make_file(self, path):
 			os.makedirs(path)
@@ -433,7 +445,7 @@ class RemoteDirectory(DirectoryBase):
 			return True
 
 	def _rename_file(self, _iter, path):
-		self.ftp.rename(self._tvmodel[_iter][2], path)
+		self.ftp.rename(self._tv_model[_iter][2], path)
 
 	def _make_file(self, path):
 		self.ftp.mkdir(path)
@@ -453,7 +465,7 @@ class RemoteDirectory(DirectoryBase):
 
 	def delete(self, model, treeiter):
 		try:
-			if self._get_is_folder(self._tvmodel[treeiter][2]):
+			if self._get_is_folder(self._tv_model[treeiter][2]):
 				self.ftp.rmdir(model[treeiter][2])
 			else:
 				self.ftp.remove(model[treeiter][2])
@@ -502,21 +514,30 @@ class FileManager(object):
 			file_h = ftp.file(src, 'r')
 			file_r = open(dst, 'a')
 		while not self._threads_shutdown.is_set() and transfered < size:
-			import time; time.sleep(1)
-			GLib.idle_add(self.get_upload_status, transfered, size)
+			GLib.idle_add(self._idle_update_status, transfered, size)
 			temp = file_h.read(chunk)
 			file_r.write(temp)
 			if self._threads_shutdown.is_set():
 				break
 			transfered += chunk
-		GLib.idle_add(self.get_upload_status, transfered, size)
+		GLib.idle_add(self._idle_update_status, transfered, size)
 		file_h.close()
 		file_r.close()
 		ftp.close()
+		GLib.idle_add(self._idle_refresh_directories)
+
+	def _idle_refresh_directories(self):
+		self.local.refresh()
 		self.remote.refresh()
 
-	### FIXME ###
+	def _idle_update_status(self, x, y):
+		amount_done = min(int(float(x) / y * 100), 100)
+		if amount_done == 100:
+			self.logger._tv_model[self._id][3] = 'Complete'
+		self.logger._tv_model[self._id][4] = amount_done
+		return False
 
+	### FIXME ###
 	### TELL SPENCER ABOUT PROBLEM W UNUSED THREADS ###
 	def _thread_routine(self, ssh):
 		while not self._threads_shutdown.is_set():
@@ -536,9 +557,9 @@ class FileManager(object):
 			thread.join()
 
 	def upload(self, temp, temp1):
-		selection = self.local.treeview_local.get_selection()
+		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		destination = self.remote.treeview_local.get_selection()
+		destination = self.remote.treeview.get_selection()
 		dest_model, dest_treeiter = destination.get_selected()
 		if treeiter is None:
 			return
@@ -563,17 +584,10 @@ class FileManager(object):
 		data_tuple = (_id, local_file, dest_file, direction)
 		self.queue.put(data_tuple)
 
-	def get_upload_status(self, x, y):
-		amount_done = min(int(float(x) / y * 100), 100)
-		if amount_done == 100:
-			self.logger._tvmodel[self._id][3] = 'Complete'
-		self.logger._tvmodel[self._id][4] = amount_done
-		return False
-
 	def download(self, temp, temp1):
-		selection = self.remote.treeview_local.get_selection()
+		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		destination = self.local.treeview_local.get_selection()
+		destination = self.local.treeview.get_selection()
 		dest_model, dest_treeiter = destination.get_selected()
 		if treeiter is None:
 			return
