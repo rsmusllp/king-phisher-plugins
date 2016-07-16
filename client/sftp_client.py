@@ -12,27 +12,37 @@ from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher import its
 
+import boltons.strutils
+import boltons.timeutils
 from gi.repository import Gtk
-from gi.repository.GdkPixbuf import Pixbuf
 from gi.repository import Gdk
+from gi.repository import GdkPixbuf
 from gi.repository import GObject
 from gi.repository import GLib
 
-
-import boltons.strutils
-import boltons.timeutils
+if its.py_v2:
+	import Queue as queue
+else:
+	import queue
 
 GTYPE_LONG = GObject.type_from_name('glong')
+
+def get_treeview_column(name, renderer, m_col, m_col_sort=None):
+	tv_col = Gtk.TreeViewColumn(name)
+	tv_col.pack_start(renderer, True)
+	tv_col.add_attribute(renderer, 'text', m_col)
+	if m_col_sort is not None:
+		tv_col.set_sort_column_id(m_col_sort)
+	return tv_col
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob']
 	title = 'SFTP Client'
 	description = """
-	Secure File Transfer Protocol Client that can be used to upload,
-	download, create, and delete local and remte files.
+	Secure File Transfer Protocol Client that can be used to upload, download,
+	create, and delete local and remote files on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-
 	def initialize(self):
 		self.sftp_window = None
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
@@ -47,13 +57,19 @@ class Plugin(plugins.ClientPlugin):
 		if self.sftp_window is None:
 			connection = self.application._ssh_forwarder
 			if connection is None:
-				self.logger.warning('Invalid connection, use ip address instead of localhost')
+				message = 'The King Phisher client does not have an active SSH connection\n'
+				message += 'to the server. The SFTP client plugin can not be used.'
+				gui_utilities.show_dialog_error(
+					'No SSH Connection',
+					self.application.get_active_window(),
+					message
+				)
 				return
 			ssh = connection.client
 			ftp = ssh.open_sftp()
 			target_file = os.path.splitext(__file__)[0] + '.ui'
 			self.logger.debug('loading gtk builder file from: ' + target_file)
-			manager = FileManager(target_file, self.application, ssh)  #pylint: disable=unused-variable
+			manager = FileManager(target_file, self.application, ssh)  # pylint: disable=unused-variable
 			self.sftp_window = manager.window
 			self.sftp_window.connect('destroy', self.signal_window_destroy)
 		self.sftp_window.show()
@@ -71,26 +87,11 @@ class Logger(object):
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
 		col_text = Gtk.CellRendererText()
 		columns = ('Direction', 'Source', 'Destination', 'Status')
-		x = 0
-		col = Gtk.TreeViewColumn('Direction')
-		col.pack_start(col_text, True)
-		col.add_attribute(col_text, 'text', 0)
-		col.set_sort_column_id(0)
 
-		col_src = Gtk.TreeViewColumn('Source')
-		col_src.pack_start(col_text, True)
-		col_src.add_attribute(col_text, 'text', 1)
-		col_src.set_sort_column_id(1)
-
-		col_dest = Gtk.TreeViewColumn('Destination')
-		col_dest.pack_start(col_text, True)
-		col_dest.add_attribute(col_text, 'text', 2)
-		col_dest.set_sort_column_id(2)
-
-		col_stat = Gtk.TreeViewColumn('Status')
-		col_stat.pack_start(col_text, True)
-		col_stat.add_attribute(col_text, 'text', 3)
-		col_stat.set_sort_column_id(3)
+		col = get_treeview_column('Direction', col_text, 0, m_col_sort=0)
+		col_src = get_treeview_column('Source', col_text, 1, m_col_sort=1)
+		col_dest = get_treeview_column('Destination', col_text, 2, m_col_sort=2)
+		col_stat = get_treeview_column('Status', col_text, 3, m_col_sort=3)
 
 		col_bar = Gtk.TreeViewColumn('Progress')
 		progress = Gtk.CellRendererProgress()
@@ -102,74 +103,72 @@ class Logger(object):
 		for column in [col, col_src, col_dest, col_stat, col_bar]:
 			self.treeview_transfer.append_column(column)
 		self._tvmodel = Gtk.ListStore(str, str, str, str, int)
-		self.treeview_transfer.connect('size-allocate', self._treeview_changed)
+		self.treeview_transfer.connect('size-allocate', self.signal_treeview_size_allocate)
 		self.treeview_transfer.set_model(self._tvmodel)
-		self.treeview_transfer.connect('button_press_event', self._signal_treeview_button_pressed)
+		self.treeview_transfer.connect('button_press_event', self.signal_treeview_button_pressed)
 
 		self.treeview_transfer.show_all()
-		
+
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.MenuItem.new_with_label('Clear')
-		menu_item.connect('activate', self.log_clear)
+		menu_item.connect('activate', self.signal_menu_activate_clear)
 		self.popup_menu.append(menu_item)
 		self.popup_menu.show_all()
 
-	def log_clear(self, _):
+	def signal_menu_activate_clear(self, _):
 		self._tvmodel.clear()
 
-	def _signal_treeview_button_pressed(self, _, event):
+	def signal_treeview_button_pressed(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
 
-	def _treeview_changed(self, widget, event, data=None):
+	def signal_treeview_size_allocate(self, widget, event, data=None):
 		adj = self.scroll.get_vadjustment()
 		adj.set_value(0)
 
 	def log_transfer(self, direction, src, dest, stat, bar):
 		return self._tvmodel.prepend([direction, src, dest, stat, bar])
 
-
 class DirectoryBase(object):
 	def __init__(self, treeview, logger):
-		col = Gtk.TreeViewColumn('Files')
 		self.logger = logger
-		self.treeview_local = treeview
+		self.treeview = treeview
 		self.col_name = Gtk.CellRendererText()
 		self.col_name.connect('edited', self.signal_text_edited)
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
+
+		col = Gtk.TreeViewColumn('Files')
 		col.pack_start(col_img, False)
 		col.pack_start(self.col_name, True)
 		col.add_attribute(self.col_name, 'text', 0)
 		col.add_attribute(col_img, 'pixbuf', 1)
 		col.set_sort_column_id(0)
-		col_perm = Gtk.TreeViewColumn('Permissions')
-		col_perm.pack_start(col_text, True)
-		col_perm.add_attribute(col_text, 'text', 3)
-		col_size = Gtk.TreeViewColumn('Size')
-		col_size.pack_start(col_text, True)
-		col_size.add_attribute(col_text, 'text', 4)
-		col_size.set_sort_column_id(5)
-		col_date = Gtk.TreeViewColumn('Date Modified')
-		col_date.pack_start(col_text, True)
-		col_date.add_attribute(col_text, 'text', 6)
-		col_date.set_sort_column_id(6)
-		self.treeview_local.append_column(col)
-		self.treeview_local.append_column(col_perm)
-		self.treeview_local.append_column(col_size)
-		self.treeview_local.append_column(col_date)
 
-		self.treeview_local.connect('row-expanded', self.signal_expand_row)
-		self.treeview_local.connect('row-collapsed', self.signal_collapse_row)
-		self._tvmodel = Gtk.TreeStore(str, Pixbuf, str, str, str, GTYPE_LONG, str)
+		col_perm = get_treeview_column('Permissions', col_text, 3, m_col_sort=3)
+		col_size = get_treeview_column('Size', col_text, 4, m_col_sort=5)
+		col_date = get_treeview_column('Date Modified', col_text, 6, m_col_sort=6)
+
+		self.treeview.append_column(col)
+		self.treeview.append_column(col_perm)
+		self.treeview.append_column(col_size)
+		self.treeview.append_column(col_date)
+
+		self.treeview.connect('row-expanded', self.signal_expand_row)
+		self.treeview.connect('row-collapsed', self.signal_collapse_row)
+		self._tvmodel = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
+		tm_sort = Gtk.TreeModelSort(model=self._tvmodel)
+		# default sort is ascending by file / directory name
+		tm_sort.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+		self.treeview.set_model(tm_sort)
 
 		self.local_hidden = True
 		self._get_popup_menu()
 
 	def _get_popup_menu(self):
-		self.treeview_local.connect('button_press_event', self._signal_treeview_button_pressed)
+		self.treeview.connect('button_press_event', self._signal_treeview_button_pressed)
 
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
@@ -222,13 +221,13 @@ class DirectoryBase(object):
 			if not w_perm:
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), "Cannot access {0} as user".format(fullname))
 				return
-		col = self.treeview_local.get_column(0)
+		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
-		self.treeview_local.set_cursor(path, col, True)
+		self.treeview.set_cursor(path, col, True)
 		self.col_name.set_property('editable', False)
 
 	def signal_menu_activate_rename(self, _):
-		selection = self.treeview_local.get_selection()
+		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		_iter = self._tvmodel.get_path(treeiter)
 		self.rename(_iter)
@@ -259,7 +258,7 @@ class DirectoryBase(object):
 				time = datetime.datetime.fromtimestamp(raw_time)
 				date_modified = '   ' + utilities.format_datetime(time)
 				is_folder = self._get_is_folder(fullname)
-			except OSError, IOError:
+			except (OSError, IOError):
 				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
 				self._tvmodel.append(parent, [name, icon, fullname, None, None, None, None])
 				continue
@@ -279,15 +278,15 @@ class DirectoryBase(object):
 		self.refresh()
 
 	def signal_menu_activate_collapse_all(self, _):
-		self.treeview_local.collapse_all()
+		self.treeview.collapse_all()
 
 	def refresh(self):
 		model = self._tvmodel
 		exp_lines = []
-		model.foreach(lambda model, path, iter: exp_lines.append(path) if self.treeview_local.row_expanded(path) else 0)
-		self.treeview_local.collapse_all()
+		model.foreach(lambda model, path, iter: exp_lines.append(path) if self.treeview.row_expanded(path) else 0)
+		self.treeview.collapse_all()
 		for path in exp_lines:
-			self.treeview_local.expand_row(path, False)
+			self.treeview.expand_row(path, False)
 
 	def signal_menu_activate_transfer(self, _):
 		pass
@@ -296,7 +295,7 @@ class DirectoryBase(object):
 		adj = self.scroll.get_vadjustment()
 		adj.set_value(0)
 	def signal_menu_activate_create_folder(self, _):
-		selection = self.treeview_local.get_selection()
+		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		fullname = model[treeiter][2]
 		dir_name = 'New Folder'
@@ -306,13 +305,13 @@ class DirectoryBase(object):
 		w_perm = True if perm[4] == 'w' else False
 		if not w_perm:
 			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), "Cannot access {0} as user".format(fullname))
-			return 
-		if not self.treeview_local.row_expanded(path):
-			self.treeview_local.expand_row(path, False)
+			return
+		if not self.treeview.row_expanded(path):
+			self.treeview.expand_row(path, False)
 		if self._tvmodel.iter_children(treeiter) is None:
 			self._tvmodel.append(treeiter,[None, None, None, None, None, None, None])
 			current = self._tvmodel.append(treeiter,[' ', None, None, None, None, None, None])
-			self.treeview_local.expand_row(path, False)
+			self.treeview.expand_row(path, False)
 		else:
 			current = self._tvmodel.append(treeiter,[' ', None, None, None, None, None, None])
 		current_path = self._tvmodel.get_path(current)
@@ -340,7 +339,7 @@ class DirectoryBase(object):
 		self.refresh()
 
 	def signal_menu_activate_delete_prompt(self, _):
-		selection = self.treeview_local.get_selection()
+		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		delete = gui_utilities.show_dialog_yes_no("Delete selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file'), self.application.get_active_window())
 		if delete:
@@ -355,7 +354,6 @@ class LocalDirectory(DirectoryBase):
 		self.upload_button = upload_button
 		self.def_dir = os.path.abspath(os.sep)
 		self.load_dirs(self.def_dir)
-		self.treeview_local.set_model(self._tvmodel)
 
 	def _check_perm(self, fullname):
 		r_permissions = os.access(fullname, os.R_OK)
@@ -411,7 +409,6 @@ class RemoteDirectory(DirectoryBase):
 		self.application = application
 		self.def_dir = self.application.config['server_config']['server.web_root']
 		self.load_dirs(self.def_dir)
-		self.treeview_local.set_model(self._tvmodel)
 
 	def _check_perm(self, fullname):
 		lstatout = self.ftp.stat(fullname)
@@ -429,8 +426,8 @@ class RemoteDirectory(DirectoryBase):
 	def _already_exists(self, path):
 		try:
 			self.ftp.stat(path)
-		except IOError, e:
-			if e[0] == 2:
+		except IOError as error:
+			if error[0] == 2:
 				return False
 		else:
 			return True
@@ -469,7 +466,7 @@ class RemoteDirectory(DirectoryBase):
 class FileManager(object):
 	def __init__(self, target_file, application, ssh, *args, **kwargs):
 		self.application = application
-		self.queue = Queue.Queue()
+		self.queue = queue.Queue()
 		self.upload_wheel = []
 		self._threads = []
 		self._threads_max = 1
@@ -505,6 +502,7 @@ class FileManager(object):
 			file_h = ftp.file(src, 'r')
 			file_r = open(dst, 'a')
 		while not self._threads_shutdown.is_set() and transfered < size:
+			import time; time.sleep(1)
 			GLib.idle_add(self.get_upload_status, transfered, size)
 			temp = file_h.read(chunk)
 			file_r.write(temp)
@@ -532,8 +530,9 @@ class FileManager(object):
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
+		for _ in self._threads:
+			self.queue.put([None, None, None, None])
 		for thread in self._threads:
-			self.queue.put([None, None, None])
 			thread.join()
 
 	def upload(self, temp, temp1):
@@ -565,10 +564,11 @@ class FileManager(object):
 		self.queue.put(data_tuple)
 
 	def get_upload_status(self, x, y):
-		amount_done = int(float(x) / y * 100)
-		if amount_done >= 100:
+		amount_done = min(int(float(x) / y * 100), 100)
+		if amount_done == 100:
 			self.logger._tvmodel[self._id][3] = 'Complete'
 		self.logger._tvmodel[self._id][4] = amount_done
+		return False
 
 	def download(self, temp, temp1):
 		selection = self.remote.treeview_local.get_selection()
