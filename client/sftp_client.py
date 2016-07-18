@@ -1,16 +1,15 @@
+import collections
 import os
 import datetime
 import stat
 import shutil
+import threading
 import time
 
-import threading
-import Queue
-
-import king_phisher.client.plugins as plugins
+from king_phisher import its
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
-from king_phisher import its
+from king_phisher.client import plugins
 
 import boltons.strutils
 import boltons.timeutils
@@ -19,11 +18,7 @@ from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 from gi.repository import GObject
 from gi.repository import GLib
-
-if its.py_v2:
-	import Queue as queue
-else:
-	import queue
+import paramiko
 
 GTYPE_LONG = GObject.type_from_name('glong')
 
@@ -68,7 +63,19 @@ class Plugin(plugins.ClientPlugin):
 			ssh = connection.client
 			target_file = os.path.splitext(__file__)[0] + '.ui'
 			self.logger.debug('loading gtk builder file from: ' + target_file)
-			manager = FileManager(target_file, self.application, ssh)  # pylint: disable=unused-variable
+			try:
+				manager = FileManager(target_file, self.application, ssh)
+			except paramiko.ssh_exception.ChannelException as error:
+				if len(error.args) == 2:
+					details = "SSH Channel Exception #{0} ({1})".format(*error.args)
+				else:
+					details = 'An unknown SSH Channel Exception occurred.'
+				gui_utilities.show_dialog_error(
+					'SSH Channel Exception',
+					self.application.get_active_window(),
+					details
+				)
+				return
 			self.sftp_window = manager.window
 			self.sftp_window.connect('destroy', self.signal_window_destroy)
 		self.sftp_window.show()
@@ -77,19 +84,144 @@ class Plugin(plugins.ClientPlugin):
 	def signal_window_destroy(self, window):
 		self.sftp_window = None
 
+class TaskQueue(object):
+	def __init__(self):
+		self.mutex = threading.RLock()
+		self.not_empty = threading.Condition(self.mutex)
+		self.not_full = threading.Condition(self.mutex)
+		self.queue = []
+		self.unfinished_tasks = 0
+
+	@property
+	def queue_ready(self):
+		for task in self.queue:
+			if task.is_ready:
+				yield task
+
+	def _qsize(self, len=len):
+		return len(list(self.queue))
+
+	def _qsize_ready(self, len=len):
+		return len(list(self.queue_ready))
+
+	def get(self, block=True, timeout=None):
+		self.not_empty.acquire()
+		try:
+			if not block:
+				if not self._qsize_ready():
+					return None
+			elif timeout is None:
+				while not self._qsize_ready():
+					self.not_empty.wait()
+			elif timeout < 0:
+				raise ValueError("'timeout' must be a non-negative number")
+			else:
+				endtime = time() + timeout
+				while not self._qsize_ready():
+					remaining = endtime - time()
+					if remaining <= 0.0:
+						return None
+					self.not_empty.wait(remaining)
+			task = next(self.queue_ready)
+			task.state = 'Active'
+			self.not_full.notify()
+			return task
+		finally:
+			self.not_empty.release()
+
+	def put(self, task):
+		if not isinstance(task, Task):
+			raise TypeError('argument 1 task must be Task instance')
+		with self.not_full:
+			task.register(self.not_empty)
+			self.queue.append(task)
+			self.unfinished_tasks += 1
+			self.not_empty.notify()
+
+	def remove(self, task):
+		with self.mutex:
+			self.queue.remove(task)
+			self.unfinished_tasks += 1
+			self.not_full.notify()
+
+class Task(object):
+	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending')
+	_ready_states = ('Pending',)
+	__slots__ = ('_ready', '_state')
+	def __init__(self, state=None):
+		self._ready = None
+		self._state = None
+		self.state = (state or 'Pending')
+
+	@property
+	def is_done(self):
+		return self._state in ('Cancelled', 'Completed', 'Error')
+
+	@property
+	def is_ready(self):
+		return self._state in self._ready_states
+
+	@property
+	def state(self):
+		return self._state
+
+	@state.setter
+	def state(self, value):
+		if value not in self._states:
+			raise ValueError('invalid state')
+		self._state = value
+		if self._state in self._ready_states and self._ready is not None:
+			self._ready.notify()
+
+	def register(self, ready_event):
+		if self._ready is not None:
+			raise RuntimeError('this task has already been registered')
+		self._ready = ready_event
+
+class ShutdownTask(Task):
+	pass
+
+class TransferTask(Task):
+	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
+	__slots__ = ('_state', 'local_file', 'remote_file', 'size', 'transferred', 'treepath')
+	def __init__(self, local_file, remote_file, state=None):
+		super(TransferTask, self).__init__(state=state)
+		self.local_file = local_file
+		self.remote_file = remote_file
+		self.transferred = 0
+		self.size = None
+		self.treepath = None
+
+	@property
+	def progress(self):
+		if self.size is None:
+			percent = 0
+		else:
+			percent = (float(self.transferred) / float(self.size))
+		return min(int(percent * 100), 100)
+
+class DownloadTask(TransferTask):
+	transfer_direction = 'download'
+
+class UploadTask(TransferTask):
+	transfer_direction = 'upload'
+
 class Logger(object):
-	def __init__(self, builder, *args, **kwargs):
+	def __init__(self, builder, queue):
 		self.builder = builder
+		self.queue = queue
 		self.scroll = self.builder.get_object('logger_scroll')
 		self.treeview_transfer = self.builder.get_object('SFTPClientGUI.treeview_transfer')
+		self._tv_lock = threading.RLock()
+		gsrc_id = GLib.timeout_add(250, self._sync_view, priority=GLib.PRIORITY_DEFAULT_IDLE)  # 250 milliseconds
+		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
 		col_text = Gtk.CellRendererText()
-		columns = ('Direction', 'Source', 'Destination', 'Status')
 
 		col = get_treeview_column('Direction', col_text, 0, m_col_sort=0)
-		col_src = get_treeview_column('Source', col_text, 1, m_col_sort=1)
-		col_dest = get_treeview_column('Destination', col_text, 2, m_col_sort=2)
+		col_src = get_treeview_column('Local File', col_text, 1, m_col_sort=1)
+		col_dest = get_treeview_column('Remote File', col_text, 2, m_col_sort=2)
 		col_stat = get_treeview_column('Status', col_text, 3, m_col_sort=3)
 
 		col_bar = Gtk.TreeViewColumn('Progress')
@@ -109,26 +241,116 @@ class Logger(object):
 		self.treeview_transfer.show_all()
 
 		self.popup_menu = Gtk.Menu.new()
+
+		self.menu_item_paused = Gtk.CheckMenuItem.new_with_label('Paused')
+		menu_item = self.menu_item_paused
+		menu_item.connect('toggled', self.signal_menu_toggled_paused)
+		self.popup_menu.append(menu_item)
+
+		self.menu_item_cancel = Gtk.MenuItem.new_with_label('Cancel')
+		menu_item = self.menu_item_cancel
+		menu_item.connect('activate', self.signal_menu_activate_cancel)
+		self.popup_menu.append(menu_item)
+
+		menu_item = Gtk.SeparatorMenuItem()
+		self.popup_menu.append(menu_item)
 		menu_item = Gtk.MenuItem.new_with_label('Clear')
 		menu_item.connect('activate', self.signal_menu_activate_clear)
 		self.popup_menu.append(menu_item)
 		self.popup_menu.show_all()
 
+	def _get_selected_tasks(self):
+		treepaths = self._get_selected_treepaths()
+		return [task for task in self.queue.queue if task.treepath in treepaths]
+
+	def _get_selected_treepaths(self):
+		selection = self.treeview_transfer.get_selection()
+		model, treeiter = selection.get_selected()
+		treepaths = []
+		while treeiter is not None:
+			treepaths.append(model.get_path(treeiter))
+			treeiter = model.iter_children(treeiter)
+		return treepaths
+
+	def _change_task_state(self, state_from, state_to):
+		with self.queue.mutex:
+			for task in self._get_selected_tasks():
+				if task.state in state_from:
+					task.state = state_to
+
+	def _sync_view(self):
+		if not self.queue.mutex.acquire(blocking=False):
+			return
+		if not self._tv_lock.acquire(blocking=False):
+			self.queue.mutex.release()
+			return
+		for task in self.queue.queue:
+			if not isinstance(task, TransferTask):
+				continue
+			if task.treepath is None:
+				treeiter = self._tv_model.append([
+					task.transfer_direction.title(),
+					task.local_file,
+					task.remote_file,
+					task.state,
+					0
+				])
+				task.treepath = self._tv_model.get_path(treeiter)
+			else:
+				row = self._tv_model[task.treepath]
+				row[3] = task.state
+				row[4] = task.progress
+		self.queue.mutex.release()
+		return True
+
 	def signal_menu_activate_clear(self, _):
-		self._tv_model.clear()
+		with self.queue.mutex:
+			for task in self.queue.queue:
+				if not task.is_done:
+					continue
+				if task.treepath is not None:
+					self._tv_model.remove(self._tv_model.get_iter(task.treepath))
+					task.treepath = None
+				self.queue.queue.remove(task)
+			self.queue.not_full.notify()
+
+	def signal_menu_toggled_paused(self, _):
+		if self.menu_item_paused.get_active():
+			self._change_task_state(('Active', 'Pending', 'Transferring'), 'Paused')
+		else:
+			self._change_task_state(('Paused',), 'Pending')
+
+	def signal_menu_activate_cancel(self, _):
+		self._change_task_state(('Active', 'Paused', 'Pending', 'Transferring'), 'Cancelled')
 
 	def signal_tv_button_pressed(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
+			selected_tasks = self._get_selected_tasks()
+			if not selected_tasks:
+				self.menu_item_cancel.set_sensitive(False)
+				self.menu_item_paused.set_sensitive(False)
+			else:
+				self.menu_item_cancel.set_sensitive(True)
+				self.menu_item_paused.set_sensitive(True)
+				tasks_are_paused = [task.state == 'Paused' for task in selected_tasks]
+				if any(tasks_are_paused):
+					self.menu_item_paused.set_active(True)
+					self.menu_item_paused.set_inconsistent(not all(tasks_are_paused))
+				else:
+					self.menu_item_paused.set_active(False)
+					self.menu_item_paused.set_inconsistent(False)
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
 
-	def signal_tv_size_allocate(self, widget, event, data=None):
+	def signal_tv_destroy(self, _, gsrc_id):
+		self._tv_lock.acquire()
+		GLib.source_remove(gsrc_id)
+		# purposely don't release self._tv_lock, the tv has been destroyed
+
+	def signal_tv_size_allocate(self, _, event, data=None):
 		adj = self.scroll.get_vadjustment()
 		adj.set_value(0)
-
-	def log_transfer(self, direction, src, dest, stat, bar):
-		return self._tv_model.prepend([direction, src, dest, stat, bar])
 
 class DirectoryBase(object):
 	def __init__(self, treeview, logger):
@@ -183,8 +405,7 @@ class DirectoryBase(object):
 		self.signal_menu_toggled_hidden_files = menu_item
 		self.popup_menu.append(menu_item)
 
-		label = 'Upload' if self.treeview_name == 'treeview_local' else 'Download'
-		menu_item = Gtk.MenuItem.new_with_label(label)
+		menu_item = Gtk.MenuItem.new_with_label(self.transfer_direction.title())
 		menu_item.connect('activate', self.signal_menu_activate_transfer)
 		self.popup_menu.append(menu_item)
 
@@ -212,6 +433,12 @@ class DirectoryBase(object):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		self.rename(treeiter)
+
+	def get_is_folder(self, fullname):
+		return stat.S_ISDIR(self.stat(fullname).st_mode)
+
+	def get_file_size(self, fullname):
+		return self.stat(fullname).st_size
 
 	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
@@ -277,7 +504,7 @@ class DirectoryBase(object):
 				raw_time = self._get_raw_time(fullname)
 				time = datetime.datetime.fromtimestamp(raw_time)
 				date_modified = '   ' + utilities.format_datetime(time)
-				is_folder = self._get_is_folder(fullname)
+				is_folder = self.get_is_folder(fullname)
 			except (OSError, IOError):
 				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
 				self._tv_model.append(parent, [name, icon, fullname, None, None, None, None])
@@ -286,7 +513,7 @@ class DirectoryBase(object):
 				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
 				current = self._tv_model.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
 			else:
-				file_size = self._get_file_size(fullname)
+				file_size = self.get_file_size(fullname)
 				hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
 				icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
 				current = self._tv_model.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
@@ -358,10 +585,12 @@ class DirectoryBase(object):
 		self._delete_selection()
 
 class LocalDirectory(DirectoryBase):
+	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
 	def __init__(self, builder, logger, upload_button, application):
 		self.application = application
 		_treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
+		self.stat = os.stat
 		super(LocalDirectory, self).__init__(_treeview, logger)
 		self.upload_button = upload_button
 		self.def_dir = os.path.abspath(os.sep)
@@ -393,12 +622,6 @@ class LocalDirectory(DirectoryBase):
 	def _get_raw_time(self, fullname):
 		return os.path.getmtime(fullname)
 
-	def _get_is_folder(self, fullname):
-		return stat.S_ISDIR(os.stat(fullname).st_mode)
-
-	def _get_file_size(self, fullname):
-		return os.path.getsize(fullname)
-
 	def delete(self, model, treeiter):
 		try:
 			if model[treeiter][5] == -1:
@@ -412,9 +635,11 @@ class LocalDirectory(DirectoryBase):
 			self.refresh()
 
 class RemoteDirectory(DirectoryBase):
+	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
 	def __init__(self, builder, logger, download_button, application, ftp):
 		_treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
+		self.stat = ftp.stat
 		super(RemoteDirectory, self).__init__(_treeview, logger)
 		self.ftp = ftp
 		self.download_button = download_button
@@ -454,18 +679,9 @@ class RemoteDirectory(DirectoryBase):
 		lstatout = self.ftp.stat(fullname)
 		return lstatout.st_mtime
 
-	def _get_is_folder(self, fullname):
-		lstatout = self.ftp.stat(fullname)
-		mode = lstatout.st_mode
-		return stat.S_ISDIR(mode)
-
-	def _get_file_size(self, fullname):
-		lstatout = self.ftp.stat(fullname)
-		return lstatout.st_size
-
 	def delete(self, model, treeiter):
 		try:
-			if self._get_is_folder(self._tv_model[treeiter][2]):
+			if self.get_is_folder(self._tv_model[treeiter][2]):
 				self.ftp.rmdir(model[treeiter][2])
 			else:
 				self.ftp.remove(model[treeiter][2])
@@ -478,8 +694,10 @@ class RemoteDirectory(DirectoryBase):
 class FileManager(object):
 	def __init__(self, target_file, application, ssh, *args, **kwargs):
 		self.application = application
-		self.queue = queue.Queue()
+		self.queue = TaskQueue()
 		self.upload_wheel = []
+		self._task_lock = threading.Lock()
+		self._tasks = []
 		self._threads = []
 		self._threads_max = 1
 		self._threads_shutdown = threading.Event()
@@ -493,118 +711,108 @@ class FileManager(object):
 		self.window = self.builder.get_object('SFTPClientGUI.window')
 		upload_button = self.builder.get_object('button_upload')
 		download_button = self.builder.get_object('button_download')
-		self.logger = Logger(self.builder)
+		self.logger = Logger(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.logger, upload_button, self.application)  # pylint: disable=unused-variable
 		self.remote = RemoteDirectory(self.builder, self.logger, download_button, self.application, ftp)  # pylint: disable=unused-variable
-		self.local.upload_button.connect('button-press-event', self.upload)
-		self.remote.download_button.connect('button-press-event', self.download)
+		self.local.upload_button.connect('button-press-event', lambda widget, event: self._queue_transfer(UploadTask))
+		self.remote.download_button.connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.acceptable_perms = ('r-x', 'r--', 'rwx', 'rw-')
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
 	### FIXME ###
-	def _transfer(self, src, dst, ssh, direction, chunk=0x1000):
+	def _transfer(self, task, ssh, chunk=0x1000):
+		task.state = 'Transferring'
 		ftp = ssh.open_sftp()
-		size = self.local._get_file_size(src)
-		transfered = 0
-		if direction == 'U':
-			file_h = open(src)
-			file_r = ftp.file(dst, 'w')
-		else:
-			file_h = ftp.file(src, 'r')
-			file_r = open(dst, 'a')
-		while not self._threads_shutdown.is_set() and transfered < size:
-			GLib.idle_add(self._idle_update_status, transfered, size)
-			temp = file_h.read(chunk)
-			file_r.write(temp)
-			if self._threads_shutdown.is_set():
-				break
-			transfered += chunk
-		GLib.idle_add(self._idle_update_status, transfered, size)
-		file_h.close()
-		file_r.close()
-		ftp.close()
-		GLib.idle_add(self._idle_refresh_directories)
+		try:
+			if isinstance(task, UploadTask):
+				task.size = self.local.get_file_size(task.local_file)
+				src_file_h = open(task.local_file, 'rb')
+				dst_file_h = ftp.file(task.remote_file, 'wb')
+			elif isinstance(task, DownloadTask):
+				task.size = self.remote.get_file_size(task.remote_file)
+				src_file_h = ftp.file(task.remote_file, 'rb')
+				dst_file_h = open(task.local_file, 'wb')
+			else:
+				raise ValueError('unsupported task type passed to _transfer')
+			while task.transferred < task.size:
+				if self._threads_shutdown.is_set():
+					task.state = 'Cancelled'
+					break
+				if task.state != 'Transferring':
+					break
+				temp = src_file_h.read(chunk)
+				dst_file_h.write(temp)
+				task.transferred += chunk
+				time.sleep(1)
+			else:
+				task.state = 'Completed'
+				GLib.idle_add(self._idle_refresh_directories)
+			src_file_h.close()
+			dst_file_h.close()
+		except:
+			if not task.is_done:
+				task.state = 'Error'
+		finally:
+			ftp.close()
 
 	def _idle_refresh_directories(self):
 		self.local.refresh()
 		self.remote.refresh()
 
-	def _idle_update_status(self, x, y):
-		amount_done = min(int(float(x) / y * 100), 100)
-		if amount_done == 100:
-			self.logger._tv_model[self._id][3] = 'Complete'
-		self.logger._tv_model[self._id][4] = amount_done
-		return False
-
 	### FIXME ###
 	### TELL SPENCER ABOUT PROBLEM W UNUSED THREADS ###
 	def _thread_routine(self, ssh):
 		while not self._threads_shutdown.is_set():
-			self._id, local_file, dest_file, direction = self.queue.get()
-			if local_file is None:
-				pass
-			else:
-				self._transfer(local_file, dest_file, ssh, direction)
-				self.queue.task_done()
+			task = self.queue.get()
+			if isinstance(task, ShutdownTask):
+				task.state = 'Completed'
+				self.queue.remove(task)
+				break
+			elif isinstance(task, TransferTask):
+				self._transfer(task, ssh)
 
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
 		for _ in self._threads:
-			self.queue.put([None, None, None, None])
+			self.queue.put(ShutdownTask())
 		for thread in self._threads:
 			thread.join()
 
-	def upload(self, temp, temp1):
+	def _queue_transfer(self, task_cls):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		destination = self.remote.treeview.get_selection()
-		dest_model, dest_treeiter = destination.get_selected()
-		if treeiter is None:
-			return
 		local_file = model[treeiter][2]
-		if dest_treeiter is None:
-			dest_dir = self.remote.def_dir
-		elif dest_model[dest_treeiter][5] != -1:
-			return
-		else:
-			dest_dir = dest_model[dest_treeiter][2]
-			if dest_model[dest_treeiter][3][3:] not in self.acceptable_perms:
-				self.logger.log_transfer('Upload', local_file, dest_dir, 'Error', 0)
-				return
-		if model[treeiter][3][3:] not in self.acceptable_perms:
-			self.logger.log_transfer('Upload', local_file, dest_dir, 'Error', 0)
-			return
-		unique = self.logger.log_transfer('Upload', local_file, dest_dir, 'Pending', 0)
-		new_full_name = dest_dir + '/' + model[treeiter][0]
-		self.queue_transfer(unique, local_file, new_full_name, 'U')
 
-	def queue_transfer(self, _id, local_file, dest_file, direction):
-		data_tuple = (_id, local_file, dest_file, direction)
-		self.queue.put(data_tuple)
-
-	def download(self, temp, temp1):
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		destination = self.local.treeview.get_selection()
-		dest_model, dest_treeiter = destination.get_selected()
-		if treeiter is None:
-			return
-		local_file = model[treeiter][2]
-		if dest_treeiter is None:
-			dest_dir = os.path.abspath(os.sep)
-		elif dest_model[dest_treeiter][5] != -1:
-			return
+		remote_file = model[treeiter][2]
+		
+		if issubclass(task_cls, DownloadTask):
+			src, dst = self.remote, self.local
+			src_file, dst_file = remote_file, local_file
+		elif issubclass(task_cls, UploadTask):
+			src, dst = self.local, self.remote
+			src_file, dst_file = local_file, remote_file
 		else:
-			dest_dir = dest_model[dest_treeiter][2]
-			if dest_model[dest_treeiter][3][3:] not in self.acceptable_perms:
-				self.logger.log_transfer('Download', local_file, dest_dir, 'Error', 0)
-				return
-		if model[treeiter][3][3:] not in self.acceptable_perms:
-				self.logger.log_transfer('Download', local_file, dest_dir, 'Error', 0)
-				return
-		unique = self.logger.log_transfer('Download', local_file, dest_dir, 'Pending', 0)
-		new_full_name = dest_dir + '/' + model[treeiter][0]
-		self.queue_transfer(unique, local_file, new_full_name, 'D')
+			raise ValueError('task_cls must be a subclass of TransferTask')
 
+		if dst.get_is_folder(dst_file):
+			dst_dir = dst_file
+			dst_file = os.path.join(dst_file, os.path.basename(src_file))
+		else:
+			dst_dir = os.path.dirname(dst_file)
+
+		if issubclass(task_cls, DownloadTask):
+			if not os.access(dst_dir, os.W_OK):
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Can not write to the destination folder.'
+				)
+				return
+			local_file, remote_file = dst_file, src_file
+		elif issubclass(task_cls, UploadTask):
+			local_file, remote_file = src_file, dst_file
+		self.queue.put(task_cls(local_file, remote_file))
