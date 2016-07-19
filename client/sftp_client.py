@@ -183,14 +183,14 @@ class ShutdownTask(Task):
 
 class TransferTask(Task):
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
-	__slots__ = ('_state', 'local_file', 'remote_file', 'size', 'transferred', 'treepath')
+	__slots__ = ('_state', 'local_file', 'remote_file', 'size', 'transferred', 'treerowref')
 	def __init__(self, local_file, remote_file, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_file = local_file
 		self.remote_file = remote_file
 		self.transferred = 0
 		self.size = None
-		self.treepath = None
+		self.treerowref = None
 
 	@property
 	def progress(self):
@@ -261,7 +261,7 @@ class Logger(object):
 
 	def _get_selected_tasks(self):
 		treepaths = self._get_selected_treepaths()
-		return [task for task in self.queue.queue if task.treepath in treepaths]
+		return [task for task in self.queue.queue if task.treerowref.valid() and task.treerowref.get_path() in treepaths]
 
 	def _get_selected_treepaths(self):
 		selection = self.treeview_transfer.get_selection()
@@ -287,7 +287,7 @@ class Logger(object):
 		for task in self.queue.queue:
 			if not isinstance(task, TransferTask):
 				continue
-			if task.treepath is None:
+			if task.treerowref is None:
 				treeiter = self._tv_model.append([
 					task.transfer_direction.title(),
 					task.local_file,
@@ -295,9 +295,9 @@ class Logger(object):
 					task.state,
 					0
 				])
-				task.treepath = self._tv_model.get_path(treeiter)
-			else:
-				row = self._tv_model[task.treepath]
+				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
+			elif task.treerowref.valid():
+				row = self._tv_model[task.treerowref.get_path()]
 				row[3] = task.state
 				row[4] = task.progress
 		self.queue.mutex.release()
@@ -308,9 +308,9 @@ class Logger(object):
 			for task in self.queue.queue:
 				if not task.is_done:
 					continue
-				if task.treepath is not None:
-					self._tv_model.remove(self._tv_model.get_iter(task.treepath))
-					task.treepath = None
+				if task.treerowref is not None and task.treerowref.valid():
+					self._tv_model.remove(self._tv_model.get_iter(task.treerowref.get_path()))
+					task.treerowref = None
 				self.queue.queue.remove(task)
 			self.queue.not_full.notify()
 
@@ -735,6 +735,7 @@ class FileManager(object):
 				dst_file_h = open(task.local_file, 'wb')
 			else:
 				raise ValueError('unsupported task type passed to _transfer')
+			# todo handle resuming a previously paused transfer via seek
 			while task.transferred < task.size:
 				if self._threads_shutdown.is_set():
 					task.state = 'Cancelled'
