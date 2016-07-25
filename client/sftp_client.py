@@ -679,6 +679,7 @@ class RemoteDirectory(DirectoryBase):
 
 class FileManager(object):
 	def __init__(self, application, ssh):
+		self.ssh = ssh
 		self.application = application
 		self.queue = TaskQueue()
 		self._threads = []
@@ -766,10 +767,12 @@ class FileManager(object):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		local_file = model[treeiter][2]
+		local_name = model[treeiter][0]
 
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		remote_file = model[treeiter][2]
+		remote_name = model[treeiter][0]
 
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
@@ -786,15 +789,66 @@ class FileManager(object):
 		else:
 			dst_dir = os.path.dirname(dst_file)
 
-		if issubclass(task_cls, DownloadTask):
-			if not os.access(dst_dir, os.W_OK):
-				gui_utilities.show_dialog_error(
-					'Permission Denied',
-					self.application.get_active_window(),
-					'Can not write to the destination folder.'
-				)
-				return
-			local_file, remote_file = dst_file, src_file
-		elif issubclass(task_cls, UploadTask):
-			local_file, remote_file = src_file, dst_file
-		self.queue.put(task_cls(local_file, remote_file))
+		if src.get_is_folder(src_file):
+			commands = []
+			tasks = []
+			old_files = {}
+			uload = False
+			if issubclass(task_cls, UploadTask):
+				self.local_walk(src_file, src, commands, local_name, old_files)
+				uload = True
+			elif issubclass(task_cls, DownloadTask):
+				self.remote_walk(src_file, src, commands, remote_name, old_files)
+			for command in commands:
+				new_dir = dst_dir + '/' + command[0]
+				dst._make_file(new_dir)
+				for _file in command[2]:
+					new_file = new_dir + '/' + _file
+					old_file = old_files[command[0]] + '/' + _file
+					if uload:
+						local_file, remote_file = old_file, new_file
+					else:
+						local_file, remote_file = new_file, old_file
+					self.queue.put(task_cls(local_file, remote_file))
+		else:
+			if issubclass(task_cls, DownloadTask):
+				if not os.access(dst_dir, os.W_OK):
+					gui_utilities.show_dialog_error(
+						'Permission Denied',
+						self.application.get_active_window(),
+						'Can not write to the destination folder.'
+					)
+					return
+				local_file, remote_file = dst_file, src_file
+			elif issubclass(task_cls, UploadTask):
+				local_file, remote_file = src_file, dst_file
+			self.queue.put(task_cls(local_file, remote_file))
+
+	def remote_walk(self, _dir, src, commands, remote_name, old_files):
+		subdirs = []
+		files =[]
+		temp = _dir.split('/')
+		loc = temp.index(remote_name)
+		parsed_name = '/'.join(temp[loc:])
+		for f in src._yield_dir_list(_dir):
+			if src.get_is_folder(_dir + '/' + f):
+				subdirs.append(f)
+			else:
+				files.append(f)
+		command = [parsed_name, subdirs, files]
+		commands.append(command)
+		old_files[parsed_name] = _dir
+		for folder in subdirs:
+			new_path = os.path.join(_dir, folder)
+			self.remote_walk(new_path, src, commands, remote_name, old_files)
+
+	def local_walk(self, src_file, src, commands, local_name, old_files):
+		for walker in os.walk(src_file):
+			walker = list(walker)
+			temp = walker[0].split('/')
+			loc = temp.index(local_name)
+			parsed_name = '/'.join(temp[loc:])
+			walker[0] = parsed_name
+			commands.append(walker)
+			old_files[parsed_name] = walker[0]
+
