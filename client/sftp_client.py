@@ -159,7 +159,6 @@ class Task(object):
 		self._ready = None
 		self._state = None
 		self.state = (state or 'Pending')
-		self.parents = []
 
 	@property
 	def is_done(self):
@@ -192,13 +191,17 @@ class ShutdownTask(Task):
 class TransferTask(Task):
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
 	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref')
-	def __init__(self, local_path, remote_path, state=None):
+	def __init__(self, local_path, remote_path, folder=False, parent=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
 		self.remote_path = remote_path
 		self.transferred = 0
 		self.size = None
 		self.treerowref = None
+		self.time = 0
+		self.parent = parent
+		self.parents = []
+		self.folder = folder
 
 	@property
 	def progress(self):
@@ -226,6 +229,8 @@ class StatusDisplay(object):
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
 
+		self.path_to_ref = {}
+
 		col_text = Gtk.CellRendererText()
 		self.treeview_transfer.append_column(get_treeview_column('Direction', col_text, 0, m_col_sort=0))
 		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1))
@@ -238,7 +243,7 @@ class StatusDisplay(object):
 		col_bar.add_attribute(progress, 'value', 4)
 		self.treeview_transfer.append_column(col_bar)
 
-		self._tv_model = Gtk.ListStore(str, str, str, str, int)
+		self._tv_model = Gtk.TreeStore(str, str, str, str, int)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 		self.treeview_transfer.set_model(self._tv_model)
@@ -279,7 +284,7 @@ class StatusDisplay(object):
 
 	def _change_task_state(self, state_from, state_to):
 		with self.queue.mutex:
-			for task in self._get_selected_tasks():
+			for task in self._get_selected_tasks():	
 				if task.state in state_from:
 					task.state = state_to
 
@@ -290,10 +295,21 @@ class StatusDisplay(object):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
+			parent = None
+			if task.parent is not None:
+				parent = task.parent.treerowref
+				if parent is None:
+					self.queue.queue.remove(task)
+					continue
+				parent_path = parent.get_path()
+				parent = self._tv_model.get_iter(parent_path)
+				if task.time == 0:
+					self.treeview_transfer.expand_row(parent_path, False)
+					task.time = 1
 			if not isinstance(task, TransferTask):
 				continue
 			if task.treerowref is None:
-				treeiter = self._tv_model.append([
+				treeiter = self._tv_model.append(parent, [
 					task.transfer_direction.title(),
 					task.local_path,
 					task.remote_path,
@@ -626,6 +642,12 @@ class LocalDirectory(DirectoryBase):
 			gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
 			self.refresh()
 
+	def remove_by_folder_name(self, name):
+		shutil.rmtree(name)
+
+	def remove_by_file_name(self, name):
+		os.remove(name)
+
 class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
@@ -676,6 +698,13 @@ class RemoteDirectory(DirectoryBase):
 		else:
 			gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
 			self.refresh()
+	
+	def remove_by_folder_name(self, name):
+		self.ftp.rmdir(name)
+
+	def remove_by_file_name(self, name):
+		self.ftp.remove(name)
+
 
 class FileManager(object):
 	def __init__(self, application, ssh):
@@ -709,7 +738,9 @@ class FileManager(object):
 		ftp = ssh.open_sftp()
 		write_mode = 'ab' if task.transferred > 0 else 'wb'
 		try:
-			if isinstance(task, UploadTask):
+			if task.folder:
+				print self.status_display.parent_to_child
+			elif isinstance(task, UploadTask):
 				task.size = self.local.get_file_size(task.local_path)
 				src_file_h = open(task.local_path, 'rb')
 				dst_file_h = ftp.file(task.remote_path, write_mode)
@@ -719,7 +750,8 @@ class FileManager(object):
 				dst_file_h = open(task.local_path, write_mode)
 			else:
 				raise ValueError('unsupported task type passed to _transfer')
-			src_file_h.seek(task.transferred)
+			if not task.folder:
+				src_file_h.seek(task.transferred)
 			while task.transferred < task.size:
 				if self._threads_shutdown.is_set():
 					task.state = 'Cancelled'
@@ -729,12 +761,18 @@ class FileManager(object):
 				dst_file_h.write(temp)
 				task.transferred += chunk
 			else:
+				if task.parent is not None:
+					task.parent.transferred += 1
+					if task.parent.transferred >= task.parent.size:
+						task.parent.state = 'Completed'
 				task.state = 'Completed'
 				GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
 		except:
-			if not task.is_done:
+			if task.folder:
+				task.state = 'Transferring'
+			elif not task.is_done:
 				task.state = 'Error'
 		finally:
 			ftp.close()
@@ -797,11 +835,42 @@ class FileManager(object):
 			if issubclass(task_cls, UploadTask):
 				self.local_walk(src_file, src, commands, local_name, old_files)
 				uload = True
+				new_task = UploadTask(src_file, dst_file, folder=True)
 			elif issubclass(task_cls, DownloadTask):
 				self.remote_walk(src_file, src, commands, remote_name, old_files)
+				new_task = DownloadTask(dst_file, src_file, folder=True)
+			total_items = 0
+			for command in commands:
+				for _file in command[2]:
+					total_items += 1
+			new_task.size = total_items
+			self.queue.put(new_task)
+			counter = 0
+			parent_to_child = {}
+			
 			for command in commands:
 				new_dir = dst_dir + '/' + command[0]
+				if dst._already_exists(new_dir):
+					confirmed = gui_utilities.show_dialog_yes_no(
+						'Warning',
+						self.application.get_active_window(),
+						"Folder {0} already exists. Replace?".format(new_dir)
+					)
+					if not confirmed:
+						return
+					dst.remove_by_folder_name(new_dir)
 				dst._make_file(new_dir)
+				if counter == 0:
+					parent_to_child[command[0]] = new_task
+				else:
+					parents = command[0].split('/')
+					x = 0
+					for x in range(0, len(parents)):
+						if parents[x] not in parent_to_child:
+							true_parent = parent_to_child[parents[x-1]]
+							task = task_cls(parents[x], None, parent=true_parent)
+							self.queue.put(task)
+							parent_to_child[parents[x]] = task
 				for _file in command[2]:
 					new_file = new_dir + '/' + _file
 					old_file = old_files[command[0]] + '/' + _file
@@ -809,7 +878,9 @@ class FileManager(object):
 						local_file, remote_file = old_file, new_file
 					else:
 						local_file, remote_file = new_file, old_file
-					self.queue.put(task_cls(local_file, remote_file))
+					self.queue.put(task_cls(local_file, remote_file, parent=new_task))
+				counter += 1
+			print parent_to_child
 		else:
 			if issubclass(task_cls, DownloadTask):
 				if not os.access(dst_dir, os.W_OK):
@@ -848,7 +919,7 @@ class FileManager(object):
 			temp = walker[0].split('/')
 			loc = temp.index(local_name)
 			parsed_name = '/'.join(temp[loc:])
+			old_files[parsed_name] = walker[0]
 			walker[0] = parsed_name
 			commands.append(walker)
-			old_files[parsed_name] = walker[0]
 
