@@ -636,7 +636,12 @@ class LocalDirectory(DirectoryBase):
 		os.rename(self._tv_model[_iter][2], path)
 
 	def _make_file(self, path):
-		os.makedirs(path)
+		try:
+			os.makedirs(path)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 
 	def _get_raw_time(self, fullname):
 		return os.path.getmtime(fullname)
@@ -654,11 +659,20 @@ class LocalDirectory(DirectoryBase):
 			self.refresh()
 
 	def remove_by_folder_name(self, name):
-		shutil.rmtree(name)
+		try:
+			shutil.rmtree(name)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 
 	def remove_by_file_name(self, name):
-		os.remove(name)
-
+		try:
+			os.remove(name)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
@@ -692,7 +706,12 @@ class RemoteDirectory(DirectoryBase):
 		self.ftp.rename(self._tv_model[_iter][2], path)
 
 	def _make_file(self, path):
-		self.ftp.mkdir(path)
+		try:
+			self.ftp.mkdir(path)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 
 	def _get_raw_time(self, fullname):
 		lstatout = self.ftp.stat(fullname)
@@ -711,10 +730,19 @@ class RemoteDirectory(DirectoryBase):
 			self.refresh()
 	
 	def remove_by_folder_name(self, name):
-		self.ftp.rmdir(name)
-
+		try:
+			self.ftp.rmdir(name)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 	def remove_by_file_name(self, name):
-		self.ftp.remove(name)
+		try:
+			self.ftp.remove(name)
+			return True
+		except IOError:
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
 
 
 class FileManager(object):
@@ -775,10 +803,6 @@ class FileManager(object):
 				task.transferred += chunk
 			else:
 				task.state = 'Completed'
-				if task.parent is not None:
-					task.parent.transferred += 1
-					if task.parent.transferred >= task.parent.size:
-						task.parent.state = 'Completed'
 				GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
@@ -786,6 +810,11 @@ class FileManager(object):
 			if not task.is_done:
 				task.state = 'Error'
 		finally:
+			if task.parent is not None:
+				for parent in task.parent:
+					parent.transferred += 1
+					if parent.transferred >= parent.size:
+						parent.state = 'Completed'
 			ftp.close()
 
 	def _idle_refresh_directories(self):
@@ -851,17 +880,8 @@ class FileManager(object):
 			elif issubclass(task_cls, DownloadTask):
 				self.remote_walk(src_file, src, commands, remote_name, old_files)
 				new_task = DownloadFolderTask(dst_file, src_file)
-			total_items = 0
-			item_list = []
-			for command in commands:
-				items = 0
-				for _file in command[2]:
-					items += 1
-				item_list.append(items)
-				total_items += items
-			new_task.size = total_items
-			self.queue.put(new_task)
-			parents = [(new_task, None)]
+			parents = []
+			all_parents = []
 			for command in commands:
 				new_dir = dst_dir + '/' + command[0]
 				if dst._already_exists(new_dir):
@@ -872,20 +892,27 @@ class FileManager(object):
 					)
 					if not confirmed:
 						return
-					dst.remove_by_folder_name(new_dir)
-				dst._make_file(new_dir)
+					if not dst.remove_by_folder_name(new_dir):
+						return
+				if not dst._make_file(new_dir):
+					return
 				temp = command[0].split('/')
-				for i in range(1, len(temp)):
+				for i in range(0, len(temp)):
 					name = '/'.join(temp[0:i+1])
-					task = (DownloadFolderTask(None, name, parent=(parents[i-1][0],)), name)
+					parent_task = (parents[i-1][0],) if i > 0 else None
+
+					if not uload:
+						task = (DownloadFolderTask(new_dir, name, parent=parent_task), name)
+					else:
+						task = (UploadFolderTask(name, new_dir, parent=parent_task), name)
 					if i >= len(parents):
 						parents.append(task)
+						all_parents.append(task[0])
 						self.queue.put(task[0])
-						print 'LOGGING NEW DIR ' + name
 					elif name != parents[i][1]:
 						parents[i] = task
+						all_parents.append(task[0])
 						self.queue.put(task[0])
-						print 'LOGGING NEW DIR ' + name
 
 				for i in range(0, len(parents)-len(temp)):
 					parents.pop()
@@ -899,7 +926,17 @@ class FileManager(object):
 					actual_parents = []
 					for parent in parents:
 						actual_parents.append(parent[0])
+					for parent in actual_parents:
+						if parent.size is None:
+							parent.size = 1
+						else:
+							parent.size += 1
 					self.queue.put(task_cls(local_file, remote_file, parent=actual_parents))
+			for parent in all_parents:
+				if parent.size is None:
+					parent.size = 1
+					parent.transferred = 1
+					parent.state = 'Completed'
 		else:
 			if issubclass(task_cls, DownloadTask):
 				if not os.access(dst_dir, os.W_OK):
