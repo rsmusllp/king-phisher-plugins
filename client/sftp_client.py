@@ -206,6 +206,8 @@ class TransferTask(Task):
 	def progress(self):
 		if self.size is None:
 			percent = 0
+		elif self.size == 0 and self.transferred == 0:
+			percent = 1
 		else:
 			percent = (float(self.transferred) / float(self.size))
 		return min(int(percent * 100), 100)
@@ -237,10 +239,10 @@ class StatusDisplay(object):
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
 
-		self.path_to_ref = {}
 
 		col_text = Gtk.CellRendererText()
-		self.treeview_transfer.append_column(get_treeview_column('Direction', col_text, 0, m_col_sort=0))
+		col_im = Gtk.CellRendererPixbuf()
+		self.treeview_transfer.append_column(get_treeview_column('Direction', col_im, 0, m_col_sort=0))
 		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1))
 		self.treeview_transfer.append_column(get_treeview_column('Remote File', col_text, 2, m_col_sort=2))
 		self.treeview_transfer.append_column(get_treeview_column('Status', col_text, 3, m_col_sort=3))
@@ -251,7 +253,7 @@ class StatusDisplay(object):
 		col_bar.add_attribute(progress, 'value', 4)
 		self.treeview_transfer.append_column(col_bar)
 
-		self._tv_model = Gtk.TreeStore(str, str, str, str, int)
+		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 		self.treeview_transfer.set_model(self._tv_model)
@@ -285,15 +287,28 @@ class StatusDisplay(object):
 		selection = self.treeview_transfer.get_selection()
 		model, treeiter = selection.get_selected()
 		treepaths = []
+		treepaths.append(model.get_path(treeiter))
+		if model.iter_has_child(treeiter):
+			treeiter = model.iter_children(treeiter)
+			self._get_rows(model, treeiter, treepaths)
+		return treepaths
+
+	def _get_rows(self, model, treeiter, treepaths):
 		while treeiter is not None:
 			treepaths.append(model.get_path(treeiter))
-			treeiter = model.iter_children(treeiter)
-		return treepaths
+			if model.iter_has_child(treeiter):
+				childiter = model.iter_children(treeiter)
+				self._get_rows(model, childiter, treepaths)
+			treeiter = model.iter_next(treeiter)
+
 
 	def _change_task_state(self, state_from, state_to):
 		with self.queue.mutex:
 			for task in self._get_selected_tasks():	
 				if task.state in state_from:
+					if state_to == 'Cancelled' and task.parent is not None:
+						for parent in task.parent:
+							parent.size -= 1
 					task.state = state_to
 
 	def _sync_view(self):
@@ -320,8 +335,9 @@ class StatusDisplay(object):
 			if not isinstance(task, TransferTask):
 				continue
 			if task.treerowref is None:
+				stock = Gtk.STOCK_GO_FORWARD
 				treeiter = self._tv_model.append(parent, [
-					task.transfer_direction.title(),
+					Gtk.Image(stock=Gtk.STOCK_OPEN),
 					task.local_path,
 					task.remote_path,
 					task.state,
@@ -777,6 +793,7 @@ class FileManager(object):
 			path = task.local_path
 		elif isinstance(task, DownloadFolderTask):
 			path = task.remote_path
+		
 	def _transfer(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
 		ftp = ssh.open_sftp()
@@ -803,6 +820,11 @@ class FileManager(object):
 				task.transferred += chunk
 			else:
 				task.state = 'Completed'
+				if task.parent is not None:
+					for parent in task.parent:
+						parent.transferred += 1
+						if parent.transferred >= parent.size:
+							parent.state = 'Completed'
 				GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
@@ -810,11 +832,6 @@ class FileManager(object):
 			if not task.is_done:
 				task.state = 'Error'
 		finally:
-			if task.parent is not None:
-				for parent in task.parent:
-					parent.transferred += 1
-					if parent.transferred >= parent.size:
-						parent.state = 'Completed'
 			ftp.close()
 
 	def _idle_refresh_directories(self):
@@ -934,8 +951,8 @@ class FileManager(object):
 					self.queue.put(task_cls(local_file, remote_file, parent=actual_parents))
 			for parent in all_parents:
 				if parent.size is None:
-					parent.size = 1
-					parent.transferred = 1
+					parent.size = 0
+					parent.transferred = 0
 					parent.state = 'Completed'
 		else:
 			if issubclass(task_cls, DownloadTask):
