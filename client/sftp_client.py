@@ -6,7 +6,6 @@ import shutil
 import threading
 import time
 
-from king_phisher import its
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
@@ -105,10 +104,10 @@ class TaskQueue(object):
 			if task.is_ready:
 				yield task
 
-	def _qsize(self, len=len):
+	def _qsize(self, len=len):  # pylint: disable=redefined-builtin
 		return len(list(self.queue))
 
-	def _qsize_ready(self, len=len):
+	def _qsize_ready(self, len=len):  # pylint: disable=redefined-builtin
 		return len(list(self.queue_ready))
 
 	def get(self, block=True, timeout=None):
@@ -123,7 +122,7 @@ class TaskQueue(object):
 			elif timeout < 0:
 				raise ValueError("'timeout' must be a non-negative number")
 			else:
-				endtime = time() + timeout
+				endtime = time() + timeout 
 				while not self._qsize_ready():
 					remaining = endtime - time()
 					if remaining <= 0.0:
@@ -191,16 +190,15 @@ class ShutdownTask(Task):
 class TransferTask(Task):
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
 	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref')
-	def __init__(self, local_path, remote_path, folder=False, parent=None, state=None):
+	def __init__(self, local_path, remote_path, folder=False, parents=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
 		self.remote_path = remote_path
 		self.transferred = 0
+		self.init_size = None
 		self.size = None
 		self.treerowref = None
-		self.time = 0
-		self.parent = parent
-		self.parents = []
+		self.parents = parents
 
 	@property
 	def progress(self):
@@ -218,14 +216,15 @@ class DownloadTask(TransferTask):
 class UploadTask(TransferTask):
 	transfer_direction = 'upload'
 
-class TransferFolderTask(TransferTask):
-	files = 0
+class TransferDirectoryTask(TransferTask):
+	has_children = False
+	folder_clicked = False
 
-class DownloadFolderTask(TransferFolderTask):
-	transfer_direction = 'download'
+class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
+	pass
 
-class UploadFolderTask(TransferFolderTask):
-	transfer_direction = 'upload'
+class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
+	pass
 
 class StatusDisplay(object):
 	def __init__(self, builder, queue):
@@ -241,8 +240,12 @@ class StatusDisplay(object):
 
 
 		col_text = Gtk.CellRendererText()
-		col_im = Gtk.CellRendererPixbuf()
-		self.treeview_transfer.append_column(get_treeview_column('Direction', col_im, 0, m_col_sort=0))
+		col_img = Gtk.CellRendererPixbuf()
+		col = Gtk.TreeViewColumn('Direction')
+		col.pack_start(col_img, False)
+		col.add_attribute(col_img, 'pixbuf', 0)
+		self.treeview_transfer.append_column(col)
+
 		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1))
 		self.treeview_transfer.append_column(get_treeview_column('Remote File', col_text, 2, m_col_sort=2))
 		self.treeview_transfer.append_column(get_treeview_column('Status', col_text, 3, m_col_sort=3))
@@ -253,7 +256,10 @@ class StatusDisplay(object):
 		col_bar.add_attribute(progress, 'value', 4)
 		self.treeview_transfer.append_column(col_bar)
 
-		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int)
+		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3))
+
+
+		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 		self.treeview_transfer.set_model(self._tv_model)
@@ -304,11 +310,16 @@ class StatusDisplay(object):
 
 	def _change_task_state(self, state_from, state_to):
 		with self.queue.mutex:
-			for task in self._get_selected_tasks():	
+			for task in self._get_selected_tasks():
 				if task.state in state_from:
-					if state_to == 'Cancelled' and task.parent is not None:
-						for parent in task.parent:
-							parent.size -= 1
+					if state_to == 'Cancelled':
+						if isinstance(task, TransferDirectoryTask):
+							if task.has_children:
+								task.folder_clicked = True
+						elif task.parents is not None:
+							for parent in task.parents:
+								if not parent.folder_clicked:
+									parent.size -= 1
 					task.state = state_to
 
 	def _sync_view(self):
@@ -318,30 +329,29 @@ class StatusDisplay(object):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
-			parent = None
-			if task.parent is not None:
-				parent = task.parent[len(task.parent)-1].treerowref
-				if parent is None:
+			parent_treerowref = None
+			if task.parents is not None:
+				parent_treerowref = task.parents[len(task.parents)-1].treerowref
+				if parent_treerowref is None:
 					self.queue.queue.remove(task)
 					continue
-				parent_path = parent.get_path()
+				parent_path = parent_treerowref.get_path()
 				if parent_path is None:
 					self.queue.queue.remove(task)
 					continue
-				parent = self._tv_model.get_iter(parent_path)
-				if task.time == 0:
-					#self.treeview_transfer.expand_row(parent_path, True)
-					task.time = 1
+				parent_treerowref = self._tv_model.get_iter(parent_path)
 			if not isinstance(task, TransferTask):
 				continue
 			if task.treerowref is None:
-				stock = Gtk.STOCK_GO_FORWARD
-				treeiter = self._tv_model.append(parent, [
-					Gtk.Image(stock=Gtk.STOCK_OPEN),
+				stock = Gtk.STOCK_GO_FORWARD if task.transfer_direction == 'upload' else Gtk.STOCK_GO_BACK
+				image = self.treeview_transfer.render_icon(stock, Gtk.IconSize.BUTTON, None) if parent_treerowref is None else Gtk.Image()
+				treeiter = self._tv_model.append(parent_treerowref, [
+					image,
 					task.local_path,
 					task.remote_path,
 					task.state,
-					0
+					0,
+					boltons.strutils.bytes2human(task.init_size) if task.init_size is not None else None
 				])
 				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
 			elif task.treerowref.valid():
@@ -427,6 +437,8 @@ class DirectoryBase(object):
 		self.treeview.connect('row-expanded', self.signal_tv_expand_row)
 		self.treeview.connect('row-collapsed', self.signal_tv_collapse_row)
 		self._tv_model = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
+		tree_filter = self._tv_model.filter_new()
+		tree_filter.set_visible_func(self.show_hidden_files)
 		self.treeview.set_model(self._tv_model)
 
 		self.local_hidden = True
@@ -570,6 +582,10 @@ class DirectoryBase(object):
 		self.local_hidden = not self.local_hidden
 		self.refresh()
 
+	def show_hidden_files(self, model, _iter, data):
+		#print self._tv_model[_iter:1]
+		pass
+
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
 
@@ -584,14 +600,21 @@ class DirectoryBase(object):
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		fullname = model[treeiter][2]
+		if treeiter is not None:
+			fullname = model[treeiter][2]
+			path = self._tv_model.get_path(treeiter)
+		else:
+			fullname = self.default_directory
 		dir_name = 'New Folder'
 		new_path = fullname + '/' + dir_name
-		path = self._tv_model.get_path(treeiter)
 		perm = self._check_perm(fullname)
 		w_perm = True if perm[4] == 'w' else False
 		if not w_perm:
 			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), "Cannot access {0} as user".format(fullname))
+			return
+		if treeiter is None:
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
+			self.rename(current)
 			return
 		if not self.treeview.row_expanded(path):
 			self.treeview.expand_row(path, False)
@@ -627,6 +650,17 @@ class DirectoryBase(object):
 	def signal_menu_activate_delete_prompt(self, _):
 		self._delete_selection()
 
+def handle_permission_denied(function, *args, **kwargs):
+	def wrapper(self, *args, **kwargs):
+		try:
+			function(self, *args, **kwargs)
+		except (IOError, OSError):
+			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			return False
+		else:
+			return True
+	return wrapper
+
 class LocalDirectory(DirectoryBase):
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
@@ -651,44 +685,30 @@ class LocalDirectory(DirectoryBase):
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)
 
+	@handle_permission_denied
 	def _make_file(self, path):
-		try:
-			os.makedirs(path)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		os.makedirs(path)
 
 	def _get_raw_time(self, fullname):
 		return os.path.getmtime(fullname)
 
+	@handle_permission_denied
 	def delete(self, model, treeiter):
-		try:
-			if model[treeiter][5] == -1:
-				shutil.rmtree(model[treeiter][2])
-			else:
-				os.remove(model[treeiter][2])
-		except OSError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+		if model[treeiter][5] == -1:
+			shutil.rmtree(model[treeiter][2])
 		else:
-			gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
-			self.refresh()
+			os.remove(model[treeiter][2])
+		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
+		self.refresh()
 
+	@handle_permission_denied
 	def remove_by_folder_name(self, name):
-		try:
-			shutil.rmtree(name)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		shutil.rmtree(name)
 
+	@handle_permission_denied
 	def remove_by_file_name(self, name):
-		try:
-			os.remove(name)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		os.remove(name)
+
 class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
@@ -699,6 +719,22 @@ class RemoteDirectory(DirectoryBase):
 
 	def _check_perm(self, fullname):
 		mode = self.ftp.stat(fullname).st_mode
+#		try:
+#			_file = self.ftp.open(fullname)
+#		except IOError:
+#			readable = False
+#		else:
+#			readable = True
+#			_file.close()
+#
+#		try:
+#			_file = self.ftp.open(fullname, 'w')
+#		except IOError:
+#			writable = False
+#		else:
+#			writable = True
+#			_file.close()
+
 		perm = '   '
 		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
 		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
@@ -721,44 +757,31 @@ class RemoteDirectory(DirectoryBase):
 	def _rename_file(self, _iter, path):
 		self.ftp.rename(self._tv_model[_iter][2], path)
 
+	@handle_permission_denied
 	def _make_file(self, path):
-		try:
-			self.ftp.mkdir(path)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		self.ftp.mkdir(path)
 
 	def _get_raw_time(self, fullname):
 		lstatout = self.ftp.stat(fullname)
 		return lstatout.st_mtime
 
+	@handle_permission_denied
 	def delete(self, model, treeiter):
-		try:
-			if self.get_is_folder(self._tv_model[treeiter][2]):
-				self.ftp.rmdir(model[treeiter][2])
-			else:
-				self.ftp.remove(model[treeiter][2])
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+		if self.get_is_folder(self._tv_model[treeiter][2]):
+			self.ftp.rmdir(model[treeiter][2])
 		else:
-			gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
-			self.refresh()
-	
+			self.ftp.remove(model[treeiter][2])
+		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
+		self.refresh()
+
+	@handle_permission_denied
 	def remove_by_folder_name(self, name):
-		try:
-			self.ftp.rmdir(name)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		return True
+
+	@handle_permission_denied
 	def remove_by_file_name(self, name):
-		try:
-			self.ftp.remove(name)
-			return True
-		except IOError:
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
-			return False
+		self.ftp.remove(name)
+
 
 
 class FileManager(object):
@@ -774,6 +797,7 @@ class FileManager(object):
 			thread.start()
 			self._threads.append(thread)
 		ftp = ssh.open_sftp()
+		self.ftp = ftp
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(gtk_builder_file)
 		self.window = self.builder.get_object('SFTPClientGUI.window')
@@ -789,11 +813,11 @@ class FileManager(object):
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
-		if isinstance(task, UploadFolderTask):
+		if isinstance(task, UploadDirectoryTask):
 			path = task.local_path
-		elif isinstance(task, DownloadFolderTask):
+		elif isinstance(task, DownloadDirectoryTask):
 			path = task.remote_path
-		
+
 	def _transfer(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
 		ftp = ssh.open_sftp()
@@ -814,14 +838,19 @@ class FileManager(object):
 				if self._threads_shutdown.is_set():
 					task.state = 'Cancelled'
 				if task.state != 'Transferring':
+					if task.state == 'Cancelled':
+						if isinstance(task, UploadTask):
+							self.remote.remove_by_file_name(task.remote_path)
+						elif isinstance(task, DownloadTask):
+							self.local.remove_by_file_name(task.local_path)
 					break
 				temp = src_file_h.read(chunk)
 				dst_file_h.write(temp)
 				task.transferred += chunk
 			else:
 				task.state = 'Completed'
-				if task.parent is not None:
-					for parent in task.parent:
+				if task.parents is not None:
+					for parent in task.parents:
 						parent.transferred += 1
 						if parent.transferred >= parent.size:
 							parent.state = 'Completed'
@@ -831,6 +860,8 @@ class FileManager(object):
 		except:
 			if not task.is_done:
 				task.state = 'Error'
+				for parent in task.parents:
+					parent.state = 'Error'
 		finally:
 			ftp.close()
 
@@ -846,12 +877,13 @@ class FileManager(object):
 				self.queue.remove(task)
 				break
 			elif isinstance(task, TransferTask):
-				if isinstance(task, TransferFolderTask):
+				if isinstance(task, TransferDirectoryTask):
 					self._transfer_folder(task, ssh)
 				else:
 					self._transfer(task, ssh)
 
 	def signal_window_destroy(self, _):
+		self.ftp.close()
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
 		for _ in self._threads:
@@ -862,13 +894,21 @@ class FileManager(object):
 	def _queue_transfer(self, task_cls):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		local_file = model[treeiter][2]
-		local_name = model[treeiter][0]
+		if treeiter is None:
+			local_file = self.local.default_directory
+			local_name = self.local.default_directory
+		else:
+			local_file = model[treeiter][2]
+			local_name = model[treeiter][0]
 
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		remote_file = model[treeiter][2]
-		remote_name = model[treeiter][0]
+		if treeiter is None:
+			remote_file = self.remote.default_directory
+			remote_name = self.remote.default_directory
+		else:
+			remote_file = model[treeiter][2]
+			remote_name = model[treeiter][0]
 
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
@@ -883,20 +923,22 @@ class FileManager(object):
 			dst_dir = dst_file
 			dst_file = os.path.join(dst_file, os.path.basename(src_file))
 		else:
-			dst_dir = os.path.dirname(dst_file)
+			gui_utilities.show_dialog_error(
+				'ERROR',
+				self.application.get_active_window(),
+				'Cannot write to the destination.'
+			)
+			return
 
 		if src.get_is_folder(src_file):
 			commands = []
-			tasks = []
 			old_files = {}
 			uload = False
 			if issubclass(task_cls, UploadTask):
 				self.local_walk(src_file, src, commands, local_name, old_files)
 				uload = True
-				new_task = UploadFolderTask(src_file, dst_file)
 			elif issubclass(task_cls, DownloadTask):
 				self.remote_walk(src_file, src, commands, remote_name, old_files)
-				new_task = DownloadFolderTask(dst_file, src_file)
 			parents = []
 			all_parents = []
 			for command in commands:
@@ -917,11 +959,10 @@ class FileManager(object):
 				for i in range(0, len(temp)):
 					name = '/'.join(temp[0:i+1])
 					parent_task = (parents[i-1][0],) if i > 0 else None
-
 					if not uload:
-						task = (DownloadFolderTask(new_dir, name, parent=parent_task), name)
+						task = (DownloadDirectoryTask(new_dir, remote_file + '/' + name, parents=parent_task), name)
 					else:
-						task = (UploadFolderTask(name, new_dir, parent=parent_task), name)
+						task = (UploadDirectoryTask(local_file + '/' + name, new_dir, parents=parent_task), name)
 					if i >= len(parents):
 						parents.append(task)
 						all_parents.append(task[0])
@@ -931,7 +972,7 @@ class FileManager(object):
 						all_parents.append(task[0])
 						self.queue.put(task[0])
 
-				for i in range(0, len(parents)-len(temp)):
+				for i in range(0, len(parents) - len(temp)):
 					parents.pop()
 				for _file in command[2]:
 					new_file = new_dir + '/' + _file
@@ -948,7 +989,14 @@ class FileManager(object):
 							parent.size = 1
 						else:
 							parent.size += 1
-					self.queue.put(task_cls(local_file, remote_file, parent=actual_parents))
+						parent.has_children = True
+					file_task = task_cls(local_file, remote_file, parents=actual_parents)
+					if isinstance(file_task, UploadTask):
+						file_size = self.local.get_file_size(local_file)
+					elif isinstance(file_task, DownloadTask):
+						file_size = self.remote.get_file_size(remote_file)
+					file_task.init_size = file_size
+					self.queue.put(file_task)
 			for parent in all_parents:
 				if parent.size is None:
 					parent.size = 0
@@ -960,17 +1008,30 @@ class FileManager(object):
 					gui_utilities.show_dialog_error(
 						'Permission Denied',
 						self.application.get_active_window(),
-						'Can not write to the destination folder.'
+						'Cannot write to the destination folder.'
 					)
 					return
 				local_file, remote_file = dst_file, src_file
 			elif issubclass(task_cls, UploadTask):
+				if not os.access(local_file, os.R_OK):
+					gui_utilities.show_dialog_error(
+						'Permission Denied',
+						self.application.get_active_window(),
+						'Cannot read the source file.'
+					)
+					return
 				local_file, remote_file = src_file, dst_file
-			self.queue.put(task_cls(local_file, remote_file))
+			file_task = task_cls(local_file, remote_file)
+			if isinstance(file_task, UploadTask):
+				file_size = self.local.get_file_size(local_file)
+			elif isinstance(file_task, DownloadTask):
+				file_size = self.remote.get_file_size(remote_file)
+			file_task.init_size = file_size
+			self.queue.put(file_task)
 
 	def remote_walk(self, _dir, src, commands, remote_name, old_files):
 		subdirs = []
-		files =[]
+		files = []
 		temp = _dir.split('/')
 		loc = temp.index(remote_name)
 		parsed_name = '/'.join(temp[loc:])
