@@ -1,10 +1,10 @@
-import collections
 import os
 import datetime
 import stat
 import shutil
 import threading
 import time
+import hashlib
 
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
@@ -122,9 +122,9 @@ class TaskQueue(object):
 			elif timeout < 0:
 				raise ValueError("'timeout' must be a non-negative number")
 			else:
-				endtime = time() + timeout 
+				endtime = time() + timeout  # pylint: disable = not-callable
 				while not self._qsize_ready():
-					remaining = endtime - time()
+					remaining = endtime - time()  # pylint: disable = not-callable
 					if remaining <= 0.0:
 						return None
 					self.not_empty.wait(remaining)
@@ -189,16 +189,16 @@ class ShutdownTask(Task):
 
 class TransferTask(Task):
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
-	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref')
-	def __init__(self, local_path, remote_path, folder=False, parents=None, state=None):
+	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents', 'init_size')
+	def __init__(self, local_path, remote_path, parents=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
 		self.remote_path = remote_path
 		self.transferred = 0
-		self.init_size = None
 		self.size = None
 		self.treerowref = None
 		self.parents = parents
+		self.init_size = None
 
 	@property
 	def progress(self):
@@ -355,7 +355,7 @@ class StatusDisplay(object):
 				])
 				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
 			elif task.treerowref.valid():
-				row = self._tv_model[task.treerowref.get_path()]
+				row = self._tv_model[task.treerowref.get_path()]  # pylint: disable=unsubscriptable-object
 				row[3] = task.state
 				row[4] = task.progress
 		self.queue.mutex.release()
@@ -489,7 +489,7 @@ class DirectoryBase(object):
 
 	def _rename_selection(self):
 		selection = self.treeview.get_selection()
-		model, treeiter = selection.get_selected()
+		_, treeiter = selection.get_selected()
 		self.rename(treeiter)
 
 	def get_is_folder(self, fullname):
@@ -560,8 +560,8 @@ class DirectoryBase(object):
 			try:
 				perm = self._check_perm(fullname)
 				raw_time = self._get_raw_time(fullname)
-				time = datetime.datetime.fromtimestamp(raw_time)
-				date_modified = '   ' + utilities.format_datetime(time)
+				date = datetime.datetime.fromtimestamp(raw_time)
+				date_modified = '   ' + utilities.format_datetime(date)
 				is_folder = self.get_is_folder(fullname)
 			except (OSError, IOError):
 				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
@@ -605,8 +605,6 @@ class DirectoryBase(object):
 			path = self._tv_model.get_path(treeiter)
 		else:
 			fullname = self.default_directory
-		dir_name = 'New Folder'
-		new_path = fullname + '/' + dir_name
 		perm = self._check_perm(fullname)
 		w_perm = True if perm[4] == 'w' else False
 		if not w_perm:
@@ -653,9 +651,17 @@ class DirectoryBase(object):
 def handle_permission_denied(function, *args, **kwargs):
 	def wrapper(self, *args, **kwargs):
 		try:
-			function(self, *args, **kwargs)
-		except (IOError, OSError):
-			gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window())
+			func = function(self, *args, **kwargs)
+		except (IOError, OSError) as error:
+			err_type = error[0]
+			print error
+			print (function, args, kwargs)
+			err_message = 'An undocumented error occured'
+			gui_utilities.show_dialog_error(
+				'Permission Denied',
+				self.application.get_active_window(),
+				err_message
+			)
 			return False
 		else:
 			return True
@@ -681,9 +687,12 @@ class LocalDirectory(DirectoryBase):
 
 	def _already_exists(self, path):
 		return os.path.isdir(path)
+	
+	def _already_exists_all(self, path):
+		return os.path.exists(path)
 
 	def _rename_file(self, _iter, path):
-		os.rename(self._tv_model[_iter][2], path)
+		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
 	def _make_file(self, path):
@@ -709,6 +718,16 @@ class LocalDirectory(DirectoryBase):
 	def remove_by_file_name(self, name):
 		os.remove(name)
 
+	def walk(self, src_file, src, commands, local_name, old_files):
+		for walker in os.walk(src_file):
+			walker = list(walker)
+			temp = walker[0].split('/')
+			loc = temp.index(local_name)
+			parsed_name = '/'.join(temp[loc:])
+			old_files[parsed_name] = walker[0]
+			walker[0] = parsed_name
+			commands.append(walker)
+
 class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
@@ -719,25 +738,39 @@ class RemoteDirectory(DirectoryBase):
 
 	def _check_perm(self, fullname):
 		mode = self.ftp.stat(fullname).st_mode
-#		try:
-#			_file = self.ftp.open(fullname)
-#		except IOError:
-#			readable = False
-#		else:
-#			readable = True
-#			_file.close()
-#
-#		try:
-#			_file = self.ftp.open(fullname, 'w')
-#		except IOError:
-#			writable = False
-#		else:
-#			writable = True
-#			_file.close()
-
+		readable = True
+		writable = True
+		'''
+		try:
+			_file = self.ftp.open(fullname)
+		except IOError:
+			pass
+		else:
+			readable = True
+			_file.close()
+		if not self.get_is_folder(fullname):
+			try:
+				_file = self.ftp.open(fullname, 'w')
+			except IOError:
+				pass
+			else:
+				writable = True
+				_file.close()
+		else:
+			temp_name = '.abcdefg'
+			path = os.path.join(fullname, temp_name)
+			try:
+				_file = self.ftp.open(path, 'w+')
+			except IOError:
+				pass
+			else:
+				writable = True
+				_file.close()
+				self.remove_by_file_name(path)
+		'''
 		perm = '   '
-		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
-		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
+		perm += 'r' if readable else '-'
+		perm += 'w' if writable else '-'
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
 
@@ -755,7 +788,7 @@ class RemoteDirectory(DirectoryBase):
 			return True
 
 	def _rename_file(self, _iter, path):
-		self.ftp.rename(self._tv_model[_iter][2], path)
+		self.ftp.rename(self._tv_model[_iter][2], path)  #pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
 	def _make_file(self, path):
@@ -767,7 +800,8 @@ class RemoteDirectory(DirectoryBase):
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
-		if self.get_is_folder(self._tv_model[treeiter][2]):
+		if self.get_is_folder(self._tv_model[treeiter][2]):  #pylint: disable=unsubscriptable-object
+			print model[treeiter][2]
 			self.ftp.rmdir(model[treeiter][2])
 		else:
 			self.ftp.remove(model[treeiter][2])
@@ -782,7 +816,26 @@ class RemoteDirectory(DirectoryBase):
 	def remove_by_file_name(self, name):
 		self.ftp.remove(name)
 
+	def walk(self, _dir, src, commands, remote_name, old_files):
+		subdirs = []
+		files = []
+		temp = _dir.split('/')
+		loc = temp.index(remote_name)
+		parsed_name = '/'.join(temp[loc:])
+		for f in src._yield_dir_list(_dir):
+			if src.get_is_folder(_dir + '/' + f):
+				subdirs.append(f)
+			else:
+				files.append(f)
+		command = [parsed_name, subdirs, files]
+		commands.append(command)
+		old_files[parsed_name] = _dir
+		for folder in subdirs:
+			new_path = os.path.join(_dir, folder)
+			self.walk(new_path, src, commands, remote_name, old_files)
 
+	def _already_exists_all(self, path):
+		return True
 
 class FileManager(object):
 	def __init__(self, application, ssh):
@@ -801,6 +854,8 @@ class FileManager(object):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(gtk_builder_file)
 		self.window = self.builder.get_object('SFTPClientGUI.window')
+		self.menubar = self.builder.get_object('SFTPClientGUI.menu')
+		self.render_menubar(self.menubar)
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application)
 		self.remote = RemoteDirectory(self.builder, self.application, ftp)
@@ -811,17 +866,49 @@ class FileManager(object):
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
+	def render_menubar(self, menubar):
+		self.validate = False
+		menu_item = Gtk.CheckMenuItem.new_with_label('Checksum Validation')
+		menu_item.connect('toggled', self.validate_checksums)
+		self.validate_checksums = menu_item
+		menubar.append(menu_item)
+
+		menu_item = Gtk.CheckMenuItem.new_with_label('Transfer Hidden Files')
+		menu_item.connect('toggled', self.transfer_hidden)
+		self.transfer_hidden = menu_item
+		menubar.append(menu_item)
+
+		menu_item = Gtk.SeparatorMenuItem()
+		menubar.append(menu_item)
+
+		menu_item = Gtk.MenuItem.new_with_label('Exit')
+		menu_item.connect('activate', self.shutdown)
+		menubar.append(menu_item)
+
+	def shutdown(self, _):
+		pass
+
+	def transfer_hidden(self, _):
+		pass
+
+	def validate_checksums(self, _):
+		self.validate = not self.validate
+
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
-		if isinstance(task, UploadDirectoryTask):
-			path = task.local_path
-		elif isinstance(task, DownloadDirectoryTask):
-			path = task.remote_path
+		if isinstance(task, UploadTask):
+			self.remote._make_file(task.remote_path)
+		elif isinstance(task, DownloadTask):
+			self.local._make_file(task.local_path)
+		if task.size is None:
+			task.transferred = 0
+			task.size = 0
+			task.state = 'Completed'
 
 	def _transfer(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
 		ftp = ssh.open_sftp()
-		write_mode = 'ab' if task.transferred > 0 else 'wb'
+		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
 		try:
 			if isinstance(task, UploadTask):
 				task.size = self.local.get_file_size(task.local_path)
@@ -849,6 +936,15 @@ class FileManager(object):
 				task.transferred += chunk
 			else:
 				task.state = 'Completed'
+				if self.validate:
+					src_file_h.seek(0)
+					dst_file_h.seek(0)
+					src_hash = hashlib.md5(src_file_h.read()).hexdigest()
+					dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
+					if src_hash == dst_hash:
+						self.application.logger.info("{0} and {1} have been validated".format(task.local_path, task.remote_path))
+					else:
+						self.application.logger.error("{0} and {1} were not properly transferred".format(task.local_path, task.remote_path))
 				if task.parents is not None:
 					for parent in task.parents:
 						parent.transferred += 1
@@ -857,11 +953,13 @@ class FileManager(object):
 				GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
-		except:
+		except:  # pylint: disable=bare-except
 			if not task.is_done:
+				self.application.logger.error("Error transferring {0} to {1}".format('a', 'b'))
 				task.state = 'Error'
-				for parent in task.parents:
-					parent.state = 'Error'
+				if task.parents is not None:
+					for parent in task.parents:
+						parent.state = 'Error'
 		finally:
 			ftp.close()
 
@@ -924,136 +1022,118 @@ class FileManager(object):
 			dst_file = os.path.join(dst_file, os.path.basename(src_file))
 		else:
 			gui_utilities.show_dialog_error(
-				'ERROR',
+				'Error',
 				self.application.get_active_window(),
-				'Cannot write to the destination.'
+				'Not a valid destination.'
 			)
 			return
 
 		if src.get_is_folder(src_file):
-			commands = []
-			old_files = {}
-			uload = False
-			if issubclass(task_cls, UploadTask):
-				self.local_walk(src_file, src, commands, local_name, old_files)
-				uload = True
-			elif issubclass(task_cls, DownloadTask):
-				self.remote_walk(src_file, src, commands, remote_name, old_files)
-			parents = []
-			all_parents = []
-			for command in commands:
-				new_dir = dst_dir + '/' + command[0]
-				if dst._already_exists(new_dir):
-					confirmed = gui_utilities.show_dialog_yes_no(
-						'Warning',
-						self.application.get_active_window(),
-						"Folder {0} already exists. Replace?".format(new_dir)
-					)
-					if not confirmed:
-						return
-					if not dst.remove_by_folder_name(new_dir):
-						return
-				if not dst._make_file(new_dir):
-					return
-				temp = command[0].split('/')
-				for i in range(0, len(temp)):
-					name = '/'.join(temp[0:i+1])
-					parent_task = (parents[i-1][0],) if i > 0 else None
-					if not uload:
-						task = (DownloadDirectoryTask(new_dir, remote_file + '/' + name, parents=parent_task), name)
-					else:
-						task = (UploadDirectoryTask(local_file + '/' + name, new_dir, parents=parent_task), name)
-					if i >= len(parents):
-						parents.append(task)
-						all_parents.append(task[0])
-						self.queue.put(task[0])
-					elif name != parents[i][1]:
-						parents[i] = task
-						all_parents.append(task[0])
-						self.queue.put(task[0])
-
-				for i in range(0, len(parents) - len(temp)):
-					parents.pop()
-				for _file in command[2]:
-					new_file = new_dir + '/' + _file
-					old_file = old_files[command[0]] + '/' + _file
-					if uload:
-						local_file, remote_file = old_file, new_file
-					else:
-						local_file, remote_file = new_file, old_file
-					actual_parents = []
-					for parent in parents:
-						actual_parents.append(parent[0])
-					for parent in actual_parents:
-						if parent.size is None:
-							parent.size = 1
-						else:
-							parent.size += 1
-						parent.has_children = True
-					file_task = task_cls(local_file, remote_file, parents=actual_parents)
-					if isinstance(file_task, UploadTask):
-						file_size = self.local.get_file_size(local_file)
-					elif isinstance(file_task, DownloadTask):
-						file_size = self.remote.get_file_size(remote_file)
-					file_task.init_size = file_size
-					self.queue.put(file_task)
-			for parent in all_parents:
-				if parent.size is None:
-					parent.size = 0
-					parent.transferred = 0
-					parent.state = 'Completed'
+			self.handle_folder_transfer(task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file)
 		else:
-			if issubclass(task_cls, DownloadTask):
-				if not os.access(dst_dir, os.W_OK):
-					gui_utilities.show_dialog_error(
-						'Permission Denied',
-						self.application.get_active_window(),
-						'Cannot write to the destination folder.'
-					)
+			self.handle_file_transfer(task_cls, local_file, src_file, dst_file, dst_dir)
+
+	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir):
+		if issubclass(task_cls, DownloadTask):
+			if not os.access(dst_dir, os.W_OK):
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot write to the destination folder.'
+				)
+				return
+			local_file, remote_file = dst_file, src_file
+		elif issubclass(task_cls, UploadTask):
+			if not os.access(local_file, os.R_OK):
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot read the source file.'
+				)
+				return
+			local_file, remote_file = src_file, dst_file
+		file_task = task_cls(local_file, remote_file)
+		if isinstance(file_task, UploadTask):
+			file_size = self.local.get_file_size(local_file)
+		elif isinstance(file_task, DownloadTask):
+			file_size = self.remote.get_file_size(remote_file)
+		file_task.init_size = file_size
+		self.queue.put(file_task)
+
+	def handle_folder_transfer(self, task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file):
+		commands = []
+		old_files = {}
+		uload = False
+		if issubclass(task_cls, UploadTask):
+			name = local_name
+			uload = True
+		elif issubclass(task_cls, DownloadTask):
+			name = remote_name
+		src.walk(src_file, src, commands, name, old_files)
+		parents = []
+		for command in commands:
+			hidden = False
+			new_dir = dst_dir + '/' + command[0]
+			old_dir = old_files[command[0]]
+			for part in command[0].split('/'):
+				if part.startswith('.'):
+					hidden = True
+					break
+			if hidden:
+				continue
+			if dst._already_exists(new_dir):
+				confirmed = gui_utilities.show_dialog_yes_no(
+					'Warning',
+					self.application.get_active_window(),
+					"Folder {0} already exists. Replace?".format(new_dir)
+				)
+				if not confirmed:
 					return
-				local_file, remote_file = dst_file, src_file
-			elif issubclass(task_cls, UploadTask):
-				if not os.access(local_file, os.R_OK):
-					gui_utilities.show_dialog_error(
-						'Permission Denied',
-						self.application.get_active_window(),
-						'Cannot read the source file.'
-					)
+				if not dst.remove_by_folder_name(new_dir):
 					return
-				local_file, remote_file = src_file, dst_file
-			file_task = task_cls(local_file, remote_file)
-			if isinstance(file_task, UploadTask):
-				file_size = self.local.get_file_size(local_file)
-			elif isinstance(file_task, DownloadTask):
-				file_size = self.remote.get_file_size(remote_file)
-			file_task.init_size = file_size
-			self.queue.put(file_task)
-
-	def remote_walk(self, _dir, src, commands, remote_name, old_files):
-		subdirs = []
-		files = []
-		temp = _dir.split('/')
-		loc = temp.index(remote_name)
-		parsed_name = '/'.join(temp[loc:])
-		for f in src._yield_dir_list(_dir):
-			if src.get_is_folder(_dir + '/' + f):
-				subdirs.append(f)
-			else:
-				files.append(f)
-		command = [parsed_name, subdirs, files]
-		commands.append(command)
-		old_files[parsed_name] = _dir
-		for folder in subdirs:
-			new_path = os.path.join(_dir, folder)
-			self.remote_walk(new_path, src, commands, remote_name, old_files)
-
-	def local_walk(self, src_file, src, commands, local_name, old_files):
-		for walker in os.walk(src_file):
-			walker = list(walker)
-			temp = walker[0].split('/')
-			loc = temp.index(local_name)
-			parsed_name = '/'.join(temp[loc:])
-			old_files[parsed_name] = walker[0]
-			walker[0] = parsed_name
-			commands.append(walker)
-
+			if not dst._make_file(new_dir):
+				return
+			dst.remove_by_folder_name(new_dir)
+			temp = command[0].split('/')
+			for i in range(0, len(temp)):
+				name = '/'.join(temp[0:i+1])
+				parent_task = (parents[i-1][0],) if i > 0 else None
+				if not uload:
+					task = (DownloadDirectoryTask(new_dir, old_dir, parents=parent_task), name)
+				else:
+					task = (UploadDirectoryTask(old_dir, new_dir, parents=parent_task), name)
+				if i >= len(parents):
+					parents.append(task)
+					self.queue.put(task[0])
+				elif name != parents[i][1]:
+					parents[i] = task
+					self.queue.put(task[0])
+			for i in range(0, len(parents) - len(temp)):
+				parents.pop()
+			for _file in command[2]:
+				if _file.startswith('.'):
+					continue
+				new_file = new_dir + '/' + _file
+				old_file = old_files[command[0]] + '/' + _file
+				if not src._already_exists_all(old_file):
+					self.application.logger.error("{0} is neither a file nor folder".format(old_file))
+					continue
+				if uload:
+					local_file, remote_file = old_file, new_file
+				else:
+					local_file, remote_file = new_file, old_file
+				actual_parents = []
+				for parent in parents:
+					if parent[0].size is None:
+						parent[0].size = 1
+					else:
+						parent[0].size += 1
+					parent[0].has_children = True
+					actual_parents.append(parent[0])
+				file_task = task_cls(local_file, remote_file, parents=actual_parents)
+				if isinstance(file_task, UploadTask):
+					file_size = self.local.get_file_size(local_file)
+				elif isinstance(file_task, DownloadTask):
+					file_size = self.remote.get_file_size(remote_file)
+				file_task.init_size = file_size
+				self.queue.put(file_task)
