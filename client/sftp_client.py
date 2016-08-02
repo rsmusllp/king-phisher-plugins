@@ -769,8 +769,8 @@ class RemoteDirectory(DirectoryBase):
 				self.remove_by_file_name(path)
 		'''
 		perm = '   '
-		perm += 'r' if readable else '-'
-		perm += 'w' if writable else '-'
+		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
+		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
 
@@ -869,13 +869,14 @@ class FileManager(object):
 	def render_menubar(self, menubar):
 		self.validate = False
 		menu_item = Gtk.CheckMenuItem.new_with_label('Checksum Validation')
-		menu_item.connect('toggled', self.validate_checksums)
+		menu_item.connect('toggled', self.signal_toggled_validate_checksums)
 		self.validate_checksums = menu_item
 		menubar.append(menu_item)
 
+		self.transfer_hidden = True
 		menu_item = Gtk.CheckMenuItem.new_with_label('Transfer Hidden Files')
-		menu_item.connect('toggled', self.transfer_hidden)
-		self.transfer_hidden = menu_item
+		menu_item.connect('toggled', self.signal_toggled_transfer_hidden)
+		self.signal_toggled_transfer_hidden = menu_item
 		menubar.append(menu_item)
 
 		menu_item = Gtk.SeparatorMenuItem()
@@ -888,18 +889,14 @@ class FileManager(object):
 	def shutdown(self, _):
 		pass
 
-	def transfer_hidden(self, _):
-		pass
+	def signal_toggled_transfer_hidden(self, _):
+		self.transfer_hidden = not self.transfer_hidden
 
-	def validate_checksums(self, _):
+	def signal_toggled_validate_checksums(self, _):
 		self.validate = not self.validate
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
-		if isinstance(task, UploadTask):
-			self.remote._make_file(task.remote_path)
-		elif isinstance(task, DownloadTask):
-			self.local._make_file(task.local_path)
 		if task.size is None:
 			task.transferred = 0
 			task.size = 0
@@ -1075,10 +1072,11 @@ class FileManager(object):
 			hidden = False
 			new_dir = dst_dir + '/' + command[0]
 			old_dir = old_files[command[0]]
-			for part in command[0].split('/'):
-				if part.startswith('.'):
-					hidden = True
-					break
+			if self.transfer_hidden:
+				for part in command[0].split('/'):
+					if part.startswith('.'):
+						hidden = True
+						break
 			if hidden:
 				continue
 			if dst._already_exists(new_dir):
@@ -1093,7 +1091,6 @@ class FileManager(object):
 					return
 			if not dst._make_file(new_dir):
 				return
-			dst.remove_by_folder_name(new_dir)
 			temp = command[0].split('/')
 			for i in range(0, len(temp)):
 				name = '/'.join(temp[0:i+1])
@@ -1111,7 +1108,7 @@ class FileManager(object):
 			for i in range(0, len(parents) - len(temp)):
 				parents.pop()
 			for _file in command[2]:
-				if _file.startswith('.'):
+				if _file.startswith('.') and self.transfer_hidden:
 					continue
 				new_file = new_dir + '/' + _file
 				old_file = old_files[command[0]] + '/' + _file
