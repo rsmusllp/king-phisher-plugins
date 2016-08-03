@@ -219,6 +219,7 @@ class UploadTask(TransferTask):
 class TransferDirectoryTask(TransferTask):
 	has_children = False
 	folder_clicked = False
+	dummy_node = None
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	pass
@@ -237,7 +238,7 @@ class StatusDisplay(object):
 		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
-
+		self._task_map = {}
 
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
@@ -257,11 +258,12 @@ class StatusDisplay(object):
 		self.treeview_transfer.append_column(col_bar)
 
 		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3))
-
-
 		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
+		self.treeview_transfer.connect('row-expanded', self.signal_tv_expand_row)
+		self.treeview_transfer.connect('row-collapsed', self.signal_tv_collapse_row)
+
 		self.treeview_transfer.set_model(self._tv_model)
 		self.treeview_transfer.show_all()
 
@@ -287,25 +289,17 @@ class StatusDisplay(object):
 
 	def _get_selected_tasks(self):
 		treepaths = self._get_selected_treepaths()
-		return [task for task in self.queue.queue if task.treerowref.valid() and task.treerowref.get_path() in treepaths]
-
+		parent_task = [task for task in self.queue.queue if task.treerowref is not None and task.treerowref.valid() and task.treerowref.get_path() in treepaths][0]
+		children = [task for task in self.queue.queue if task.parents is not None and parent_task in task.parents]
+		parent_task = [parent_task,]
+		return parent_task + children
+		
 	def _get_selected_treepaths(self):
 		selection = self.treeview_transfer.get_selection()
 		model, treeiter = selection.get_selected()
 		treepaths = []
 		treepaths.append(model.get_path(treeiter))
-		if model.iter_has_child(treeiter):
-			treeiter = model.iter_children(treeiter)
-			self._get_rows(model, treeiter, treepaths)
 		return treepaths
-
-	def _get_rows(self, model, treeiter, treepaths):
-		while treeiter is not None:
-			treepaths.append(model.get_path(treeiter))
-			if model.iter_has_child(treeiter):
-				childiter = model.iter_children(treeiter)
-				self._get_rows(model, childiter, treepaths)
-			treeiter = model.iter_next(treeiter)
 
 
 	def _change_task_state(self, state_from, state_to):
@@ -323,12 +317,24 @@ class StatusDisplay(object):
 					task.state = state_to
 
 	def _sync_view(self):
-		if not self.queue.mutex.acquire(blocking=False):
+		if not self.queue.mutex.acquire(blocking=True):
 			return
 		if not self._tv_lock.acquire(blocking=False):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
+			if task not in self._task_map:
+				parent = task.parents[len(task.parents)-1] if task.parents is not None else None
+				self._task_map[task] = [task, parent, False if task.parents is not None else True, False]
+		for task_item in self._task_map:
+			if task_item.parents is not None:
+				parent_task = task_item.parents[len(task_item.parents)-1]
+				if self._task_map[parent_task][3]:
+					self._task_map[task_item][2] = True
+			task_info = self._task_map[task_item]
+			if not task_info[2]:
+				continue
+			task = task_info[0]
 			parent_treerowref = None
 			if task.parents is not None:
 				parent_treerowref = task.parents[len(task.parents)-1].treerowref
@@ -353,14 +359,28 @@ class StatusDisplay(object):
 					0,
 					boltons.strutils.bytes2human(task.init_size) if task.init_size is not None else None
 				])
+				if task.parents is not None:
+					if task.parents[len(task.parents)-1].dummy_node is not None:
+						self._tv_model.remove(parent_task.dummy_node)
+						parent_task.dummy_node = None
+				if isinstance(task, TransferDirectoryTask):
+					task.dummy_node = self._tv_model.append(treeiter, [None, None, None, None, None, None])
 				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
-			elif task.treerowref.valid():
+			else:
 				row = self._tv_model[task.treerowref.get_path()]  # pylint: disable=unsubscriptable-object
 				row[3] = task.state
 				row[4] = task.progress
 		self.queue.mutex.release()
 		return True
 
+	def signal_tv_expand_row(self, _, treeiter, treepath):
+		row = self._tv_model[treeiter]
+		task = [task for task in self.queue.queue if task.local_path == row[1] and task.remote_path == row[2]][0]
+		self._task_map[task][3] = True
+
+	def signal_tv_collapse_row(self, _, treeiter, treepath):
+		pass
+		
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
 			for task in self.queue.queue:
@@ -736,6 +756,7 @@ class RemoteDirectory(DirectoryBase):
 		self.stat = ftp.stat
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'])
 
+	###FIX ME
 	def _check_perm(self, fullname):
 		mode = self.ftp.stat(fullname).st_mode
 		readable = True
@@ -773,6 +794,7 @@ class RemoteDirectory(DirectoryBase):
 		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
+	###FIX ME
 
 	def _yield_dir_list(self, path):
 		for name in self.ftp.listdir(path):
@@ -801,7 +823,6 @@ class RemoteDirectory(DirectoryBase):
 	@handle_permission_denied
 	def delete(self, model, treeiter):
 		if self.get_is_folder(self._tv_model[treeiter][2]):  #pylint: disable=unsubscriptable-object
-			print model[treeiter][2]
 			self.ftp.rmdir(model[treeiter][2])
 		else:
 			self.ftp.remove(model[treeiter][2])
@@ -812,9 +833,12 @@ class RemoteDirectory(DirectoryBase):
 	def remove_by_folder_name(self, name):
 		return True
 
+	###FIX ME
 	@handle_permission_denied
 	def remove_by_file_name(self, name):
-		self.ftp.remove(name)
+		#self.ftp.remove(name)
+		pass
+	###FIX ME
 
 	def walk(self, _dir, src, commands, remote_name, old_files):
 		subdirs = []
@@ -897,10 +921,6 @@ class FileManager(object):
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
-		if task.size is None:
-			task.transferred = 0
-			task.size = 0
-			task.state = 'Completed'
 
 	def _transfer(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
@@ -947,7 +967,8 @@ class FileManager(object):
 						parent.transferred += 1
 						if parent.transferred >= parent.size:
 							parent.state = 'Completed'
-				GLib.idle_add(self._idle_refresh_directories)
+				else:
+					GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
 		except:  # pylint: disable=bare-except
@@ -1068,6 +1089,7 @@ class FileManager(object):
 			name = remote_name
 		src.walk(src_file, src, commands, name, old_files)
 		parents = []
+		all_parents = []
 		for command in commands:
 			hidden = False
 			new_dir = dst_dir + '/' + command[0]
@@ -1101,9 +1123,11 @@ class FileManager(object):
 					task = (UploadDirectoryTask(old_dir, new_dir, parents=parent_task), name)
 				if i >= len(parents):
 					parents.append(task)
+					all_parents.append(task)
 					self.queue.put(task[0])
 				elif name != parents[i][1]:
 					parents[i] = task
+					all_parents.append(task)
 					self.queue.put(task[0])
 			for i in range(0, len(parents) - len(temp)):
 				parents.pop()
@@ -1134,3 +1158,8 @@ class FileManager(object):
 					file_size = self.remote.get_file_size(remote_file)
 				file_task.init_size = file_size
 				self.queue.put(file_task)
+		for parent in all_parents:
+			if parent[0].size is None:
+				parent[0].size = 0
+				parent[0].transferred = 0
+				parent[0].state = 'Completed'
