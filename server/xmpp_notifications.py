@@ -18,7 +18,7 @@ else:
 	_sleekxmpp_ClientXMPP = sleekxmpp.ClientXMPP
 
 class NotificationBot(_sleekxmpp_ClientXMPP):
-	def __init__(self, jid, password, room):
+	def __init__(self, jid, password, room, verify_cert):
 		super(NotificationBot, self).__init__(jid, password)
 		self.add_event_handler('disconnect', self.on_xmpp_disconnect)
 		self.add_event_handler('session_start', self.on_xmpp_session_start)
@@ -27,6 +27,8 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 		self.register_plugin('xep_0045')  # multi-user chat
 		self.register_plugin('xep_0199')  # xmpp ping
 		self.room = room
+		self.verify_cert = verify_cert
+		self.logger = logging.getLogger('KingPhisher.Plugins.XMPPNoficationBot')
 
 	def send_notification(self, message):
 		ET = sleekxmpp.xmlstream.ET
@@ -72,6 +74,11 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 		self.send_notification('king phisher server notifications are now online')
 
 	def on_xmpp_ssl_invalid_cert(self, pem_cert):
+		if self.verify_cert:
+			self.logger.warning('received an invalid ssl certificate, disconnecting from the server')
+			self.disconnect(send_close=False)
+		else:
+			self.logger.warning('received an invalid ssl certificate, ignoring it per the configuration')
 		return
 
 class Plugin(plugins.ServerPlugin):
@@ -86,8 +93,11 @@ class Plugin(plugins.ServerPlugin):
 		plugin_opts.OptionString('jid', 'the username to login with'),
 		plugin_opts.OptionString('password', 'the password to login with'),
 		plugin_opts.OptionString('room', 'the room to send notifications to'),
-		plugin_opts.OptionString('server', 'the server to connect to')
+		plugin_opts.OptionString('server', 'the server to connect to'),
+		# verify_cert only functions when sleekxmpp supports it
+		plugin_opts.OptionBoolean('verify_cert', 'verify the ssl certificate', default=True)
 	]
+	req_min_version = '1.4.0b0'
 	req_packages = {
 		'sleekxmpp': has_sleekxmpp
 	}
@@ -99,7 +109,12 @@ class Plugin(plugins.ServerPlugin):
 		return True
 
 	def on_server_initialized(self, server):
-		self.bot = NotificationBot(self.config['jid'], self.config['password'], self.config['room'])
+		self.bot = NotificationBot(
+			self.config['jid'],
+			self.config['password'],
+			self.config['room'],
+			self.config['verify_cert']
+		)
 		self.bot.connect(utilities.parse_server(self.config['server'], 5222))
 		self.bot.process(block=False)
 
