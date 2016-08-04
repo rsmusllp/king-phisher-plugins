@@ -5,6 +5,7 @@ import shutil
 import threading
 import time
 import hashlib
+import errno
 
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
@@ -22,10 +23,11 @@ import paramiko
 GTYPE_LONG = GObject.type_from_name('glong')
 gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 
-def get_treeview_column(name, renderer, m_col, m_col_sort=None):
+def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable = False):
 	tv_col = Gtk.TreeViewColumn(name)
 	tv_col.pack_start(renderer, True)
 	tv_col.add_attribute(renderer, 'text', m_col)
+	tv_col.set_property('resizable', resizable)
 	if m_col_sort is not None:
 		tv_col.set_sort_column_id(m_col_sort)
 	return tv_col
@@ -199,6 +201,8 @@ class TransferTask(Task):
 		self.treerowref = None
 		self.parents = parents
 		self.init_size = None
+		self.show = False
+		self.show_children = False
 
 	@property
 	def progress(self):
@@ -238,7 +242,6 @@ class StatusDisplay(object):
 		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
 		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
 		self.label_file = self.builder.get_object('SFTPClientGUI.label')
-		self._task_map = {}
 
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
@@ -247,17 +250,18 @@ class StatusDisplay(object):
 		col.add_attribute(col_img, 'pixbuf', 0)
 		self.treeview_transfer.append_column(col)
 
-		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1))
-		self.treeview_transfer.append_column(get_treeview_column('Remote File', col_text, 2, m_col_sort=2))
-		self.treeview_transfer.append_column(get_treeview_column('Status', col_text, 3, m_col_sort=3))
+		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1, resizable=True))
+		self.treeview_transfer.append_column(get_treeview_column('Remote File', col_text, 2, m_col_sort=2, resizable=True))
+		self.treeview_transfer.append_column(get_treeview_column('Status', col_text, 3, m_col_sort=3, resizable=True))
 
 		col_bar = Gtk.TreeViewColumn('Progress')
 		progress = Gtk.CellRendererProgress()
 		col_bar.pack_start(progress, True)
 		col_bar.add_attribute(progress, 'value', 4)
+		col_bar.set_property('resizable', True)
 		self.treeview_transfer.append_column(col_bar)
 
-		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3))
+		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
 		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
@@ -289,6 +293,8 @@ class StatusDisplay(object):
 
 	def _get_selected_tasks(self):
 		treepaths = self._get_selected_treepaths()
+		if treepaths is None:
+			return None
 		parent_task = [task for task in self.queue.queue if task.treerowref is not None and task.treerowref.valid() and task.treerowref.get_path() in treepaths][0]
 		children = [task for task in self.queue.queue if task.parents is not None and parent_task in task.parents]
 		parent_task = [parent_task,]
@@ -297,6 +303,8 @@ class StatusDisplay(object):
 	def _get_selected_treepaths(self):
 		selection = self.treeview_transfer.get_selection()
 		model, treeiter = selection.get_selected()
+		if treeiter is None:
+			return None
 		treepaths = []
 		treepaths.append(model.get_path(treeiter))
 		return treepaths
@@ -323,27 +331,23 @@ class StatusDisplay(object):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
-			if task not in self._task_map:
-				parent = task.parents[len(task.parents)-1] if task.parents is not None else None
-				self._task_map[task] = [task, parent, False if task.parents is not None else True, False]
-		for task_item in self._task_map:
-			if task_item.parents is not None:
-				parent_task = task_item.parents[len(task_item.parents)-1]
-				if self._task_map[parent_task][3]:
-					self._task_map[task_item][2] = True
-			task_info = self._task_map[task_item]
-			if not task_info[2]:
+			if task.parents is None:
+				task.show = True
+			else :
+				parent_task = task.parents[len(task.parents)-1]
+				if parent_task.show_children:
+					task.show = True
+				else:
+					task.show = False
+			if not task.show:
 				continue
-			task = task_info[0]
 			parent_treerowref = None
 			if task.parents is not None:
 				parent_treerowref = task.parents[len(task.parents)-1].treerowref
 				if parent_treerowref is None:
-					self.queue.queue.remove(task)
 					continue
 				parent_path = parent_treerowref.get_path()
 				if parent_path is None:
-					self.queue.queue.remove(task)
 					continue
 				parent_treerowref = self._tv_model.get_iter(parent_path)
 			if not isinstance(task, TransferTask):
@@ -364,7 +368,8 @@ class StatusDisplay(object):
 						self._tv_model.remove(parent_task.dummy_node)
 						parent_task.dummy_node = None
 				if isinstance(task, TransferDirectoryTask):
-					task.dummy_node = self._tv_model.append(treeiter, [None, None, None, None, None, None])
+					if task.has_children:
+						task.dummy_node = self._tv_model.append(treeiter, [None, None, None, None, None, None])
 				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
 			else:
 				row = self._tv_model[task.treerowref.get_path()]  # pylint: disable=unsubscriptable-object
@@ -376,7 +381,7 @@ class StatusDisplay(object):
 	def signal_tv_expand_row(self, _, treeiter, treepath):
 		row = self._tv_model[treeiter]
 		task = [task for task in self.queue.queue if task.local_path == row[1] and task.remote_path == row[2]][0]
-		self._task_map[task][3] = True
+		task.show_children = True
 
 	def signal_tv_collapse_row(self, _, treeiter, treepath):
 		pass
@@ -388,6 +393,8 @@ class StatusDisplay(object):
 					continue
 				if task.treerowref is not None and task.treerowref.valid():
 					self._tv_model.remove(self._tv_model.get_iter(task.treerowref.get_path()))
+					task.show_children = False
+					task.show = False
 					task.treerowref = None
 				self.queue.queue.remove(task)
 			self.queue.not_full.notify()
@@ -445,20 +452,19 @@ class DirectoryBase(object):
 		col.pack_start(self.col_name, True)
 		col.add_attribute(self.col_name, 'text', 0)
 		col.add_attribute(col_img, 'pixbuf', 1)
+		col.set_property('resizable', True)
 		col.set_sort_column_id(0)
 
 		self.treeview.append_column(col)
-		self.treeview.append_column(get_treeview_column('Permissions', col_text, 3, m_col_sort=3))
-		self.treeview.append_column(get_treeview_column('Size', col_text, 4, m_col_sort=5))
-		self.treeview.append_column(get_treeview_column('Date Modified', col_text, 6, m_col_sort=6))
+		self.treeview.append_column(get_treeview_column('Permissions', col_text, 3, m_col_sort=3, resizable=True))
+		self.treeview.append_column(get_treeview_column('Size', col_text, 4, m_col_sort=5, resizable=True))
+		self.treeview.append_column(get_treeview_column('Date Modified', col_text, 6, m_col_sort=6, resizable=True))
 
 		self.treeview.connect('button_press_event', self.signal_tv_button_press)
 		self.treeview.connect('key-press-event', self.signal_tv_key_press)
 		self.treeview.connect('row-expanded', self.signal_tv_expand_row)
 		self.treeview.connect('row-collapsed', self.signal_tv_collapse_row)
 		self._tv_model = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
-		tree_filter = self._tv_model.filter_new()
-		tree_filter.set_visible_func(self.show_hidden_files)
 		self.treeview.set_model(self._tv_model)
 
 		self.local_hidden = True
@@ -474,6 +480,10 @@ class DirectoryBase(object):
 			"Are you sure you want to delete the selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file')
 		)
 		if confirmed:
+			if self._tv_model.iter_parent(treeiter) is None:
+				self.parentless = True
+			else:
+				self.parentless = False
 			self.delete(model, treeiter)
 
 	def _get_popup_menu(self):
@@ -515,7 +525,9 @@ class DirectoryBase(object):
 	def get_is_folder(self, fullname):
 		return stat.S_ISDIR(self.stat(fullname).st_mode)
 
-	def get_file_size(self, fullname):
+	def get_file_size(self, fullname, stat_override=None):
+		if stat_override is not None:
+			return stat_override(fullname).st_size
 		return self.stat(fullname).st_size
 
 	def signal_tv_button_press(self, _, event):
@@ -541,14 +553,17 @@ class DirectoryBase(object):
 		parent = self._tv_model.iter_parent(treeiter)
 		if parent is None:
 			parent_name = self.default_directory
+			self.parentless = True
 		else:
 			parent_name = self._tv_model[parent][2]
+			self.parentless = False
 		if self._tv_model[treeiter][2] is not None:
 			perm = self._check_perm(parent_name)
 			w_perm = True if perm[4] == 'w' else False
 			if not w_perm:
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), "Cannot access {0} as user".format(fullname))
 				return
+		
 		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
 		self.treeview.set_cursor(path, col, True)
@@ -601,10 +616,6 @@ class DirectoryBase(object):
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
 		self.local_hidden = not self.local_hidden
 		self.refresh()
-
-	def show_hidden_files(self, model, _iter, data):
-		#print self._tv_model[_iter:1]
-		pass
 
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
@@ -664,6 +675,9 @@ class DirectoryBase(object):
 			self._tv_model.remove(_iter)
 			self._make_file(new_path)
 		self.refresh()
+		if self.parentless:
+			self._tv_model.clear()
+			self.load_dirs(self.default_directory)
 
 	def signal_menu_activate_delete_prompt(self, _):
 		self._delete_selection()
@@ -676,7 +690,7 @@ def handle_permission_denied(function, *args, **kwargs):
 			err_type = error[0]
 			print error
 			print (function, args, kwargs)
-			err_message = 'An undocumented error occured'
+			err_message = 'An error occured'
 			gui_utilities.show_dialog_error(
 				'Permission Denied',
 				self.application.get_active_window(),
@@ -729,6 +743,9 @@ class LocalDirectory(DirectoryBase):
 			os.remove(model[treeiter][2])
 		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
 		self.refresh()
+		if self.parentless:
+			self._tv_model.clear()
+			self.load_dirs(self.default_directory)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -759,24 +776,7 @@ class RemoteDirectory(DirectoryBase):
 	###FIX ME
 	def _check_perm(self, fullname):
 		mode = self.ftp.stat(fullname).st_mode
-		readable = True
-		writable = True
 		'''
-		try:
-			_file = self.ftp.open(fullname)
-		except IOError:
-			pass
-		else:
-			readable = True
-			_file.close()
-		if not self.get_is_folder(fullname):
-			try:
-				_file = self.ftp.open(fullname, 'w')
-			except IOError:
-				pass
-			else:
-				writable = True
-				_file.close()
 		else:
 			temp_name = '.abcdefg'
 			path = os.path.join(fullname, temp_name)
@@ -822,22 +822,33 @@ class RemoteDirectory(DirectoryBase):
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
-		if self.get_is_folder(self._tv_model[treeiter][2]):  #pylint: disable=unsubscriptable-object
-			self.ftp.rmdir(model[treeiter][2])
+		name = self._tv_model[treeiter][2]
+		if self.get_is_folder(name):  #pylint: disable=unsubscriptable-object
+			if not self.remove_by_folder_name(name):
+				return
 		else:
-			self.ftp.remove(model[treeiter][2])
-		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
+			if not self.remove_by_file_name(name):
+				return
+		gui_utilities.show_dialog_warning('Successfully deleted ' + name, self.application.get_active_window())
 		self.refresh()
-
-	@handle_permission_denied
-	def remove_by_folder_name(self, name):
-		return True
+		if self.parentless:
+			self._tv_model.clear()
+			self.load_dirs(self.default_directory)
 
 	###FIX ME
 	@handle_permission_denied
+	def remove_by_folder_name(self, name):
+		for path in self._yield_dir_list(name):
+			new_path = os.path.join(name, path)
+			if self.get_is_folder(new_path):
+				self.remove_by_folder_name(new_path)
+			else:
+				self.remove_by_file_name(new_path)
+		self.ftp.rmdir(name)
+
+	@handle_permission_denied
 	def remove_by_file_name(self, name):
-		#self.ftp.remove(name)
-		pass
+		self.ftp.remove(name)
 	###FIX ME
 
 	def walk(self, _dir, src, commands, remote_name, old_files):
@@ -859,7 +870,14 @@ class RemoteDirectory(DirectoryBase):
 			self.walk(new_path, src, commands, remote_name, old_files)
 
 	def _already_exists_all(self, path):
-		return True
+		try:
+			self.ftp.stat(path)
+		except IOError as e:
+			if e.errno == errno.ENOENT or e.errno == errno.EACCES:
+				return False
+			raise
+		else:
+			return True
 
 class FileManager(object):
 	def __init__(self, application, ssh):
@@ -887,8 +905,65 @@ class FileManager(object):
 		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
+
+		box_local = self.builder.get_object('box_local_dropdown')
+		self._local_dropdown_model = Gtk.ListStore(str)
+		self.render_dropdown(self._local_dropdown_model, self.local)
+		self.local_dropdown = Gtk.ComboBox.new_with_model_and_entry(self._local_dropdown_model)
+		self.local_dropdown.set_entry_text_column(0)
+		self.local_dropdown.connect('changed', self.signal_combo_changed, self.local)
+		box_local.pack_start(self.local_dropdown, True, True, 0)
+
+		box_remote = self.builder.get_object('box_remote_dropdown')
+		self._remote_dropdown_model = Gtk.ListStore(str)
+		self.render_dropdown(self._remote_dropdown_model, self.remote)
+		self.remote_dropdown = Gtk.ComboBox.new_with_model_and_entry(self._remote_dropdown_model)
+		self.remote_dropdown.set_entry_text_column(0)
+		self.remote_dropdown.connect('changed', self.signal_combo_changed, self.remote)
+		box_remote.pack_start(self.remote_dropdown, True, True, 0)
+
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
+
+
+	def signal_combo_changed(self, combo, *data):
+		system = data[0]
+		treeiter = combo.get_active_iter()
+		model = combo.get_model()
+		if treeiter != None:
+			new_dir = model[treeiter][0]
+		else:
+			new_dir = '.'
+			entry = combo.get_child().get_text()
+			if entry == '..':
+				pass
+			elif system._already_exists_all(entry) and entry != system.default_directory:
+				if system.get_is_folder(entry) and 'r' in system._check_perm(entry):
+					new_dir = entry
+		if new_dir != '.':
+			if new_dir == '..':
+				split = system.default_directory.split('/')
+				split = split[:-1]
+				new_dir = '/'.join(split)
+				if new_dir == '':
+					new_dir = '/'
+			system.default_directory = new_dir
+			system._tv_model.clear()
+			system.load_dirs(system.default_directory)
+			model.clear()
+			self.render_dropdown(model, system)
+
+	def render_dropdown(self, model, system):
+		model.append(('..', ))
+		for _dir in system._yield_dir_list(system.default_directory):
+			filename = os.path.join(system.default_directory, _dir)
+			if 'r' not in system._check_perm(filename):
+				continue
+			elif not system.get_is_folder(filename):
+				continue
+			elif system.local_hidden and _dir.startswith('.'):
+				continue
+			model.append((filename,))
 
 	def render_menubar(self, menubar):
 		self.validate = False
@@ -932,7 +1007,7 @@ class FileManager(object):
 				src_file_h = open(task.local_path, 'rb')
 				dst_file_h = ftp.file(task.remote_path, write_mode)
 			elif isinstance(task, DownloadTask):
-				task.size = self.remote.get_file_size(task.remote_path)
+				task.size = self.remote.get_file_size(task.remote_path, stat_override=ftp.stat)
 				src_file_h = ftp.file(task.remote_path, 'rb')
 				dst_file_h = open(task.local_path, write_mode)
 			else:
@@ -958,22 +1033,25 @@ class FileManager(object):
 					dst_file_h.seek(0)
 					src_hash = hashlib.md5(src_file_h.read()).hexdigest()
 					dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
+					print src_hash, dst_hash
 					if src_hash == dst_hash:
 						self.application.logger.info("{0} and {1} have been validated".format(task.local_path, task.remote_path))
 					else:
-						self.application.logger.error("{0} and {1} were not properly transferred".format(task.local_path, task.remote_path))
+						self.application.logger.warning("{0} and {1} were not properly transferred".format(task.local_path, task.remote_path))
 				if task.parents is not None:
 					for parent in task.parents:
 						parent.transferred += 1
 						if parent.transferred >= parent.size:
 							parent.state = 'Completed'
+							if parent.parents is None:
+								GLib.idle_add(self._idle_refresh_directories)
 				else:
 					GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
 		except:  # pylint: disable=bare-except
 			if not task.is_done:
-				self.application.logger.error("Error transferring {0} to {1}".format('a', 'b'))
+				self.application.logger.error("Unknown error transferring {0} and {1}".format(task.local_path, task.remote_path))
 				task.state = 'Error'
 				if task.parents is not None:
 					for parent in task.parents:
@@ -999,20 +1077,21 @@ class FileManager(object):
 					self._transfer(task, ssh)
 
 	def signal_window_destroy(self, _):
-		self.ftp.close()
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
 		for _ in self._threads:
 			self.queue.put(ShutdownTask())
 		for thread in self._threads:
 			thread.join()
+		self.ftp.close()
 
 	def _queue_transfer(self, task_cls):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
 			local_file = self.local.default_directory
-			local_name = self.local.default_directory
+			local_name = local_file.split('/')
+			local_name = local_name[len(local_name)-1]
 		else:
 			local_file = model[treeiter][2]
 			local_name = model[treeiter][0]
@@ -1021,7 +1100,8 @@ class FileManager(object):
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
 			remote_file = self.remote.default_directory
-			remote_name = self.remote.default_directory
+			remote_name = remote_file.split('/')
+			remote_name = remote_name[len(remote_name) -1]
 		else:
 			remote_file = model[treeiter][2]
 			remote_name = model[treeiter][0]
@@ -1060,6 +1140,13 @@ class FileManager(object):
 					'Cannot write to the destination folder.'
 				)
 				return
+			elif 'r' not in self.remote._check_perm(src_file):
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot read the source file.'
+				)
+				return
 			local_file, remote_file = dst_file, src_file
 		elif issubclass(task_cls, UploadTask):
 			if not os.access(local_file, os.R_OK):
@@ -1067,6 +1154,13 @@ class FileManager(object):
 					'Permission Denied',
 					self.application.get_active_window(),
 					'Cannot read the source file.'
+				)
+				return
+			elif 'w' not in self.remote._check_perm(dst_dir):
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot write to the destination folder.'
 				)
 				return
 			local_file, remote_file = src_file, dst_file
@@ -1136,8 +1230,16 @@ class FileManager(object):
 					continue
 				new_file = new_dir + '/' + _file
 				old_file = old_files[command[0]] + '/' + _file
+				if uload:
+					if not os.access(old_file, os.R_OK):
+						self.application.logger.warning("Cannot read file {0}".format(old_file))
+						continue
+				else:
+					if 'r' not in self.remote._check_perm(old_file):
+						self.application.logger.warning("Cannot read file {0}".format(old_file))
+						continue
 				if not src._already_exists_all(old_file):
-					self.application.logger.error("{0} is neither a file nor folder".format(old_file))
+					self.application.logger.warning("{0} is neither a file nor folder".format(old_file))
 					continue
 				if uload:
 					local_file, remote_file = old_file, new_file
