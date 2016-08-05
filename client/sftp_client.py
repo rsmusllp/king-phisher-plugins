@@ -23,7 +23,8 @@ import paramiko
 GTYPE_LONG = GObject.type_from_name('glong')
 gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 
-def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable = False):
+def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
+	""" Function used for getting a generic text treeview column. """
 	tv_col = Gtk.TreeViewColumn(name)
 	tv_col.pack_start(renderer, True)
 	tv_col.add_attribute(renderer, 'text', m_col)
@@ -93,6 +94,10 @@ class Plugin(plugins.ClientPlugin):
 		self.sftp_window = None
 
 class TaskQueue(object):
+	"""
+	Task queue used for transfer tasks that handles thread and task
+	management in a way to prevent errors.
+	"""
 	def __init__(self):
 		self.mutex = threading.RLock()
 		self.not_empty = threading.Condition(self.mutex)
@@ -153,6 +158,10 @@ class TaskQueue(object):
 			self.not_full.notify()
 
 class Task(object):
+	"""
+	Generic task class that contains information about task state
+	and readiness.
+	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending')
 	_ready_states = ('Pending',)
 	__slots__ = ('_ready', '_state')
@@ -187,11 +196,16 @@ class Task(object):
 		self._ready = ready_event
 
 class ShutdownTask(Task):
+	""" Dummy task used for signaling a shutdown within the queue. """
 	pass
 
 class TransferTask(Task):
+	"""
+	Task used to model transfers. Each task is put in the queue where it will be pass into the
+	_transfer method of the FileManager class for the transfer to occur.
+	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
-	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents', 'init_size')
+	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents', 'init_size', 'show', 'show_children')
 	def __init__(self, local_path, remote_path, parents=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
@@ -221,9 +235,14 @@ class UploadTask(TransferTask):
 	transfer_direction = 'upload'
 
 class TransferDirectoryTask(TransferTask):
+	"""
+	Task to model a folder transfer. Acts as a parent task
+	to other TransferTasks and is passed into _transfer_folder.
+	"""
 	has_children = False
 	folder_clicked = False
 	dummy_node = None
+	empty = False
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	pass
@@ -232,6 +251,11 @@ class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	pass
 
 class StatusDisplay(object):
+	"""
+	Class representing the bottom treeview of the GUI. This contains the logging and graphical
+	representation of all queued transfers. This display is updated every 250 milliseconds
+	and otherwise only updated with GLib.idle_add.
+	"""
 	def __init__(self, builder, queue):
 		self.builder = builder
 		self.queue = queue
@@ -240,8 +264,6 @@ class StatusDisplay(object):
 		self._tv_lock = threading.RLock()
 		gsrc_id = GLib.timeout_add(250, self._sync_view, priority=GLib.PRIORITY_DEFAULT_IDLE)  # 250 milliseconds
 		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
-		self.progress_bar = self.builder.get_object('SFTPClientGUI.progressbar')
-		self.label_file = self.builder.get_object('SFTPClientGUI.label')
 
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
@@ -266,7 +288,6 @@ class StatusDisplay(object):
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 		self.treeview_transfer.connect('row-expanded', self.signal_tv_expand_row)
-		self.treeview_transfer.connect('row-collapsed', self.signal_tv_collapse_row)
 
 		self.treeview_transfer.set_model(self._tv_model)
 		self.treeview_transfer.show_all()
@@ -295,11 +316,12 @@ class StatusDisplay(object):
 		treepaths = self._get_selected_treepaths()
 		if treepaths is None:
 			return None
+		# Find the task selected task then find tall the tasks in the queue with it as a parent.
 		parent_task = [task for task in self.queue.queue if task.treerowref is not None and task.treerowref.valid() and task.treerowref.get_path() in treepaths][0]
 		children = [task for task in self.queue.queue if task.parents is not None and parent_task in task.parents]
 		parent_task = [parent_task,]
 		return parent_task + children
-		
+
 	def _get_selected_treepaths(self):
 		selection = self.treeview_transfer.get_selection()
 		model, treeiter = selection.get_selected()
@@ -309,7 +331,6 @@ class StatusDisplay(object):
 		treepaths.append(model.get_path(treeiter))
 		return treepaths
 
-
 	def _change_task_state(self, state_from, state_to):
 		with self.queue.mutex:
 			for task in self._get_selected_tasks():
@@ -317,6 +338,7 @@ class StatusDisplay(object):
 					if state_to == 'Cancelled':
 						if isinstance(task, TransferDirectoryTask):
 							if task.has_children:
+								# Folder clicked indicates a parent task has been clicked and to freeze its progress
 								task.folder_clicked = True
 						elif task.parents is not None:
 							for parent in task.parents:
@@ -325,20 +347,19 @@ class StatusDisplay(object):
 					task.state = state_to
 
 	def _sync_view(self):
+		# This value was set to True to prevent the treeview from freezing.
 		if not self.queue.mutex.acquire(blocking=True):
 			return
 		if not self._tv_lock.acquire(blocking=False):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
+			# Make task visible if it has no parents (it is a root task) or if its parent has been expanded
 			if task.parents is None:
 				task.show = True
-			else :
+			else:
 				parent_task = task.parents[len(task.parents)-1]
-				if parent_task.show_children:
-					task.show = True
-				else:
-					task.show = False
+				task.show = bool(parent_task.show_children)
 			if not task.show:
 				continue
 			parent_treerowref = None
@@ -383,9 +404,6 @@ class StatusDisplay(object):
 		task = [task for task in self.queue.queue if task.local_path == row[1] and task.remote_path == row[2]][0]
 		task.show_children = True
 
-	def signal_tv_collapse_row(self, _, treeiter, treepath):
-		pass
-		
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
 			for task in self.queue.queue:
@@ -438,6 +456,10 @@ class StatusDisplay(object):
 		adj.set_value(0)
 
 class DirectoryBase(object):
+	"""
+	Base directory object that is used by both the remote and
+	local directory to get and render directory data.
+	"""
 	def __init__(self, builder, application, default_directory):
 		self.application = application
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
@@ -480,10 +502,8 @@ class DirectoryBase(object):
 			"Are you sure you want to delete the selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file')
 		)
 		if confirmed:
-			if self._tv_model.iter_parent(treeiter) is None:
-				self.parentless = True
-			else:
-				self.parentless = False
+			# If the selection is parentless, a different refresh method must be used to show changes
+			self.parentless = bool(self._tv_model.iter_parent(treeiter))
 			self.delete(model, treeiter)
 
 	def _get_popup_menu(self):
@@ -563,7 +583,6 @@ class DirectoryBase(object):
 			if not w_perm:
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), "Cannot access {0} as user".format(fullname))
 				return
-		
 		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
 		self.treeview.set_cursor(path, col, True)
@@ -648,6 +667,7 @@ class DirectoryBase(object):
 		if not self.treeview.row_expanded(path):
 			self.treeview.expand_row(path, False)
 		if self._tv_model.iter_children(treeiter) is None:
+			# If no children, one dummy node must be created to make row expandable and the other to be used as a placemark for new folder
 			self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 			self.treeview.expand_row(path, False)
@@ -685,14 +705,11 @@ class DirectoryBase(object):
 def handle_permission_denied(function, *args, **kwargs):
 	def wrapper(self, *args, **kwargs):
 		try:
-			func = function(self, *args, **kwargs)
+			function(self, *args, **kwargs)
 		except (IOError, OSError) as error:
-			err_type = error[0]
-			print error
-			print (function, args, kwargs)
-			err_message = 'An error occured'
+			err_message = "An error occured: {0}".format(str(error[1]))
 			gui_utilities.show_dialog_error(
-				'Permission Denied',
+				'Denied',
 				self.application.get_active_window(),
 				err_message
 			)
@@ -702,6 +719,10 @@ def handle_permission_denied(function, *args, **kwargs):
 	return wrapper
 
 class LocalDirectory(DirectoryBase):
+	"""
+	Local Directory object that defines private methods for rendering local data
+	using the os command.
+	"""
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
 	def __init__(self, builder, application):
@@ -721,7 +742,7 @@ class LocalDirectory(DirectoryBase):
 
 	def _already_exists(self, path):
 		return os.path.isdir(path)
-	
+
 	def _already_exists_all(self, path):
 		return os.path.exists(path)
 
@@ -760,39 +781,70 @@ class LocalDirectory(DirectoryBase):
 			walker = list(walker)
 			temp = walker[0].split('/')
 			loc = temp.index(local_name)
+			# Parse the name relative to the directory selected, i.e /home/osboxes/Music -> /osboxes/Music if osboxes was selected
 			parsed_name = '/'.join(temp[loc:])
 			old_files[parsed_name] = walker[0]
 			walker[0] = parsed_name
 			commands.append(walker)
 
 class RemoteDirectory(DirectoryBase):
+	"""
+	Remote Directory object that defines private methods for rendering remote data
+	using Paramiko's SFTP functionality.
+	"""
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
-	def __init__(self, builder, application, ftp):
+	def __init__(self, builder, application, ftp, ssh):
 		self.ftp = ftp
+		self.ssh = ssh
 		self.stat = ftp.stat
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'])
 
-	###FIX ME
+	### FIX ME: Paramiko has no built in command for checking file permissions
+	### The only ways I thought of to display the permissions were
+	### 1) Use ssh to execute bash commands -> Too slow and not universal
+	### 2) Open file with r and w as the mode and catch error -> MUCH too slow
+	### 3) Check chmod and chown permissions with catching errors to see if user is in
+	### 	group, owner, or other then perform bitshifts on the mode
 	def _check_perm(self, fullname):
-		mode = self.ftp.stat(fullname).st_mode
-		'''
-		else:
-			temp_name = '.abcdefg'
-			path = os.path.join(fullname, temp_name)
-			try:
-				_file = self.ftp.open(path, 'w+')
-			except IOError:
-				pass
+		mode = self.stat(fullname).st_mode
+		uid = self.stat(fullname).st_uid
+		gid = self.stat(fullname).st_gid
+		owner = False
+		group = False
+		other = False
+		try:
+			self.ftp.chmod(fullname, mode)
+		except IOError as e:
+			if e[0] == 13:
+				other = True
 			else:
-				writable = True
-				_file.close()
-				self.remove_by_file_name(path)
-		'''
+				raise e
+		else:
+			try:
+				self.ftp.chown(fullname, uid, gid)
+			except IOError as e:
+				if e[0] == 13:
+					group = True
+				else:
+					raise
+			else:
+				owner = True
 		perm = '   '
-		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
-		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
-		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
+		if other:
+			perm += 'r' if bool(mode & stat.S_IROTH) else '-'
+			perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
+			perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
+		elif group:
+			perm += 'r' if bool(mode & stat.S_IRGRP) else '-'
+			perm += 'w' if bool(mode & stat.S_IWGRP) else '-'
+			perm += 'x' if bool(mode & stat.S_IXGRP) else '-'
+		elif owner:
+			perm += 'r' if bool(mode & stat.S_IRUSR) else '-'
+			perm += 'w' if bool(mode & stat.S_IWUSR) else '-'
+			perm += 'x' if bool(mode & stat.S_IXUSR) else '-'
+		else:
+			raise ValueError('Permission not parsed correctly')
 		return perm
 	###FIX ME
 
@@ -806,6 +858,8 @@ class RemoteDirectory(DirectoryBase):
 		except IOError as error:
 			if error[0] == 2:
 				return False
+			else:
+				 raise error
 		else:
 			return True
 
@@ -813,8 +867,11 @@ class RemoteDirectory(DirectoryBase):
 		self.ftp.rename(self._tv_model[_iter][2], path)  #pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
-	def _make_file(self, path):
-		self.ftp.mkdir(path)
+	def _make_file(self, path, ftp=None):
+		# If method called when self.ftp is busy, alternate ftp is specified, prevents Garbage Packet Error
+		if ftp is None:
+			ftp = self.ftp
+		ftp.mkdir(path)
 
 	def _get_raw_time(self, fullname):
 		lstatout = self.ftp.stat(fullname)
@@ -838,6 +895,7 @@ class RemoteDirectory(DirectoryBase):
 	###FIX ME
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
+		# with paramiko, you cannot remove populated dir, so recursive method utilized
 		for path in self._yield_dir_list(name):
 			new_path = os.path.join(name, path)
 			if self.get_is_folder(new_path):
@@ -849,7 +907,6 @@ class RemoteDirectory(DirectoryBase):
 	@handle_permission_denied
 	def remove_by_file_name(self, name):
 		self.ftp.remove(name)
-	###FIX ME
 
 	def walk(self, _dir, src, commands, remote_name, old_files):
 		subdirs = []
@@ -870,16 +927,24 @@ class RemoteDirectory(DirectoryBase):
 			self.walk(new_path, src, commands, remote_name, old_files)
 
 	def _already_exists_all(self, path):
+		# using self.ftp causes collision errors and raises Garbage Packet Error
+		backup_ftp = self.ssh.open_sftp()
 		try:
-			self.ftp.stat(path)
+			backup_ftp.stat(path)
 		except IOError as e:
+			backup_ftp.close()
 			if e.errno == errno.ENOENT or e.errno == errno.EACCES:
 				return False
 			raise
 		else:
+			backup_ftp.close()
 			return True
 
 class FileManager(object):
+	"""
+	File manager that manages the Transfer Queue by adding new tasks and handling
+	tasks put in, as well as handles communication between all the other classes.
+	"""
 	def __init__(self, application, ssh):
 		self.ssh = ssh
 		self.application = application
@@ -900,7 +965,7 @@ class FileManager(object):
 		self.render_menubar(self.menubar)
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application)
-		self.remote = RemoteDirectory(self.builder, self.application, ftp)
+		self.remote = RemoteDirectory(self.builder, self.application, ftp, ssh)
 		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer(UploadTask))
 		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
@@ -933,12 +998,14 @@ class FileManager(object):
 		if treeiter != None:
 			new_dir = model[treeiter][0]
 		else:
+			# the user has typed something into the combo box
 			new_dir = '.'
 			entry = combo.get_child().get_text()
 			if entry == '..':
 				pass
 			elif system._already_exists_all(entry) and entry != system.default_directory:
 				if system.get_is_folder(entry) and 'r' in system._check_perm(entry):
+					# if the entered string is valid
 					new_dir = entry
 		if new_dir != '.':
 			if new_dir == '..':
@@ -986,7 +1053,8 @@ class FileManager(object):
 		menubar.append(menu_item)
 
 	def shutdown(self, _):
-		pass
+		self.signal_window_destroy(None)
+		self.window.destroy()
 
 	def signal_toggled_transfer_hidden(self, _):
 		self.transfer_hidden = not self.transfer_hidden
@@ -996,6 +1064,32 @@ class FileManager(object):
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
+		if task.parents is not None:
+			# prevents any lagging folders/files from causing issues
+			if  task.parents[0].state == 'Cancelled':
+				task.state = 'Cancelled'
+				return
+			if task.parents[0].state == 'Paused':
+				task.state = 'Paused'
+				return
+		if isinstance(task, UploadDirectoryTask):
+			new_dir = task.remote_path
+			dst = self.remote
+			if dst._already_exists_all(new_dir):
+				return
+			ftp = ssh.open_sftp()
+			dst._make_file(new_dir, ftp=ftp)
+			ftp.close()
+		elif isinstance(task, DownloadDirectoryTask):
+			new_dir = task.local_path
+			dst = self.local
+			if dst._already_exists_all(new_dir):
+				return
+			dst._make_file(new_dir)
+		if task.empty:
+			task.size = 0
+			task.transferred = 0
+			task.state = 'Completed'
 
 	def _transfer(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
@@ -1033,7 +1127,6 @@ class FileManager(object):
 					dst_file_h.seek(0)
 					src_hash = hashlib.md5(src_file_h.read()).hexdigest()
 					dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
-					print src_hash, dst_hash
 					if src_hash == dst_hash:
 						self.application.logger.info("{0} and {1} have been validated".format(task.local_path, task.remote_path))
 					else:
@@ -1176,6 +1269,10 @@ class FileManager(object):
 		commands = []
 		old_files = {}
 		uload = False
+		if 'w' not in dst._check_perm(dst_dir):
+			return
+		elif 'r' not in src._check_perm(src_file):
+			return
 		if issubclass(task_cls, UploadTask):
 			name = local_name
 			uload = True
@@ -1205,10 +1302,9 @@ class FileManager(object):
 					return
 				if not dst.remove_by_folder_name(new_dir):
 					return
-			if not dst._make_file(new_dir):
-				return
 			temp = command[0].split('/')
 			for i in range(0, len(temp)):
+				# look for every new directory or subdirectory in path and make it a task
 				name = '/'.join(temp[0:i+1])
 				parent_task = (parents[i-1][0],) if i > 0 else None
 				if not uload:
@@ -1234,10 +1330,11 @@ class FileManager(object):
 					if not os.access(old_file, os.R_OK):
 						self.application.logger.warning("Cannot read file {0}".format(old_file))
 						continue
-				else:
-					if 'r' not in self.remote._check_perm(old_file):
-						self.application.logger.warning("Cannot read file {0}".format(old_file))
-						continue
+# This slows down the program a lot for really REALLY big files
+#				else:
+#					if 'r' not in self.remote._check_perm(old_file):
+#						self.application.logger.warning("Cannot read file {0}".format(old_file))
+#						continue
 				if not src._already_exists_all(old_file):
 					self.application.logger.warning("{0} is neither a file nor folder".format(old_file))
 					continue
@@ -1252,7 +1349,7 @@ class FileManager(object):
 					else:
 						parent[0].size += 1
 					parent[0].has_children = True
-					actual_parents.append(parent[0])
+					actual_parents.append(parent[0])  # List of parent TASKS
 				file_task = task_cls(local_file, remote_file, parents=actual_parents)
 				if isinstance(file_task, UploadTask):
 					file_size = self.local.get_file_size(local_file)
@@ -1262,6 +1359,4 @@ class FileManager(object):
 				self.queue.put(file_task)
 		for parent in all_parents:
 			if parent[0].size is None:
-				parent[0].size = 0
-				parent[0].transferred = 0
-				parent[0].state = 'Completed'
+				parent[0].empty = True
