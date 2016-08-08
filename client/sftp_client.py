@@ -45,6 +45,7 @@ class Plugin(plugins.ClientPlugin):
 	create, and delete local and remote files on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
+
 	def initialize(self):
 		self.sftp_window = None
 		if not os.access(gtk_builder_file, os.R_OK):
@@ -710,7 +711,7 @@ def handle_permission_denied(function, *args, **kwargs):
 		try:
 			function(self, *args, **kwargs)
 		except (IOError, OSError) as error:
-			err_message = "An error occured: {0}".format(str(error[1]))
+			err_message = "An error occured: {0}".format(error)
 			gui_utilities.show_dialog_error(
 				'Denied',
 				self.application.get_active_window(),
@@ -804,7 +805,7 @@ class RemoteDirectory(DirectoryBase):
 		try:
 			self.ftp.stat(path)
 		except IOError as error:
-			if error[0] == 2:
+			if error.errno== 2:
 				return False
 			else:
 				raise error
@@ -812,7 +813,7 @@ class RemoteDirectory(DirectoryBase):
 			return True
 
 	def _rename_file(self, _iter, path):
-		self.ftp.rename(self._tv_model[_iter][2], path)  #pylint: disable=unsubscriptable-object
+		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
 	def _make_file(self, path, ftp=None):
@@ -1163,9 +1164,9 @@ class FileManager(object):
 		if src.get_is_folder(src_file):
 			self.handle_folder_transfer(task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file)
 		else:
-			self.handle_file_transfer(task_cls, local_file, src_file, dst_file, dst_dir)
+			self.handle_file_transfer(task_cls, local_file, src_file, dst_file, dst_dir, dst)
 
-	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir):
+	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir, dst):
 		if issubclass(task_cls, DownloadTask):
 			if not os.access(dst_dir, os.W_OK):
 				gui_utilities.show_dialog_error(
@@ -1183,6 +1184,11 @@ class FileManager(object):
 					'Cannot read the source file.'
 				)
 				return
+			if not dst._already_exists(dst_file):
+				if not dst._make_file(dst_file):
+					return
+				else:
+					dst.remove_by_folder_name(dst_file)
 			local_file, remote_file = src_file, dst_file
 		file_task = task_cls(local_file, remote_file)
 		if isinstance(file_task, UploadTask):
@@ -1201,6 +1207,11 @@ class FileManager(object):
 			uload = True
 			if not os.access(src_file, os.R_OK):
 				return
+			if not dst._already_exists(dst_file):
+				if not dst._make_file(dst_file):
+					return
+				else:
+					dst.remove_by_folder_name(dst_file)
 		elif issubclass(task_cls, DownloadTask):
 			name = remote_name
 			if not os.access(dst_dir, os.W_OK):
