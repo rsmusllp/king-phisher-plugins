@@ -26,6 +26,7 @@ gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 PARENT_DIRECTORY = '..'
 SINGLE_DOT = '.'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
+
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
 	""" Function used for getting a generic text treeview column. """
 	tv_col = Gtk.TreeViewColumn(name)
@@ -573,14 +574,8 @@ class DirectoryBase(object):
 
 	def rename(self, treeiter):
 		path = self._tv_model.get_path(treeiter)
-		fullname = self._tv_model[path][2]
 		parent = self._tv_model.iter_parent(treeiter)
-		if parent is None:
-			parent_name = self.default_directory
-			self.parentless = True
-		else:
-			parent_name = self._tv_model[parent][2]
-			self.parentless = False
+		self.parentless = not bool(parent)
 		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
 		self.treeview.set_cursor(path, col, True)
@@ -650,12 +645,9 @@ class DirectoryBase(object):
 
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
-		model, treeiter = selection.get_selected()
+		_, treeiter = selection.get_selected()
 		if treeiter is not None:
-			fullname = model[treeiter][2]
 			path = self._tv_model.get_path(treeiter)
-		else:
-			fullname = self.default_directory
 		if treeiter is None:
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 			self.rename(current)
@@ -815,7 +807,7 @@ class RemoteDirectory(DirectoryBase):
 			if error[0] == 2:
 				return False
 			else:
-				 raise error
+				raise error
 		else:
 			return True
 
@@ -835,8 +827,8 @@ class RemoteDirectory(DirectoryBase):
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
-		name = self._tv_model[treeiter][2]
-		if self.get_is_folder(name):  #pylint: disable=unsubscriptable-object
+		name = self._tv_model[treeiter][2]  #pylint: disable=unsubscriptable-object
+		if self.get_is_folder(name):
 			if not self.remove_by_folder_name(name):
 				return
 		else:
@@ -1008,7 +1000,7 @@ class FileManager(object):
 		self.signal_window_destroy(None)
 		self.window.destroy()
 
-	def signal_toggled_transfer_hidden(self, _):
+	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
 		self.transfer_hidden = not self.transfer_hidden
 
 	def signal_toggled_validate_checksums(self, _):
@@ -1067,6 +1059,8 @@ class FileManager(object):
 					self.remote.remove_by_file_name(task.remote_path)
 				elif isinstance(task, DownloadTask):
 					self.local.remove_by_file_name(task.local_path)
+			elif task.state == 'Paused':
+				pass
 			else:
 				task.state = 'Completed'
 				if self.validate:
