@@ -22,9 +22,10 @@ from gi.repository import GLib
 import paramiko
 
 GTYPE_LONG = GObject.type_from_name('glong')
-gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 PARENT_DIRECTORY = '..'
-SINGLE_DOT = '.'
+CURRENT_DIRECTORY = '.'
+
+gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
@@ -36,6 +37,22 @@ def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False)
 	if m_col_sort is not None:
 		tv_col.set_sort_column_id(m_col_sort)
 	return tv_col
+
+def handle_permission_denied(function, *args, **kwargs):
+	def wrapper(self, *args, **kwargs):
+		try:
+			function(self, *args, **kwargs)
+		except (IOError, OSError) as error:
+			logger.error('an exception occurred during an operation', exc_info=True)
+			err_message = "An error occured: {0}".format(error)
+			gui_utilities.show_dialog_error(
+				'Error',
+				self.application.get_active_window(),
+				err_message
+			)
+			return False
+		return True
+	return wrapper
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob', 'Spencer McIntyre']
@@ -211,26 +228,26 @@ class TransferTask(Task):
 	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
 	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents')
-	def __init__(self, local_path, remote_path, parents=0, state=None):
+	def __init__(self, local_path, remote_path, parents=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
-		"""A string representing the local filesystem path of the transfer"""
+		"""A string representing the local filesystem path of the transfer."""
 		self.remote_path = remote_path
-		"""A string representing the remote filesystem path of the transfer"""
+		"""A string representing the remote filesystem path of the transfer."""
 		self.transferred = 0
 		"""
 		If the task is a file transfer, an integer of the number of bytes transferred,
-		if the task is a directory transfer, the number of children files transferred
+		if the task is a directory transfer, the number of children files transferred.
 		"""
 		self.size = None
 		"""
 		If the task is a file transfer, an integer of the total number of bytes,
-		if the task is a directory transfer, the total number of children files
+		if the task is a directory transfer, the total number of children files.
 		"""
 		self.treerowref = None
-		"""A TreeRowReference object representing the Tasks position in the treeview"""
-		self.parents = parents
-		"""An array of TransferDirectoryTasks representing all parent directories of the task"""
+		"""A TreeRowReference object representing the Tasks position in the treeview."""
+		self.parents = parents or []
+		"""A list of TransferDirectoryTasks representing all parent directories of the task."""
 
 	@property
 	def progress(self):
@@ -330,7 +347,7 @@ class StatusDisplay(object):
 			return None
 		# Find the task selected task then find tall the tasks in the queue with it as a parent.
 		parent_task = [task for task in self.queue.queue if task.treerowref is not None and task.treerowref.valid() and task.treerowref.get_path() in treepaths][0]
-		children = [task for task in self.queue.queue if task.parents != 0 and parent_task in task.parents]
+		children = [task for task in self.queue.queue if parent_task in task.parents]
 		children.insert(0, parent_task)
 		return children
 
@@ -346,17 +363,18 @@ class StatusDisplay(object):
 	def _change_task_state(self, state_from, state_to):
 		with self.queue.mutex:
 			for task in self._get_selected_tasks():
-				if task.state in state_from:
-					if state_to == 'Cancelled':
-						if isinstance(task, TransferDirectoryTask):
-							if task.has_children:
-								# Folder clicked indicates a parent task has been clicked and to freeze its progress
-								task.folder_clicked = True
-						elif task.parents != 0:
-							for parent in task.parents:
-								if not parent.folder_clicked:
-									parent.size -= 1
-					task.state = state_to
+				if task.state not in state_from:
+					continue
+				if state_to == 'Cancelled':
+					if isinstance(task, TransferDirectoryTask):
+						if task.has_children:
+							# Folder clicked indicates a parent task has been clicked and to freeze its progress
+							task.folder_clicked = True
+					elif task.parents:
+						for parent in task.parents:
+							if not parent.folder_clicked:
+								parent.size -= 1
+				task.state = state_to
 
 	def _sync_view(self):
 		# This value was set to True to prevent the treeview from freezing.
@@ -367,7 +385,7 @@ class StatusDisplay(object):
 			return
 		for task in self.queue.queue:
 			parent_treerowref = None
-			if task.parents != 0:
+			if task.parents:
 				parent_treerowref = task.parents[-1].treerowref
 				if parent_treerowref is None:
 					continue
@@ -527,6 +545,9 @@ class DirectoryBase(object):
 
 		self.popup_menu.show_all()
 
+	def _get_raw_time(self, fullname):
+		return self.stat(fullname).st_mtime
+
 	def _rename_selection(self):
 		selection = self.treeview.get_selection()
 		_, treeiter = selection.get_selected()
@@ -602,7 +623,7 @@ class DirectoryBase(object):
 
 	def load_dirs(self, path, parent=None):
 		for name in self._yield_dir_list(path):
-			if self.local_hidden and name.startswith(SINGLE_DOT):
+			if self.local_hidden and name.startswith('.'):
 				continue
 			if path.endswith('/'):
 				fullname = path + name
@@ -639,7 +660,7 @@ class DirectoryBase(object):
 	def refresh(self):
 		model = self._tv_model
 		exp_lines = []
-		model.foreach(lambda model, path, iter: exp_lines.append(path) if self.treeview.row_expanded(path) else 0)
+		model.foreach(lambda _, path, __: exp_lines.append(path) if self.treeview.row_expanded(path) else 0)
 		self.treeview.collapse_all()
 		for path in exp_lines:
 			self.treeview.expand_row(path, False)
@@ -683,21 +704,13 @@ class DirectoryBase(object):
 			try:
 				self._rename_file(_iter, new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error(
-				'Error',
-				self.application.get_active_window(),
-				'Error renaming file'
-			)
+				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error renaming file')
 		else:
 			self._tv_model.remove(_iter)
 			try:
 				self._make_file(new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error(
-				'Error',
-				self.application.get_active_window(),
-				'Error creating file'
-			)
+				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error creating file')
 		self.refresh()
 		if self.parentless:
 			self._tv_model.clear()
@@ -706,26 +719,10 @@ class DirectoryBase(object):
 	def signal_menu_activate_delete_prompt(self, _):
 		self._delete_selection()
 
-def handle_permission_denied(function, *args, **kwargs):
-	def wrapper(self, *args, **kwargs):
-		try:
-			function(self, *args, **kwargs)
-		except (IOError, OSError) as error:
-			err_message = "An error occured: {0}".format(error)
-			gui_utilities.show_dialog_error(
-				'Denied',
-				self.application.get_active_window(),
-				err_message
-			)
-			return False
-		else:
-			return True
-	return wrapper
-
 class LocalDirectory(DirectoryBase):
 	"""
 	Local Directory object that defines private methods for rendering local data
-	using the os command.
+	using the os module.
 	"""
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
@@ -749,9 +746,6 @@ class LocalDirectory(DirectoryBase):
 	@handle_permission_denied
 	def _make_file(self, path):
 		os.makedirs(path)
-
-	def _get_raw_time(self, fullname):
-		return os.path.getmtime(fullname)
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
@@ -805,12 +799,11 @@ class RemoteDirectory(DirectoryBase):
 		try:
 			self.ftp.stat(path)
 		except IOError as error:
-			if error.errno== 2:
+			if error.errno == errno.ENOENT:
 				return False
 			else:
 				raise error
-		else:
-			return True
+		return True
 
 	def _rename_file(self, _iter, path):
 		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
@@ -822,19 +815,14 @@ class RemoteDirectory(DirectoryBase):
 			ftp = self.ftp
 		ftp.mkdir(path)
 
-	def _get_raw_time(self, fullname):
-		lstatout = self.ftp.stat(fullname)
-		return lstatout.st_mtime
-
 	@handle_permission_denied
 	def delete(self, model, treeiter):
-		name = self._tv_model[treeiter][2]  #pylint: disable=unsubscriptable-object
+		name = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
 		if self.get_is_folder(name):
 			if not self.remove_by_folder_name(name):
 				return
-		else:
-			if not self.remove_by_file_name(name):
-				return
+		elif not self.remove_by_file_name(name):
+			return
 		gui_utilities.show_dialog_warning('Successfully deleted ' + name, self.application.get_active_window())
 		self.refresh()
 		if self.parentless:
@@ -879,9 +867,9 @@ class RemoteDirectory(DirectoryBase):
 		backup_ftp = self.ssh.open_sftp()
 		try:
 			backup_ftp.stat(path)
-		except IOError as e:
+		except IOError as error:
 			backup_ftp.close()
-			if e.errno == errno.ENOENT or e.errno == errno.EACCES:
+			if error.errno == errno.ENOENT or error.errno == errno.EACCES:
 				return False
 			raise
 		else:
@@ -946,13 +934,13 @@ class FileManager(object):
 			new_dir = model[treeiter][0]
 		else:
 			# the user has typed something into the combo box
-			new_dir = SINGLE_DOT
+			new_dir = CURRENT_DIRECTORY
 			entry = combo.get_child().get_text()
 			if entry != PARENT_DIRECTORY and system._already_exists_all(entry) and entry != system.default_directory:
 				if system.get_is_folder(entry):
 					# if the entered string is valid
 					new_dir = entry
-		if new_dir != SINGLE_DOT:
+		if new_dir != CURRENT_DIRECTORY:
 			if new_dir == PARENT_DIRECTORY:
 				split = system.default_directory.split('/')
 				split = split[:-1]
@@ -973,7 +961,7 @@ class FileManager(object):
 				continue
 			elif not system.get_is_folder(filename):
 				continue
-			elif system.local_hidden and _dir.startswith(SINGLE_DOT):
+			elif system.local_hidden and _dir.startswith('.'):
 				continue
 			model.append((filename,))
 
@@ -1009,9 +997,9 @@ class FileManager(object):
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
-		if task.parents != 0:
+		if task.parents:
 			# prevents any lagging folders/files from causing issues
-			if  task.parents[0].state in ('Cancelled', 'Paused'):
+			if task.parents[0].state in ('Cancelled', 'Paused'):
 				task.state = task.parents[0].state
 				return
 		if isinstance(task, UploadDirectoryTask):
@@ -1073,24 +1061,23 @@ class FileManager(object):
 						logger.info("{0} and {1} have been validated with a sum of {2}".format(task.local_path, task.remote_path, src_hash))
 					else:
 						logger.warning("{0} and {1} were not properly transferred with the sums {2} and {3}".format(task.local_path, task.remote_path, src_hash, dst_hash))
-				if task.parents != 0:
-					for parent in task.parents:
-						parent.transferred += 1
-						if parent.transferred >= parent.size:
-							parent.state = 'Completed'
-							if parent.parents == 0:
+				if task.parents:
+					for parent_task in task.parents:
+						parent_task.transferred += 1
+						if parent_task.transferred >= parent_task.size:
+							parent_task.state = 'Completed'
+							if not parent_task.parents:
 								GLib.idle_add(self._idle_refresh_directories)
 				else:
 					GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
-		except:  # pylint: disable=bare-except
+		except Exception:
 			logger.error("Unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
 			if not task.is_done:
 				task.state = 'Error'
-				if task.parents != 0:
-					for parent in task.parents:
-						parent.state = 'Error'
+				for parent in task.parents:
+					parent.state = 'Error'
 		finally:
 			ftp.close()
 
@@ -1187,8 +1174,7 @@ class FileManager(object):
 			if not dst._already_exists(dst_file):
 				if not dst._make_file(dst_file):
 					return
-				else:
-					dst.remove_by_folder_name(dst_file)
+				dst.remove_by_folder_name(dst_file)
 			local_file, remote_file = src_file, dst_file
 		file_task = task_cls(local_file, remote_file)
 		if isinstance(file_task, UploadTask):
@@ -1210,8 +1196,7 @@ class FileManager(object):
 			if not dst._already_exists(dst_file):
 				if not dst._make_file(dst_file):
 					return
-				else:
-					dst.remove_by_folder_name(dst_file)
+				dst.remove_by_folder_name(dst_file)
 		elif issubclass(task_cls, DownloadTask):
 			name = remote_name
 			if not os.access(dst_dir, os.W_OK):
@@ -1225,7 +1210,7 @@ class FileManager(object):
 			old_dir = old_files[command[0]]
 			if self.transfer_hidden:
 				for part in command[0].split('/'):
-					if part.startswith(SINGLE_DOT):
+					if part.startswith('.'):
 						hidden = True
 						break
 			if hidden:
@@ -1243,7 +1228,7 @@ class FileManager(object):
 			temp = command[0].split('/')
 			for i in range(0, len(temp)):
 				# look for every new directory or subdirectory in path and make it a task
-				name = '/'.join(temp[0 : i+1])
+				name = '/'.join(temp[0:i + 1])
 				parent_task = (parents[i - 1][0],) if i > 0 else 0
 				if not uload:
 					task = (DownloadDirectoryTask(new_dir, old_dir, parents=parent_task), name)
@@ -1257,17 +1242,17 @@ class FileManager(object):
 					parents[i] = task
 					all_parents.append(task)
 					self.queue.put(task[0])
+
 			for i in range(0, len(parents) - len(temp)):
 				parents.pop()
 			for _file in command[2]:
-				if _file.startswith(SINGLE_DOT) and self.transfer_hidden:
+				if _file.startswith('.') and self.transfer_hidden:
 					continue
 				new_file = new_dir + '/' + _file
 				old_file = old_files[command[0]] + '/' + _file
-				if uload:
-					if not os.access(old_file, os.R_OK):
-						logger.warning("Cannot read file {0}".format(old_file))
-						continue
+				if uload and not os.access(old_file, os.R_OK):
+					logger.warning("cannot read file {0}".format(old_file))
+					continue
 				if not src._already_exists_all(old_file):
 					logger.warning("{0} is neither a file nor folder".format(old_file))
 					continue
