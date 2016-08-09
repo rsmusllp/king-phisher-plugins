@@ -29,7 +29,16 @@ gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
-	""" Function used for getting a generic text treeview column. """
+	""" 
+	A function used to generate a generic treeview column. 
+
+	:param str name: The name of the column.
+	:param renderer: The Gtk renderer to be used for the column.
+	:param m_col: The column position in the model.
+	:param m_col_sort: The column to sort column data by.
+	:param bool resizable: Decide whether the column should be resizable.
+	:return: A TreeViewColumn Object with the desired setttings.
+	"""
 	tv_col = Gtk.TreeViewColumn(name)
 	tv_col.pack_start(renderer, True)
 	tv_col.add_attribute(renderer, 'text', m_col)
@@ -39,6 +48,12 @@ def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False)
 	return tv_col
 
 def handle_permission_denied(function, *args, **kwargs):
+	""" 
+	Handles Permissions Denied errors when performing actions on files or folders.
+
+	:param function: A function to be tested for IOErrors and OSErrors.
+	:return: True if the function did not raise an error and false if it did.
+	"""
 	def wrapper(self, *args, **kwargs):
 		try:
 			function(self, *args, **kwargs)
@@ -64,6 +79,7 @@ class Plugin(plugins.ClientPlugin):
 	homepage = 'https://github.com/securestate/king-phisher'
 
 	def initialize(self):
+		""" Connects to the start SFTP Client Signal to the plugin and checks for .ui file. """
 		self.sftp_window = None
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
@@ -76,6 +92,7 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def finalize(self):
+		""" Allows the window to be properly closed upon the deactivation of the plugin. """
 		if self.sftp_window is not None:
 			self.sftp_window.destroy()
 
@@ -165,6 +182,11 @@ class TaskQueue(object):
 			self.not_empty.release()
 
 	def put(self, task):
+		""" 
+		Put a task in the queue.
+
+		:param task: A task to be put in the queue.
+		"""
 		if not isinstance(task, Task):
 			raise TypeError('argument 1 task must be Task instance')
 		with self.not_full:
@@ -174,6 +196,11 @@ class TaskQueue(object):
 			self.not_empty.notify()
 
 	def remove(self, task):
+		"""
+		Remove a task from the queue.
+
+		:param task: A task to be removed from the queue.
+		"""
 		with self.mutex:
 			self.queue.remove(task)
 			self.unfinished_tasks += 1
@@ -218,7 +245,10 @@ class Task(object):
 		self._ready = ready_event
 
 class ShutdownTask(Task):
-	""" Dummy task used for signaling a shutdown within the queue. """
+	""" 
+	Dummy task used for signaling a shutdown within the queue
+	to ensure proper exit.
+	"""
 	pass
 
 class TransferTask(Task):
@@ -260,9 +290,17 @@ class TransferTask(Task):
 		return min(int(percent * 100), 100)
 
 class DownloadTask(TransferTask):
+	"""
+	Subclass of TransferTask that indicates
+	the task is downloading files.
+	"""
 	transfer_direction = 'download'
 
 class UploadTask(TransferTask):
+	"""
+	Subclass of TransferTask that indicates
+	the task is uploading files.
+	"""
 	transfer_direction = 'upload'
 
 class TransferDirectoryTask(TransferTask):
@@ -275,9 +313,17 @@ class TransferDirectoryTask(TransferTask):
 	empty = False
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
+	"""
+	Subclass of DownloadTask and TransferDirectoryTask that indicates
+	the task is downloading folders.
+	"""
 	pass
 
 class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
+	"""
+	Subclass of UploadTask and TransferDirectoryTask that indicates
+	the task is uploading folders.
+	"""
 	pass
 
 class StatusDisplay(object):
@@ -472,6 +518,7 @@ class DirectoryBase(object):
 		self.application = application
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
 		self.default_directory = default_directory
+		self.cwd = self.default_directory
 		self.col_name = Gtk.CellRendererText()
 		self.col_name.connect('edited', self.signal_text_edited)
 		col_text = Gtk.CellRendererText()
@@ -499,7 +546,7 @@ class DirectoryBase(object):
 
 		self.local_hidden = True
 		self._get_popup_menu()
-		self.load_dirs(default_directory)
+		self.load_dirs(self.cwd)
 
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
@@ -510,8 +557,6 @@ class DirectoryBase(object):
 			"Are you sure you want to delete the selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file')
 		)
 		if confirmed:
-			# If the selection is parentless, a different refresh method must be used to show changes
-			self.parentless = bool(self._tv_model.iter_parent(treeiter))
 			self.delete(model, treeiter)
 
 	def _get_popup_menu(self):
@@ -570,9 +615,23 @@ class DirectoryBase(object):
 		return perm
 
 	def get_is_folder(self, fullname):
+		"""
+		Checks if the given path is for a folder.
+
+		:param str fullname: The path to be checked.
+		:return bool: True if the path is a folder, false if otherwise.
+		"""
 		return stat.S_ISDIR(self.stat(fullname).st_mode)
 
 	def get_file_size(self, fullname, stat_override=None):
+		""" 
+		Gets the file size of a given file.
+
+		:param str fullname: The path of the file to be checked.
+		:param stat_override: A keyword arguement used to override the native stat function
+		used by the Class.
+		:return int: A file size in bytes.
+		"""
 		if stat_override is not None:
 			return stat_override(fullname).st_size
 		return self.stat(fullname).st_size
@@ -595,9 +654,13 @@ class DirectoryBase(object):
 			self._delete_selection()
 
 	def rename(self, treeiter):
+		"""
+		Rename a specific row in the TreeView.
+
+		:param treeiter: A TreeIter pointing to the selected row.
+		"""
 		path = self._tv_model.get_path(treeiter)
 		parent = self._tv_model.iter_parent(treeiter)
-		self.parentless = not bool(parent)
 		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
 		self.treeview.set_cursor(path, col, True)
@@ -622,33 +685,50 @@ class DirectoryBase(object):
 		self._tv_model.remove(self._tv_model.iter_children(treeiter))
 
 	def load_dirs(self, path, parent=None):
+		"""
+		A method for loading the contents of a given path.
+
+		:param path: The absolute path to be loaded from.
+		:param parent: The TreeIter parent of the path, to be used in
+		creating the TreeModel.
+		"""
 		for name in self._yield_dir_list(path):
-			if self.local_hidden and name.startswith('.'):
-				continue
-			if path.endswith('/'):
-				fullname = path + name
-			else:
-				fullname = path + '/' + name
-			try:
-				perm = self._check_perm(fullname)
-				raw_time = self._get_raw_time(fullname)
-				date = datetime.datetime.fromtimestamp(raw_time)
-				date_modified = '   ' + utilities.format_datetime(date)
-				is_folder = self.get_is_folder(fullname)
-			except (OSError, IOError):
-				icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-				self._tv_model.append(parent, [name, icon, fullname, None, None, None, None])
-				continue
-			if is_folder:
-				icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
-				current = self._tv_model.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
-			else:
-				file_size = self.get_file_size(fullname)
-				hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
-				icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
-				current = self._tv_model.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
-			if is_folder:
-				self._tv_model.append(current, [None, None, None, None, None, None, None])
+			self.create_model_entry(path, parent, name)
+
+	def create_model_entry(self, path, parent, name):
+		"""
+		Creates a row in the directory model containing a file or directory
+		with its respective name, icon, size, date, and permissions.
+
+		:param str path: The filepath of the folder the file is in.
+		:param parent: A TreeIter object pointing to the parent node.
+		:param str name: The name of the file.
+		"""
+		if self.local_hidden and name.startswith('.'):
+			return
+		if not path.endswith('/'):
+			path = path + '/'
+		fullname = path + name
+		try:
+			perm = self._check_perm(fullname)
+			raw_time = self._get_raw_time(fullname)
+			date = datetime.datetime.fromtimestamp(raw_time)
+			date_modified = '   ' + utilities.format_datetime(date)
+			is_folder = self.get_is_folder(fullname)
+		except (OSError, IOError):
+			icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
+			self._tv_model.append(parent, [name, icon, fullname, None, None, None, None])
+			return
+		if is_folder:
+			icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
+			current = self._tv_model.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
+		else:
+			file_size = self.get_file_size(fullname)
+			hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
+			icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
+			current = self._tv_model.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
+		if is_folder:
+			self._tv_model.append(current, [None, None, None, None, None, None, None])
 
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
 		self.local_hidden = not self.local_hidden
@@ -657,13 +737,54 @@ class DirectoryBase(object):
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
 
-	def refresh(self):
+	def refresh(self, node='/'):
+		"""
+		Updates the model to reflect additions and removals from other commands.
+
+		:param str node: Keyword arguement that shows the path to be refreshed.
+		"""
+		node = os.path.abspath(node)
 		model = self._tv_model
 		exp_lines = []
-		model.foreach(lambda _, path, __: exp_lines.append(path) if self.treeview.row_expanded(path) else 0)
-		self.treeview.collapse_all()
+		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
+		_iter = model.get_iter_first()
+		path = model.get_path(_iter)
+		counter = 1
+		if model[path][2].startswith(node):
+			exp_lines.insert(0, Gtk.TreeRowReference(model, path))
+			counter = 0
 		for path in exp_lines:
-			self.treeview.expand_row(path, False)
+			path = path.get_path()
+			old_dir_list = []
+			parent = model.get_iter(path)
+			if counter == 0:
+				child = parent
+				parent = None
+				parsed_name = '/'.join(model[path][2].split('/')[:-1])
+				parsed_name = parsed_name if parsed_name != '' else self.cwd
+				parent_path = parsed_name
+				dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(parent_path, hide=self.local_hidden)]
+			else:
+				child = model.iter_children(parent)
+				parent_path = model[parent][2]
+				dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(model[path][2], hide=self.local_hidden)]
+			while child is not None:
+				old_dir_list.append((model[child][2], Gtk.TreeRowReference(model, model.get_path(child))))
+				child = model.iter_next(child)
+			# this is where we add new entries to the model
+			for dir in dir_list:
+				if not dir.startswith(node):
+					continue
+				if dir not in [name_and_ref[0] for name_and_ref in old_dir_list]:
+					self.create_model_entry(parent_path, parent, dir.split('/')[-1])
+			# this is where we remove missing entries from the model
+			for name_and_ref in old_dir_list:
+				dir = name_and_ref[0]
+				if not dir.startswith(node):
+					continue
+				if dir not in dir_list:
+					model.remove(model.get_iter(name_and_ref[1].get_path()))
+			counter += 1
 
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
@@ -689,7 +810,7 @@ class DirectoryBase(object):
 		_iter = self._tv_model.get_iter(path)
 		parent = self._tv_model.iter_parent(_iter)
 		if parent is None:
-			new_path = self.default_directory + '/' + text
+			new_path = self.cwd + '/' + text
 		else:
 			new_path = self._tv_model[parent][2] + '/' + text
 		text = text.strip()
@@ -712,9 +833,6 @@ class DirectoryBase(object):
 			except (OSError, IOError):
 				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error creating file')
 		self.refresh()
-		if self.parentless:
-			self._tv_model.clear()
-			self.load_dirs(self.default_directory)
 
 	def signal_menu_activate_delete_prompt(self, _):
 		self._delete_selection()
@@ -730,9 +848,12 @@ class LocalDirectory(DirectoryBase):
 		self.stat = os.stat
 		super(LocalDirectory, self).__init__(builder, application, os.path.abspath(os.sep))
 
-	def _yield_dir_list(self, path):
+	def _yield_dir_list(self, path, hide=False):
 		for name in os.listdir(path):
-			yield name
+			if hide and name.startswith('.'):
+				pass
+			else:
+				yield name
 
 	def _already_exists(self, path):
 		return os.path.isdir(path)
@@ -743,31 +864,74 @@ class LocalDirectory(DirectoryBase):
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
+	def change_cwd(self, new_dir):
+		"""
+		Changes current working directory to given parameter.
+
+		:param str new_dir: The directory to change the CWD to.
+		"""
+		self.cwd = new_dir
+		os.chdir(self.cwd)
+
 	@handle_permission_denied
 	def _make_file(self, path):
 		os.makedirs(path)
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
+		"""
+		Deletes the selected file.
+
+		:param model: The TreeModel to be used.
+		:param treeiter: The TreeIter that points to
+		the selected file.
+		"""
 		if model[treeiter][5] == -1:
 			shutil.rmtree(model[treeiter][2])
 		else:
 			os.remove(model[treeiter][2])
 		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
 		self.refresh()
-		if self.parentless:
-			self._tv_model.clear()
-			self.load_dirs(self.default_directory)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
+		"""
+		Removes a folder given its absolute path.
+
+		:param name: The path of the folder to be removed.
+		"""
 		shutil.rmtree(name)
 
 	@handle_permission_denied
 	def remove_by_file_name(self, name):
+		"""
+		Removes a file given its absolute path.
+
+		:param name: The path of the file to be removed.
+		"""
 		os.remove(name)
 
+	def get_abs_path(self, path):
+		"""
+		Get the absolute path of a given path.
+
+		:param path: The path to get the absolute path from.
+		:return str: The absolute path of the path.
+		"""
+		return os.path.abspath(path)
+
 	def walk(self, src_file, src, commands, local_name, old_files):
+		"""
+		Walk through a given directory and return all subdirectories and subfiles
+		in a format parsed for transfer.
+
+		:param str src_file: The Directory to be traversed through.
+		:param commands: The list to be updated with the file list.
+		:param str local_name: The name selected by the user, used 
+		to modify the path to be relative to selected directory.
+		:param old_file: Dictionary used to keep track of the original
+		file names.
+		"""
 		for walker in os.walk(src_file):
 			walker = list(walker)
 			temp = walker[0].split('/')
@@ -791,9 +955,12 @@ class RemoteDirectory(DirectoryBase):
 		self.stat = ftp.stat
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'])
 
-	def _yield_dir_list(self, path):
+	def _yield_dir_list(self, path, hide=False):
 		for name in self.ftp.listdir(path):
-			yield name
+			if hide and name.startswith('.'):
+				pass
+			else:
+				yield name
 
 	def _already_exists(self, path):
 		try:
@@ -808,6 +975,15 @@ class RemoteDirectory(DirectoryBase):
 	def _rename_file(self, _iter, path):
 		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
+	def change_cwd(self, new_dir):
+		"""
+		Changes current working directory to given parameter.
+
+		:param str new_dir: The directory to change the CWD to.
+		"""
+		self.cwd = new_dir
+		self.ftp.chdir(self.cwd)
+
 	@handle_permission_denied
 	def _make_file(self, path, ftp=None):
 		# If method called when self.ftp is busy, alternate ftp is specified, prevents Garbage Packet Error
@@ -817,6 +993,13 @@ class RemoteDirectory(DirectoryBase):
 
 	@handle_permission_denied
 	def delete(self, model, treeiter):
+		"""
+		Deletes the selected file.
+
+		:param model: The TreeModel to be used.
+		:param treeiter: The TreeIter that points to
+		the selected file.
+		"""
 		name = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
 		if self.get_is_folder(name):
 			if not self.remove_by_folder_name(name):
@@ -825,12 +1008,14 @@ class RemoteDirectory(DirectoryBase):
 			return
 		gui_utilities.show_dialog_warning('Successfully deleted ' + name, self.application.get_active_window())
 		self.refresh()
-		if self.parentless:
-			self._tv_model.clear()
-			self.load_dirs(self.default_directory)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
+		"""
+		Removes a folder given its absolute path.
+
+		:param name: The path of the folder to be removed.
+		"""
 		# with paramiko, you cannot remove populated dir, so recursive method utilized
 		for path in self._yield_dir_list(name):
 			new_path = os.path.join(name, path)
@@ -842,9 +1027,34 @@ class RemoteDirectory(DirectoryBase):
 
 	@handle_permission_denied
 	def remove_by_file_name(self, name):
+		"""
+		Removes a file given its absolute path.
+
+		:param name: The path of the file to be removed.
+		"""
 		self.ftp.remove(name)
 
+	def get_abs_path(self, path):
+		"""
+		Get the absolute path of a given path.
+
+		:param path: The path to get the absolute path from.
+		:return str: The absolute path of the path.
+		"""
+		return os.path.join(self.cwd, path)
+
 	def walk(self, directory, src, commands, remote_name, old_files):
+		"""
+		Walk through a given directory and return all subdirectories and subfiles
+		in a format parsed for transfer.
+
+		:param str directory: The Directory to be traversed through.
+		:param commands: The list to be updated with the file list.
+		:param str remote_name: The name selected by the user, used 
+		to modify the path to be relative to selected directory.
+		:param old_file: Dictionary used to keep track of the original
+		file names.
+		"""
 		subdirs = []
 		files = []
 		temp = directory.split('/')
@@ -936,27 +1146,35 @@ class FileManager(object):
 			# the user has typed something into the combo box
 			new_dir = CURRENT_DIRECTORY
 			entry = combo.get_child().get_text()
-			if entry != PARENT_DIRECTORY and system._already_exists_all(entry) and entry != system.default_directory:
+			entry = system.get_abs_path(entry)
+			if entry != PARENT_DIRECTORY and system._already_exists_all(entry) and entry != system.cwd:
 				if system.get_is_folder(entry):
 					# if the entered string is valid
 					new_dir = entry
 		if new_dir != CURRENT_DIRECTORY:
 			if new_dir == PARENT_DIRECTORY:
-				split = system.default_directory.split('/')
+				split = system.cwd.split('/')
 				split = split[:-1]
 				new_dir = '/'.join(split)
 				if new_dir == '':
 					new_dir = '/'
-			system.default_directory = new_dir
+			system.change_cwd(new_dir)
 			system._tv_model.clear()
-			system.load_dirs(system.default_directory)
+			system.load_dirs(system.cwd)
 			model.clear()
 			self.render_dropdown(model, system)
 
 	def render_dropdown(self, model, system):
+		"""
+		Populates the dropdown menu with the CWD children.
+
+		:param model: The TreeModel being used.
+		:param system: The filesystem being used, either
+		self.local or self.remote
+		"""
 		model.append((PARENT_DIRECTORY,))
-		for _dir in system._yield_dir_list(system.default_directory):
-			filename = os.path.join(system.default_directory, _dir)
+		for _dir in system._yield_dir_list(system.cwd):
+			filename = os.path.join(system.cwd, _dir)
 			if 'r' not in system._check_perm(filename):
 				continue
 			elif not system.get_is_folder(filename):
@@ -966,6 +1184,12 @@ class FileManager(object):
 			model.append((filename,))
 
 	def render_menubar(self, menubar):
+		"""
+		Populates the menu-bar as well as sets the menu check-box values
+		to their defaults.
+
+		:param menubar: The menu-bar to populate.
+		"""
 		self.validate = False
 		menu_item = Gtk.CheckMenuItem.new_with_label('Checksum Validation')
 		menu_item.connect('toggled', self.signal_toggled_validate_checksums)
@@ -982,10 +1206,10 @@ class FileManager(object):
 		menubar.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Exit')
-		menu_item.connect('activate', self.shutdown)
+		menu_item.connect('activate', self.signal_shutdown_activate)
 		menubar.append(menu_item)
 
-	def shutdown(self, _):
+	def signal_shutdown_activate(self, _):
 		self.signal_window_destroy(None)
 		self.window.destroy()
 
@@ -1111,7 +1335,7 @@ class FileManager(object):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
-			local_file = self.local.default_directory
+			local_file = self.local.cwd
 			local_name = local_file.split('/')
 			local_name = local_name[-1]
 		else:
@@ -1121,7 +1345,7 @@ class FileManager(object):
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
-			remote_file = self.remote.default_directory
+			remote_file = self.remote.cwd
 			remote_name = remote_file.split('/')
 			remote_name = remote_name[-1]
 		else:
@@ -1154,6 +1378,17 @@ class FileManager(object):
 			self.handle_file_transfer(task_cls, local_file, src_file, dst_file, dst_dir, dst)
 
 	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir, dst):
+		"""
+		Handles the file transfer by stopping bad transfers, creating tasks for transfers,
+		and placing them in the queue.
+
+		:param task_cls: The type of task the transfer will be.
+		:param str local_file: The local file involved in the transfer.
+		:param str src_file: The file to be uploaded or downloaded.
+		:param str dst_file: The file to be created.
+		:param str dst_dir: The folder the file will be placed in.
+		:param dst: The filesystem of the destination.
+		"""
 		if issubclass(task_cls, DownloadTask):
 			if not os.access(dst_dir, os.W_OK):
 				gui_utilities.show_dialog_error(
@@ -1185,6 +1420,21 @@ class FileManager(object):
 		self.queue.put(file_task)
 
 	def handle_folder_transfer(self, task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file):
+		"""
+		Handles the folder transfer by stopping bad transfers, creating tasks for transfers,
+		and placing them in the queue.
+
+		:param task_cls: The type of task the transfer will be.
+		:param str remote_name: The name of the remote folder.
+		:param str local_name: The name of the local folder.
+		:param str local_file: The local folder involved in the transfer.
+		:param str remote_file: The remote folder involved in the transfer.
+		:param str src_file: The folder to be uploaded or downloaded.
+		:param str dst_file: The folder to be created.
+		:param str dst_dir: The folder the folder will be placed in.
+		:param src: The filesystem of the source.
+		:param dst: The filesystem of the destination.
+		"""
 		commands = []
 		old_files = {}
 		uload = False
