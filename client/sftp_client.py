@@ -29,8 +29,8 @@ gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
-	""" 
-	A function used to generate a generic treeview column. 
+	"""
+	A function used to generate a generic treeview column.
 
 	:param str name: The name of the column.
 	:param renderer: The Gtk renderer to be used for the column.
@@ -48,7 +48,7 @@ def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False)
 	return tv_col
 
 def handle_permission_denied(function, *args, **kwargs):
-	""" 
+	"""
 	Handles Permissions Denied errors when performing actions on files or folders.
 
 	:param function: A function to be tested for IOErrors and OSErrors.
@@ -79,7 +79,7 @@ class Plugin(plugins.ClientPlugin):
 	homepage = 'https://github.com/securestate/king-phisher'
 
 	def initialize(self):
-		""" Connects to the start SFTP Client Signal to the plugin and checks for .ui file. """
+		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
@@ -92,7 +92,7 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def finalize(self):
-		""" Allows the window to be properly closed upon the deactivation of the plugin. """
+		"""Allows the window to be properly closed upon the deactivation of the plugin."""
 		if self.sftp_window is not None:
 			self.sftp_window.destroy()
 
@@ -134,8 +134,8 @@ class Plugin(plugins.ClientPlugin):
 
 class TaskQueue(object):
 	"""
-	Task queue used for transfer tasks that handles thread and task
-	management in a way to prevent errors.
+	Task queue used for transfer tasks that handles thread and task management
+	in a way to prevent errors.
 	"""
 	def __init__(self):
 		self.mutex = threading.RLock()
@@ -166,7 +166,7 @@ class TaskQueue(object):
 				while not self._qsize_ready():
 					self.not_empty.wait()
 			elif timeout < 0:
-				raise ValueError("'timeout' must be a non-negative number")
+				raise ValueError('\'timeout\' must be a non-negative number')
 			else:
 				endtime = time() + timeout  # pylint: disable = not-callable
 				while not self._qsize_ready():
@@ -182,7 +182,7 @@ class TaskQueue(object):
 			self.not_empty.release()
 
 	def put(self, task):
-		""" 
+		"""
 		Put a task in the queue.
 
 		:param task: A task to be put in the queue.
@@ -208,8 +208,7 @@ class TaskQueue(object):
 
 class Task(object):
 	"""
-	Generic task class that contains information about task state
-	and readiness.
+	Generic task class that contains information about task state and readiness.
 	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending')
 	_ready_states = ('Pending',)
@@ -245,16 +244,16 @@ class Task(object):
 		self._ready = ready_event
 
 class ShutdownTask(Task):
-	""" 
-	Dummy task used for signaling a shutdown within the queue
-	to ensure proper exit.
+	"""
+	Dummy task used to signal the queue to shutdown.
 	"""
 	pass
 
 class TransferTask(Task):
 	"""
-	Task used to model transfers. Each task is put in the queue where it will be pass into the
-	_transfer method of the FileManager class for the transfer to occur.
+	Task used to model transfers. Each task is put in the queue where it will be
+	pass into the _transfer method of the FileManager class for the transfer to
+	occur.
 	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
 	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents')
@@ -314,23 +313,23 @@ class TransferDirectoryTask(TransferTask):
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	"""
-	Subclass of DownloadTask and TransferDirectoryTask that indicates
-	the task is downloading folders.
+	Subclass of DownloadTask and TransferDirectoryTask that indicates the task
+	is downloading folders.
 	"""
 	pass
 
 class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	"""
-	Subclass of UploadTask and TransferDirectoryTask that indicates
-	the task is uploading folders.
+	Subclass of UploadTask and TransferDirectoryTask that indicates the task is
+	uploading folders.
 	"""
 	pass
 
 class StatusDisplay(object):
 	"""
-	Class representing the bottom treeview of the GUI. This contains the logging and graphical
-	representation of all queued transfers. This display is updated every 250 milliseconds
-	and otherwise only updated with GLib.idle_add.
+	Class representing the bottom treeview of the GUI. This contains the logging
+	and graphical representation of all queued transfers. This display is
+	updated every 250ms and otherwise only updated with GLib.idle_add.
 	"""
 	def __init__(self, builder, queue):
 		self.builder = builder
@@ -511,8 +510,8 @@ class StatusDisplay(object):
 
 class DirectoryBase(object):
 	"""
-	Base directory object that is used by both the remote and
-	local directory to get and render directory data.
+	Base directory object that is used by both the remote and local directory to
+	get and render directory data.
 	"""
 	def __init__(self, builder, application, default_directory):
 		self.application = application
@@ -614,6 +613,17 @@ class DirectoryBase(object):
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
 
+	def change_cwd(self, new_dir):
+		"""
+		Changes current working directory to given parameter.
+
+		:param str new_dir: The directory to change the CWD to.
+		"""
+		self.cwd = new_dir
+		self._chdir(self.cwd)
+		self._tv_model.clear()
+		self.load_dirs(new_dir)
+
 	def get_is_folder(self, fullname):
 		"""
 		Checks if the given path is for a folder.
@@ -624,12 +634,11 @@ class DirectoryBase(object):
 		return stat.S_ISDIR(self.stat(fullname).st_mode)
 
 	def get_file_size(self, fullname, stat_override=None):
-		""" 
+		"""
 		Gets the file size of a given file.
 
 		:param str fullname: The path of the file to be checked.
-		:param stat_override: A keyword arguement used to override the native stat function
-		used by the Class.
+		:param stat_override: A keyword arguement used to override the native stat function used by the class.
 		:return int: A file size in bytes.
 		"""
 		if stat_override is not None:
@@ -697,8 +706,8 @@ class DirectoryBase(object):
 
 	def create_model_entry(self, path, parent, name):
 		"""
-		Creates a row in the directory model containing a file or directory
-		with its respective name, icon, size, date, and permissions.
+		Creates a row in the directory model containing a file or directory with
+		its respective name, icon, size, date, and permissions.
 
 		:param str path: The filepath of the folder the file is in.
 		:param parent: A TreeIter object pointing to the parent node.
@@ -846,6 +855,7 @@ class LocalDirectory(DirectoryBase):
 	treeview_name = 'treeview_local'
 	def __init__(self, builder, application):
 		self.stat = os.stat
+		self._chdir = os.chdir
 		super(LocalDirectory, self).__init__(builder, application, os.path.abspath(os.sep))
 
 	def _yield_dir_list(self, path, hide=False):
@@ -863,15 +873,6 @@ class LocalDirectory(DirectoryBase):
 
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
-
-	def change_cwd(self, new_dir):
-		"""
-		Changes current working directory to given parameter.
-
-		:param str new_dir: The directory to change the CWD to.
-		"""
-		self.cwd = new_dir
-		os.chdir(self.cwd)
 
 	@handle_permission_denied
 	def _make_file(self, path):
@@ -922,12 +923,12 @@ class LocalDirectory(DirectoryBase):
 
 	def walk(self, src_file, src, commands, local_name, old_files):
 		"""
-		Walk through a given directory and return all subdirectories and subfiles
-		in a format parsed for transfer.
+		Walk through a given directory and return all subdirectories and
+		subfiles in a format parsed for transfer.
 
 		:param str src_file: The Directory to be traversed through.
 		:param commands: The list to be updated with the file list.
-		:param str local_name: The name selected by the user, used 
+		:param str local_name: The name selected by the user, used
 		to modify the path to be relative to selected directory.
 		:param old_file: Dictionary used to keep track of the original
 		file names.
@@ -944,8 +945,8 @@ class LocalDirectory(DirectoryBase):
 
 class RemoteDirectory(DirectoryBase):
 	"""
-	Remote Directory object that defines private methods for rendering remote data
-	using Paramiko's SFTP functionality.
+	Remote Directory object that defines private methods for rendering remote
+	data using Paramiko's SFTP functionality.
 	"""
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
@@ -953,6 +954,7 @@ class RemoteDirectory(DirectoryBase):
 		self.ftp = ftp
 		self.ssh = ssh
 		self.stat = ftp.stat
+		self._chdir = self.ftp.chdir
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'])
 
 	def _yield_dir_list(self, path, hide=False):
@@ -974,15 +976,6 @@ class RemoteDirectory(DirectoryBase):
 
 	def _rename_file(self, _iter, path):
 		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
-
-	def change_cwd(self, new_dir):
-		"""
-		Changes current working directory to given parameter.
-
-		:param str new_dir: The directory to change the CWD to.
-		"""
-		self.cwd = new_dir
-		self.ftp.chdir(self.cwd)
 
 	@handle_permission_denied
 	def _make_file(self, path, ftp=None):
@@ -1045,12 +1038,12 @@ class RemoteDirectory(DirectoryBase):
 
 	def walk(self, directory, src, commands, remote_name, old_files):
 		"""
-		Walk through a given directory and return all subdirectories and subfiles
-		in a format parsed for transfer.
+		Walk through a given directory and return all subdirectories and
+		subfiles in a format parsed for transfer.
 
 		:param str directory: The Directory to be traversed through.
 		:param commands: The list to be updated with the file list.
-		:param str remote_name: The name selected by the user, used 
+		:param str remote_name: The name selected by the user, used
 		to modify the path to be relative to selected directory.
 		:param old_file: Dictionary used to keep track of the original
 		file names.
@@ -1088,8 +1081,9 @@ class RemoteDirectory(DirectoryBase):
 
 class FileManager(object):
 	"""
-	File manager that manages the Transfer Queue by adding new tasks and handling
-	tasks put in, as well as handles communication between all the other classes.
+	File manager that manages the Transfer Queue by adding new tasks and
+	handling tasks put in, as well as handles communication between all the
+	other classes.
 	"""
 	def __init__(self, application, ssh):
 		self.ssh = ssh
@@ -1159,8 +1153,6 @@ class FileManager(object):
 				if new_dir == '':
 					new_dir = '/'
 			system.change_cwd(new_dir)
-			system._tv_model.clear()
-			system.load_dirs(system.cwd)
 			model.clear()
 			self.render_dropdown(model, system)
 
@@ -1169,8 +1161,8 @@ class FileManager(object):
 		Populates the dropdown menu with the CWD children.
 
 		:param model: The TreeModel being used.
-		:param system: The filesystem being used, either
-		self.local or self.remote
+		:type model: :py:class:`Gtk.TreeModel`
+		:param system: The filesystem being used, either self.local or self.remote
 		"""
 		model.append((PARENT_DIRECTORY,))
 		for _dir in system._yield_dir_list(system.cwd):
@@ -1185,8 +1177,8 @@ class FileManager(object):
 
 	def render_menubar(self, menubar):
 		"""
-		Populates the menu-bar as well as sets the menu check-box values
-		to their defaults.
+		Populates the menu-bar as well as sets the menu check-box values to
+		their defaults.
 
 		:param menubar: The menu-bar to populate.
 		"""
@@ -1276,15 +1268,16 @@ class FileManager(object):
 				pass
 			else:
 				task.state = 'Completed'
-				if self.validate:
-					src_file_h.seek(0)
-					dst_file_h.seek(0)
-					src_hash = hashlib.md5(src_file_h.read()).hexdigest()
-					dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
-					if src_hash == dst_hash:
-						logger.info("{0} and {1} have been validated with a sum of {2}".format(task.local_path, task.remote_path, src_hash))
-					else:
-						logger.warning("{0} and {1} were not properly transferred with the sums {2} and {3}".format(task.local_path, task.remote_path, src_hash, dst_hash))
+				#if self.validate:
+					# todo: if server-side hashing is not supported then skip the validation
+					#src_file_h.seek(0)
+					#dst_file_h.seek(0)
+					#src_hash = hashlib.md5(src_file_h.read()).hexdigest()
+					#dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
+					#if src_hash == dst_hash:
+						#logger.info("{0} and {1} have been validated with a sum of {2}".format(task.local_path, task.remote_path, src_hash))
+					#else:
+						#logger.warning("{0} and {1} were not properly transferred with the sums {2} and {3}".format(task.local_path, task.remote_path, src_hash, dst_hash))
 				if task.parents:
 					for parent_task in task.parents:
 						parent_task.transferred += 1
@@ -1379,8 +1372,8 @@ class FileManager(object):
 
 	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir, dst):
 		"""
-		Handles the file transfer by stopping bad transfers, creating tasks for transfers,
-		and placing them in the queue.
+		Handles the file transfer by stopping bad transfers, creating tasks for
+		transfers, and placing them in the queue.
 
 		:param task_cls: The type of task the transfer will be.
 		:param str local_file: The local file involved in the transfer.
@@ -1421,8 +1414,8 @@ class FileManager(object):
 
 	def handle_folder_transfer(self, task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file):
 		"""
-		Handles the folder transfer by stopping bad transfers, creating tasks for transfers,
-		and placing them in the queue.
+		Handles the folder transfer by stopping bad transfers, creating tasks
+		for transfers, and placing them in the queue.
 
 		:param task_cls: The type of task the transfer will be.
 		:param str remote_name: The name of the remote folder.
