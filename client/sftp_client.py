@@ -325,6 +325,28 @@ class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	"""
 	pass
 
+class DelayedChangedSignal(object):
+	def __init__(self, handler, delay=500):
+		self._handler = handler
+		self.delay = delay
+		self._lock = threading.RLock()
+		self._event_id = None
+
+	def __call__(self, *args):
+		return self.changed(*args)
+
+	def _changed(self, args):
+		with self._lock:
+			self._handler(*args)
+			self._event_id = None
+		return False
+
+	def changed(self, *args):
+		with self._lock:
+			if self._event_id is not None:
+				GLib.source_remove(self._event_id)
+			self._event_id = GLib.timeout_add(self.delay, self._changed, args)
+
 class StatusDisplay(object):
 	"""
 	Class representing the bottom treeview of the GUI. This contains the logging
@@ -334,8 +356,8 @@ class StatusDisplay(object):
 	def __init__(self, builder, queue):
 		self.builder = builder
 		self.queue = queue
-		self.scroll = self.builder.get_object('logger_scroll')
-		self.treeview_transfer = self.builder.get_object('SFTPClientGUI.treeview_transfer')
+		self.scroll = self.builder.get_object('scrolledwindow_transfer_statuses')
+		self.treeview_transfer = self.builder.get_object('treeview_transfer_statuses')
 		self._tv_lock = threading.RLock()
 		gsrc_id = GLib.timeout_add(250, self._sync_view, priority=GLib.PRIORITY_DEFAULT_IDLE)  # 250 milliseconds
 		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
@@ -513,6 +535,7 @@ class DirectoryBase(object):
 	Base directory object that is used by both the remote and local directory to
 	get and render directory data.
 	"""
+	root_directory = '/'
 	def __init__(self, builder, application, default_directory):
 		self.application = application
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
@@ -543,6 +566,17 @@ class DirectoryBase(object):
 		self._tv_model = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
 		self.treeview.set_model(self._tv_model)
 
+		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox
+		self.render_dropdown(self._wdcb_model)
+		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
+		self.wdcb_dropdown.set_model(self._wdcb_model)
+		self.wdcb_dropdown.set_entry_text_column(0)
+		for row in self._wdcb_model:
+			if row[0] == default_directory:
+				self.wdcb_dropdown.set_active_iter(row.iter)
+				break
+		self.wdcb_dropdown.connect('changed', DelayedChangedSignal(self.signal_combo_changed))
+
 		self.local_hidden = True
 		self._get_popup_menu()
 		self.load_dirs(self.cwd)
@@ -571,6 +605,10 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
 		self.popup_menu.append(menu_item)
+
+		#menu_item = Gtk.MenuItem.new_with_label('Set Working Directory')
+		#menu_item.connect('activate', self.signal_menu_set_working_directory)
+		#self.popup_menu.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Create Folder')
 		menu_item.connect('activate', self.signal_menu_activate_create_folder)
@@ -613,6 +651,19 @@ class DirectoryBase(object):
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
 
+	def render_dropdown(self, model):
+		"""
+		Populates the dropdown menu with the CWD children.
+
+		:param model: The TreeModel being used.
+		:type model: :py:class:`Gtk.ListStore`
+		:param system: The filesystem being used, either self.local or self.remote
+		"""
+		model.clear()
+		model.append((self.root_directory,))
+		if self.default_directory != self.root_directory:
+			model.append((self.default_directory,))
+
 	def change_cwd(self, new_dir):
 		"""
 		Changes current working directory to given parameter.
@@ -631,7 +682,11 @@ class DirectoryBase(object):
 		:param str fullname: The path to be checked.
 		:return bool: True if the path is a folder, false if otherwise.
 		"""
-		return stat.S_ISDIR(self.stat(fullname).st_mode)
+		try:
+			result = stat.S_ISDIR(self.stat(fullname).st_mode)
+		except (IOError, OSError):
+			return False
+		return result
 
 	def get_file_size(self, fullname, stat_override=None):
 		"""
@@ -644,6 +699,27 @@ class DirectoryBase(object):
 		if stat_override is not None:
 			return stat_override(fullname).st_size
 		return self.stat(fullname).st_size
+
+	@handle_permission_denied
+	def signal_combo_changed(self, combo):
+		new_dir = combo.get_active_text()
+		if not new_dir:
+			return
+		entry = combo.get_child()
+		if not self.get_is_folder(new_dir):
+			entry.set_property('primary-icon-name', 'dialog-warning')
+			return
+		if new_dir == CURRENT_DIRECTORY:
+			entry.set_property('primary-icon-name', 'gtk-apply')
+			return
+		if new_dir == PARENT_DIRECTORY:
+			new_dir = os.path.abspath(os.path.join(self.cwd, PARENT_DIRECTORY))
+		try:
+			self.change_cwd(new_dir)
+		except (IOError, OSError):
+			entry.set_property('primary-icon-name', 'dialog-warning')
+		else:
+			entry.set_property('primary-icon-name', 'gtk-apply')
 
 	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
@@ -853,10 +929,11 @@ class LocalDirectory(DirectoryBase):
 	"""
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
+	working_directory_combobox_name = 'comboboxtext_local_working_directory'
 	def __init__(self, builder, application):
 		self.stat = os.stat
 		self._chdir = os.chdir
-		super(LocalDirectory, self).__init__(builder, application, os.path.abspath(os.sep))
+		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'))
 
 	def _yield_dir_list(self, path, hide=False):
 		for name in os.listdir(path):
@@ -950,6 +1027,7 @@ class RemoteDirectory(DirectoryBase):
 	"""
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
+	working_directory_combobox_name = 'comboboxtext_remote_working_directory'
 	def __init__(self, builder, application, ftp, ssh):
 		self.ftp = ftp
 		self.ssh = ssh
@@ -1111,69 +1189,8 @@ class FileManager(object):
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
 
-		box_local = self.builder.get_object('box_local_dropdown')
-		self._local_dropdown_model = Gtk.ListStore(str)
-		self.render_dropdown(self._local_dropdown_model, self.local)
-		self.local_dropdown = Gtk.ComboBox.new_with_model_and_entry(self._local_dropdown_model)
-		self.local_dropdown.set_entry_text_column(0)
-		self.local_dropdown.connect('changed', self.signal_combo_changed, self.local)
-		box_local.pack_start(self.local_dropdown, True, True, 0)
-
-		box_remote = self.builder.get_object('box_remote_dropdown')
-		self._remote_dropdown_model = Gtk.ListStore(str)
-		self.render_dropdown(self._remote_dropdown_model, self.remote)
-		self.remote_dropdown = Gtk.ComboBox.new_with_model_and_entry(self._remote_dropdown_model)
-		self.remote_dropdown.set_entry_text_column(0)
-		self.remote_dropdown.connect('changed', self.signal_combo_changed, self.remote)
-		box_remote.pack_start(self.remote_dropdown, True, True, 0)
-
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
-
-	@handle_permission_denied
-	def signal_combo_changed(self, combo, system):
-		treeiter = combo.get_active_iter()
-		model = combo.get_model()
-		if treeiter is not None:
-			new_dir = model[treeiter][0]
-		else:
-			# the user has typed something into the combo box
-			new_dir = CURRENT_DIRECTORY
-			entry = combo.get_child().get_text()
-			entry = system.get_abs_path(entry)
-			if entry != PARENT_DIRECTORY and system._already_exists_all(entry) and entry != system.cwd:
-				if system.get_is_folder(entry):
-					# if the entered string is valid
-					new_dir = entry
-		if new_dir != CURRENT_DIRECTORY:
-			if new_dir == PARENT_DIRECTORY:
-				split = system.cwd.split('/')
-				split = split[:-1]
-				new_dir = '/'.join(split)
-				if new_dir == '':
-					new_dir = '/'
-			system.change_cwd(new_dir)
-			model.clear()
-			self.render_dropdown(model, system)
-
-	def render_dropdown(self, model, system):
-		"""
-		Populates the dropdown menu with the CWD children.
-
-		:param model: The TreeModel being used.
-		:type model: :py:class:`Gtk.TreeModel`
-		:param system: The filesystem being used, either self.local or self.remote
-		"""
-		model.append((PARENT_DIRECTORY,))
-		for _dir in system._yield_dir_list(system.cwd):
-			filename = os.path.join(system.cwd, _dir)
-			if 'r' not in system._check_perm(filename):
-				continue
-			elif not system.get_is_folder(filename):
-				continue
-			elif system.local_hidden and _dir.startswith('.'):
-				continue
-			model.append((filename,))
 
 	def render_menubar(self, menubar):
 		"""

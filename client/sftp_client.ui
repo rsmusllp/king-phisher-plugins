@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <object class="GtkImage" id="image2">
@@ -20,6 +20,9 @@
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_left">5</property>
+        <property name="margin_right">5</property>
+        <property name="margin_bottom">5</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkMenuBar" id="menubar1">
@@ -73,21 +76,21 @@
           <object class="GtkPaned" id="paned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
             <property name="orientation">vertical</property>
+            <property name="wide_handle">True</property>
             <child>
               <object class="GtkPaned" id="paned2">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="margin_bottom">5</property>
+                <property name="wide_handle">True</property>
                 <child>
                   <object class="GtkBox" id="box4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">3</property>
                     <child>
-                      <object class="GtkBox" id="SFTPClientGUI.box_local">
+                      <object class="GtkBox" id="box_local">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
@@ -112,7 +115,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="margin_bottom">5</property>
                             <property name="image">image2</property>
                             <property name="image_position">right</property>
                             <property name="always_show_image">True</property>
@@ -125,25 +127,6 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <object class="GtkBox" id="box_local_dropdown">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">3</property>
-                            <property name="margin_right">3</property>
-                            <property name="margin_top">3</property>
-                            <property name="margin_bottom">3</property>
-                            <property name="orientation">vertical</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -152,7 +135,26 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow" id="scrolledwindow1">
+                      <object class="GtkComboBoxText" id="comboboxtext_local_working_directory">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_right">3</property>
+                        <property name="has_entry">True</property>
+                        <child internal-child="entry">
+                          <object class="GtkEntry">
+                            <property name="can_focus">True</property>
+                            <property name="primary_icon_name">gtk-apply</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolledwindow_local_listing">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="shadow_type">in</property>
@@ -169,7 +171,7 @@
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -183,8 +185,9 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">3</property>
                     <child>
-                      <object class="GtkBox" id="box7">
+                      <object class="GtkBox" id="box_remote">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
@@ -194,7 +197,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="margin_bottom">5</property>
                             <property name="image">image3</property>
                             <property name="use_underline">True</property>
                             <property name="always_show_image">True</property>
@@ -222,25 +224,6 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <object class="GtkBox" id="box_remote_dropdown">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">3</property>
-                            <property name="margin_right">3</property>
-                            <property name="margin_top">3</property>
-                            <property name="margin_bottom">3</property>
-                            <property name="orientation">vertical</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -249,7 +232,26 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow" id="scrolledwindow3">
+                      <object class="GtkComboBoxText" id="comboboxtext_remote_working_directory">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="has_entry">True</property>
+                        <child internal-child="entry">
+                          <object class="GtkEntry">
+                            <property name="can_focus">True</property>
+                            <property name="margin_left">3</property>
+                            <property name="primary_icon_name">gtk-apply</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolledwindow_remote_listing">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="shadow_type">in</property>
@@ -266,7 +268,7 @@
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -282,7 +284,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box2">
+              <object class="GtkBox" id="box_transfers">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
@@ -302,14 +304,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="logger_scroll">
+                  <object class="GtkScrolledWindow" id="scrolledwindow_transfer_statuses">
                     <property name="width_request">500</property>
                     <property name="height_request">175</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="shadow_type">in</property>
                     <child>
-                      <object class="GtkTreeView" id="SFTPClientGUI.treeview_transfer">
+                      <object class="GtkTreeView" id="treeview_transfer_statuses">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="vscroll_policy">natural</property>
