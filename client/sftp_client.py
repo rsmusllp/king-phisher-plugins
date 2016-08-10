@@ -1,3 +1,4 @@
+import collections
 import datetime
 import errno
 import hashlib
@@ -112,7 +113,7 @@ class Plugin(plugins.ClientPlugin):
 			ssh = connection.client
 			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
 			try:
-				manager = FileManager(self.application, ssh)
+				manager = FileManager(self.application, ssh, self.config)
 			except paramiko.ssh_exception.ChannelException as error:
 				if len(error.args) == 2:
 					details = "SSH Channel Exception #{0} ({1})".format(*error.args)
@@ -536,11 +537,12 @@ class DirectoryBase(object):
 	get and render directory data.
 	"""
 	root_directory = '/'
-	def __init__(self, builder, application, default_directory):
+	def __init__(self, builder, application, default_directory, wd_history):
 		self.application = application
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
 		self.default_directory = default_directory
-		self.cwd = self.default_directory
+		self.wd_history = collections.deque(wd_history, maxlen=3)
+		self.cwd = None
 		self.col_name = Gtk.CellRendererText()
 		self.col_name.connect('edited', self.signal_text_edited)
 		col_text = Gtk.CellRendererText()
@@ -567,19 +569,14 @@ class DirectoryBase(object):
 		self.treeview.set_model(self._tv_model)
 
 		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox
-		self.render_dropdown(self._wdcb_model)
 		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
 		self.wdcb_dropdown.set_model(self._wdcb_model)
 		self.wdcb_dropdown.set_entry_text_column(0)
-		for row in self._wdcb_model:
-			if row[0] == default_directory:
-				self.wdcb_dropdown.set_active_iter(row.iter)
-				break
 		self.wdcb_dropdown.connect('changed', DelayedChangedSignal(self.signal_combo_changed))
 
 		self.local_hidden = True
 		self._get_popup_menu()
-		self.load_dirs(self.cwd)
+		self.change_cwd(default_directory)
 
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
@@ -606,9 +603,9 @@ class DirectoryBase(object):
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
 		self.popup_menu.append(menu_item)
 
-		#menu_item = Gtk.MenuItem.new_with_label('Set Working Directory')
-		#menu_item.connect('activate', self.signal_menu_set_working_directory)
-		#self.popup_menu.append(menu_item)
+		menu_item = Gtk.MenuItem.new_with_label('Set Working Directory')
+		menu_item.connect('activate', self.signal_menu_activate_set_working_directory)
+		self.popup_menu.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Create Folder')
 		menu_item.connect('activate', self.signal_menu_activate_create_folder)
@@ -651,29 +648,30 @@ class DirectoryBase(object):
 		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
 		return perm
 
-	def render_dropdown(self, model):
-		"""
-		Populates the dropdown menu with the CWD children.
-
-		:param model: The TreeModel being used.
-		:type model: :py:class:`Gtk.ListStore`
-		:param system: The filesystem being used, either self.local or self.remote
-		"""
-		model.clear()
-		model.append((self.root_directory,))
-		if self.default_directory != self.root_directory:
-			model.append((self.default_directory,))
-
 	def change_cwd(self, new_dir):
 		"""
 		Changes current working directory to given parameter.
 
 		:param str new_dir: The directory to change the CWD to.
 		"""
+		new_dir = os.path.normpath(new_dir)
+		if new_dir == self.cwd:
+			return
 		self.cwd = new_dir
 		self._chdir(self.cwd)
 		self._tv_model.clear()
 		self.load_dirs(new_dir)
+		# clear and rebuild the model
+		self._wdcb_model.clear()
+		self._wdcb_model.append((self.root_directory,))
+		if self.default_directory != self.root_directory:
+			self._wdcb_model.append((self.default_directory,))
+		if not new_dir in self.wd_history and gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir) is None:
+			self.wd_history.appendleft(new_dir)
+		for directory in self.wd_history:
+			self._wdcb_model.append((directory,))
+		active_iter = gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir)
+		self.wdcb_dropdown.set_active_iter(active_iter)
 
 	def get_is_folder(self, fullname):
 		"""
@@ -701,11 +699,11 @@ class DirectoryBase(object):
 		return self.stat(fullname).st_size
 
 	@handle_permission_denied
-	def signal_combo_changed(self, combo):
-		new_dir = combo.get_active_text()
+	def signal_combo_changed(self, combobox):
+		new_dir = combobox.get_active_text()
 		if not new_dir:
 			return
-		entry = combo.get_child()
+		entry = combobox.get_child()
 		if not self.get_is_folder(new_dir):
 			entry.set_property('primary-icon-name', 'dialog-warning')
 			return
@@ -715,7 +713,8 @@ class DirectoryBase(object):
 		if new_dir == PARENT_DIRECTORY:
 			new_dir = os.path.abspath(os.path.join(self.cwd, PARENT_DIRECTORY))
 		try:
-			self.change_cwd(new_dir)
+			with gui_utilities.gobject_signal_blocked(combobox, 'changed'):
+				self.change_cwd(new_dir)
 		except (IOError, OSError):
 			entry.set_property('primary-icon-name', 'dialog-warning')
 		else:
@@ -753,6 +752,12 @@ class DirectoryBase(object):
 
 	def signal_menu_activate_rename(self, _):
 		self._rename_selection()
+
+	def signal_menu_activate_set_working_directory(self, _):
+		model, treeiter = self.treeview.get_selection().get_selected()
+		if not treeiter:
+			return
+		self.change_cwd(model[treeiter][2])
 
 	def signal_tv_collapse_row(self, _, treeiter, treepath):
 		current = self._tv_model.iter_children(treeiter)
@@ -930,10 +935,11 @@ class LocalDirectory(DirectoryBase):
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
 	working_directory_combobox_name = 'comboboxtext_local_working_directory'
-	def __init__(self, builder, application):
+	def __init__(self, builder, application, config):
 		self.stat = os.stat
 		self._chdir = os.chdir
-		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'))
+		wd_history = config.get('directories', {}).get('local', [])
+		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'), wd_history)
 
 	def _yield_dir_list(self, path, hide=False):
 		for name in os.listdir(path):
@@ -1028,12 +1034,14 @@ class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
 	working_directory_combobox_name = 'comboboxtext_remote_working_directory'
-	def __init__(self, builder, application, ftp, ssh):
+	def __init__(self, builder, application, config, ftp, ssh):
 		self.ftp = ftp
 		self.ssh = ssh
 		self.stat = ftp.stat
 		self._chdir = self.ftp.chdir
-		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'])
+		wd_history = config.get('directories', {}).get('remote', {})
+		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
+		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
 
 	def _yield_dir_list(self, path, hide=False):
 		for name in self.ftp.listdir(path):
@@ -1163,9 +1171,10 @@ class FileManager(object):
 	handling tasks put in, as well as handles communication between all the
 	other classes.
 	"""
-	def __init__(self, application, ssh):
-		self.ssh = ssh
+	def __init__(self, application, ssh, config):
 		self.application = application
+		self.ssh = ssh
+		self.config = config
 		self.queue = TaskQueue()
 		self._threads = []
 		self._threads_max = 1
@@ -1182,8 +1191,8 @@ class FileManager(object):
 		self.menubar = self.builder.get_object('SFTPClientGUI.menu')
 		self.render_menubar(self.menubar)
 		self.status_display = StatusDisplay(self.builder, self.queue)
-		self.local = LocalDirectory(self.builder, self.application)
-		self.remote = RemoteDirectory(self.builder, self.application, ftp, ssh)
+		self.local = LocalDirectory(self.builder, self.application, config)
+		self.remote = RemoteDirectory(self.builder, self.application, config, ftp, ssh)
 		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer(UploadTask))
 		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
@@ -1340,6 +1349,12 @@ class FileManager(object):
 		for thread in self._threads:
 			thread.join()
 		self.ftp.close()
+		directories = self.config.get('directories', {})
+		directories['local'] = list(self.local.wd_history)
+		if not 'remote' in directories:
+			directories['remote'] = {}
+		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
+		self.config['directories'] = directories
 
 	def _queue_transfer(self, task_cls):
 		selection = self.local.treeview.get_selection()
