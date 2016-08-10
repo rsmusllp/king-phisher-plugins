@@ -32,33 +32,32 @@
               <object class="GtkMenuItem" id="menuitem1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_File</property>
+                <property name="label" translatable="yes">_Options</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="SFTPClientGUI.menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="menuitem4">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_Help</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu3">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
-                        <property name="label">gtk-about</property>
+                      <object class="GtkCheckMenuItem" id="menuitem_opts_transfer_hidden">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Transfer Hidden Files</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menuitem_exit">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Exit</property>
+                        <property name="use_underline">True</property>
                       </object>
                     </child>
                   </object>
@@ -141,9 +140,8 @@
                         <property name="margin_right">3</property>
                         <property name="has_entry">True</property>
                         <child internal-child="entry">
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="comboboxtext-entry1">
                             <property name="can_focus">True</property>
-                            <property name="primary_icon_name">gtk-apply</property>
                           </object>
                         </child>
                       </object>
@@ -237,10 +235,8 @@
                         <property name="can_focus">False</property>
                         <property name="has_entry">True</property>
                         <child internal-child="entry">
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="comboboxtext-entry2">
                             <property name="can_focus">True</property>
-                            <property name="margin_left">3</property>
-                            <property name="primary_icon_name">gtk-apply</property>
                           </object>
                         </child>
                       </object>

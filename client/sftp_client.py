@@ -379,6 +379,7 @@ class StatusDisplay(object):
 		col_bar.pack_start(progress, True)
 		col_bar.add_attribute(progress, 'value', 4)
 		col_bar.set_property('resizable', True)
+		col_bar.set_min_width(120)
 		self.treeview_transfer.append_column(col_bar)
 
 		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
@@ -581,6 +582,8 @@ class DirectoryBase(object):
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
+		if treeiter is None:
+			return
 		confirmed = gui_utilities.show_dialog_yes_no(
 			'Confirm Delete',
 			self.application.get_active_window(),
@@ -590,6 +593,7 @@ class DirectoryBase(object):
 			self.delete(model, treeiter)
 
 	def _get_popup_menu(self):
+		self._menu_items_req_selection = []
 		self.popup_menu = Gtk.Menu.new()
 		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
 		menu_item.connect('toggled', self.signal_menu_toggled_hidden_files)
@@ -598,6 +602,7 @@ class DirectoryBase(object):
 
 		self.menu_item_transfer = Gtk.MenuItem.new_with_label(self.transfer_direction.title())
 		self.popup_menu.append(self.menu_item_transfer)
+		self._menu_items_req_selection.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
@@ -606,6 +611,7 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Set Working Directory')
 		menu_item.connect('activate', self.signal_menu_activate_set_working_directory)
 		self.popup_menu.append(menu_item)
+		self._menu_items_req_selection.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Create Folder')
 		menu_item.connect('activate', self.signal_menu_activate_create_folder)
@@ -614,6 +620,7 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Rename')
 		menu_item.connect('activate', self.signal_menu_activate_rename)
 		self.popup_menu.append(menu_item)
+		self._menu_items_req_selection.append(menu_item)
 
 		menu_item = Gtk.SeparatorMenuItem()
 		self.popup_menu.append(menu_item)
@@ -621,6 +628,7 @@ class DirectoryBase(object):
 		menu_item = Gtk.MenuItem.new_with_label('Delete')
 		menu_item.connect('activate', self.signal_menu_activate_delete_prompt)
 		self.popup_menu.append(menu_item)
+		self._menu_items_req_selection.append(menu_item)
 
 		self.popup_menu.show_all()
 
@@ -722,6 +730,10 @@ class DirectoryBase(object):
 
 	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
+			_, treeiter = self.treeview.get_selection().get_selected()
+			sensitive = treeiter is not None
+			for menu_item in self._menu_items_req_selection:
+				menu_item.set_sensitive(sensitive)
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
@@ -870,6 +882,8 @@ class DirectoryBase(object):
 			# this is where we remove missing entries from the model
 			for name_and_ref in old_dir_list:
 				dir = name_and_ref[0]
+				if dir is None:
+					continue
 				if not dir.startswith(node):
 					continue
 				if dir not in dir_list:
@@ -964,18 +978,16 @@ class LocalDirectory(DirectoryBase):
 	@handle_permission_denied
 	def delete(self, model, treeiter):
 		"""
-		Deletes the selected file.
+		Delete the selected file or directory.
 
 		:param model: The TreeModel to be used.
-		:param treeiter: The TreeIter that points to
-		the selected file.
+		:param treeiter: The TreeIter that points to the selected file.
 		"""
 		if model[treeiter][5] == -1:
 			shutil.rmtree(model[treeiter][2])
 		else:
 			os.remove(model[treeiter][2])
-		gui_utilities.show_dialog_warning('Successfully deleted ' + model[treeiter][2], self.application.get_active_window())
-		self.refresh()
+		model.remove(treeiter)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -1073,20 +1085,18 @@ class RemoteDirectory(DirectoryBase):
 	@handle_permission_denied
 	def delete(self, model, treeiter):
 		"""
-		Deletes the selected file.
+		Delete the selected file or directory.
 
 		:param model: The TreeModel to be used.
-		:param treeiter: The TreeIter that points to
-		the selected file.
+		:param treeiter: The TreeIter that points to the selected file.
 		"""
-		name = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
+		name = model[treeiter][2]  # pylint: disable=unsubscriptable-object
 		if self.get_is_folder(name):
 			if not self.remove_by_folder_name(name):
 				return
 		elif not self.remove_by_file_name(name):
 			return
-		gui_utilities.show_dialog_warning('Successfully deleted ' + name, self.application.get_active_window())
-		self.refresh()
+		model.remove(treeiter)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -1188,8 +1198,6 @@ class FileManager(object):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(gtk_builder_file)
 		self.window = self.builder.get_object('SFTPClientGUI.window')
-		self.menubar = self.builder.get_object('SFTPClientGUI.menu')
-		self.render_menubar(self.menubar)
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application, config)
 		self.remote = RemoteDirectory(self.builder, self.application, config, ftp, ssh)
@@ -1197,45 +1205,16 @@ class FileManager(object):
 		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
-
+		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
+		menu_item.set_active(self.config.get('transfer_hidden', False))
+		menu_item.connect('toggled', self.signal_toggled_transfer_hidden)
+		menu_item = self.builder.get_object('menuitem_exit')
+		menu_item.connect('activate', lambda _: self.window.destroy())
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
-	def render_menubar(self, menubar):
-		"""
-		Populates the menu-bar as well as sets the menu check-box values to
-		their defaults.
-
-		:param menubar: The menu-bar to populate.
-		"""
-		self.validate = False
-		menu_item = Gtk.CheckMenuItem.new_with_label('Checksum Validation')
-		menu_item.connect('toggled', self.signal_toggled_validate_checksums)
-		self.validate_checksums = menu_item
-		menubar.append(menu_item)
-
-		self.transfer_hidden = True
-		menu_item = Gtk.CheckMenuItem.new_with_label('Transfer Hidden Files')
-		menu_item.connect('toggled', self.signal_toggled_transfer_hidden)
-		self.signal_toggled_transfer_hidden = menu_item
-		menubar.append(menu_item)
-
-		menu_item = Gtk.SeparatorMenuItem()
-		menubar.append(menu_item)
-
-		menu_item = Gtk.MenuItem.new_with_label('Exit')
-		menu_item.connect('activate', self.signal_shutdown_activate)
-		menubar.append(menu_item)
-
-	def signal_shutdown_activate(self, _):
-		self.signal_window_destroy(None)
-		self.window.destroy()
-
 	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
-		self.transfer_hidden = not self.transfer_hidden
-
-	def signal_toggled_validate_checksums(self, _):
-		self.validate = not self.validate
+		self.config['transfer_hidden'] = not self.config.get('transfer_hidden', False)
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
@@ -1294,16 +1273,6 @@ class FileManager(object):
 				pass
 			else:
 				task.state = 'Completed'
-				#if self.validate:
-					# todo: if server-side hashing is not supported then skip the validation
-					#src_file_h.seek(0)
-					#dst_file_h.seek(0)
-					#src_hash = hashlib.md5(src_file_h.read()).hexdigest()
-					#dst_hash = hashlib.md5(dst_file_h.read()).hexdigest()
-					#if src_hash == dst_hash:
-						#logger.info("{0} and {1} have been validated with a sum of {2}".format(task.local_path, task.remote_path, src_hash))
-					#else:
-						#logger.warning("{0} and {1} were not properly transferred with the sums {2} and {3}".format(task.local_path, task.remote_path, src_hash, dst_hash))
 				if task.parents:
 					for parent_task in task.parents:
 						parent_task.transferred += 1
@@ -1483,7 +1452,7 @@ class FileManager(object):
 			hidden = False
 			new_dir = dst_dir + '/' + command[0]
 			old_dir = old_files[command[0]]
-			if self.transfer_hidden:
+			if self.config['transfer_hidden']:
 				for part in command[0].split('/'):
 					if part.startswith('.'):
 						hidden = True
@@ -1521,7 +1490,7 @@ class FileManager(object):
 			for i in range(0, len(parents) - len(temp)):
 				parents.pop()
 			for _file in command[2]:
-				if _file.startswith('.') and self.transfer_hidden:
+				if _file.startswith('.') and not self.config['transfer_hidden']:
 					continue
 				new_file = new_dir + '/' + _file
 				old_file = old_files[command[0]] + '/' + _file
