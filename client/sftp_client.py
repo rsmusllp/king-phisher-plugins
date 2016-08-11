@@ -365,7 +365,7 @@ class StatusDisplay(object):
 
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
-		col = Gtk.TreeViewColumn('Direction')
+		col = Gtk.TreeViewColumn('')
 		col.pack_start(col_img, False)
 		col.add_attribute(col_img, 'pixbuf', 0)
 		self.treeview_transfer.append_column(col)
@@ -379,7 +379,7 @@ class StatusDisplay(object):
 		col_bar.pack_start(progress, True)
 		col_bar.add_attribute(progress, 'value', 4)
 		col_bar.set_property('resizable', True)
-		col_bar.set_min_width(120)
+		col_bar.set_min_width(125)
 		self.treeview_transfer.append_column(col_bar)
 
 		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
@@ -566,8 +566,19 @@ class DirectoryBase(object):
 		self.treeview.connect('key-press-event', self.signal_tv_key_press)
 		self.treeview.connect('row-expanded', self.signal_tv_expand_row)
 		self.treeview.connect('row-collapsed', self.signal_tv_collapse_row)
-		self._tv_model = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, GTYPE_LONG, str)
-		self.treeview.set_model(self._tv_model)
+		self._tv_model = Gtk.TreeStore(
+			str,               # 0 base name
+			GdkPixbuf.Pixbuf,  # 1 icon
+			str,               # 2 full path
+			str,               # 3 permissions
+			str,               # 4 human readable size
+			GTYPE_LONG,        # 5 size in bytes
+			str                # 6 modified timestamp
+		)
+		self._tv_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+		self._tv_model_filter = self._tv_model.filter_new()
+		self._tv_model_filter.set_visible_func(self._filter_entries)
+		self.treeview.set_model(Gtk.TreeModelSort(model=self._tv_model_filter))
 
 		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox
 		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
@@ -575,7 +586,7 @@ class DirectoryBase(object):
 		self.wdcb_dropdown.set_entry_text_column(0)
 		self.wdcb_dropdown.connect('changed', DelayedChangedSignal(self.signal_combo_changed))
 
-		self.local_hidden = True
+		self.show_hidden = False
 		self._get_popup_menu()
 		self.change_cwd(default_directory)
 
@@ -592,6 +603,14 @@ class DirectoryBase(object):
 		if confirmed:
 			self.delete(model, treeiter)
 
+	def _filter_entries(self, model, tree_iter, _):
+		basename = model[tree_iter][0]
+		if basename in (None, '.', '..'):
+			return True
+		if not self.show_hidden and basename.startswith('.'):
+			return False
+		return True
+
 	def _get_popup_menu(self):
 		self._menu_items_req_selection = []
 		self.popup_menu = Gtk.Menu.new()
@@ -602,7 +621,6 @@ class DirectoryBase(object):
 
 		self.menu_item_transfer = Gtk.MenuItem.new_with_label(self.transfer_direction.title())
 		self.popup_menu.append(self.menu_item_transfer)
-		self._menu_items_req_selection.append(menu_item)
 
 		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
@@ -806,8 +824,6 @@ class DirectoryBase(object):
 		:param parent: A TreeIter object pointing to the parent node.
 		:param str name: The name of the file.
 		"""
-		if self.local_hidden and name.startswith('.'):
-			return
 		if not path.endswith('/'):
 			path = path + '/'
 		fullname = path + name
@@ -833,8 +849,8 @@ class DirectoryBase(object):
 			self._tv_model.append(current, [None, None, None, None, None, None, None])
 
 	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
-		self.local_hidden = not self.local_hidden
-		self.refresh()
+		self.show_hidden = not self.show_hidden
+		self._tv_model_filter.refilter()
 
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
@@ -862,14 +878,12 @@ class DirectoryBase(object):
 			if counter == 0:
 				child = parent
 				parent = None
-				parsed_name = '/'.join(model[path][2].split('/')[:-1])
-				parsed_name = parsed_name if parsed_name != '' else self.cwd
-				parent_path = parsed_name
-				dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(parent_path, hide=self.local_hidden)]
+				parent_path = '/'.join(model[path][2].split('/')[:-1])
+				parent_path = parent_path or self.cwd
 			else:
 				child = model.iter_children(parent)
 				parent_path = model[parent][2]
-				dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(model[path][2], hide=self.local_hidden)]
+			dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
 			while child is not None:
 				old_dir_list.append((model[child][2], Gtk.TreeRowReference(model, model.get_path(child))))
 				child = model.iter_next(child)
@@ -955,12 +969,9 @@ class LocalDirectory(DirectoryBase):
 		wd_history = config.get('directories', {}).get('local', [])
 		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'), wd_history)
 
-	def _yield_dir_list(self, path, hide=False):
+	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
-			if hide and name.startswith('.'):
-				pass
-			else:
-				yield name
+			yield name
 
 	def _already_exists(self, path):
 		return os.path.isdir(path)
@@ -1055,12 +1066,9 @@ class RemoteDirectory(DirectoryBase):
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
 
-	def _yield_dir_list(self, path, hide=False):
+	def _yield_dir_list(self, path):
 		for name in self.ftp.listdir(path):
-			if hide and name.startswith('.'):
-				pass
-			else:
-				yield name
+			yield name
 
 	def _already_exists(self, path):
 		try:
