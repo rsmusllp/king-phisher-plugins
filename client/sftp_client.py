@@ -78,7 +78,7 @@ class Plugin(plugins.ClientPlugin):
 	create, and delete local and remote files on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-
+	req_min_version = '1.4.0b0'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
@@ -578,7 +578,8 @@ class DirectoryBase(object):
 		self._tv_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
 		self._tv_model_filter = self._tv_model.filter_new()
 		self._tv_model_filter.set_visible_func(self._filter_entries)
-		self.treeview.set_model(Gtk.TreeModelSort(model=self._tv_model_filter))
+		self._tv_model_sort = Gtk.TreeModelSort(model=self._tv_model_filter)
+		self.treeview.set_model(self._tv_model_sort)
 
 		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox
 		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
@@ -590,21 +591,38 @@ class DirectoryBase(object):
 		self._get_popup_menu()
 		self.change_cwd(default_directory)
 
+	def _check_perm(self, fullname):
+		mode = self.stat(fullname).st_mode
+		perm = ''
+		perm += 'r' if bool(mode & stat.S_IRUSR) else '-'
+		perm += 'w' if bool(mode & stat.S_IWUSR) else '-'
+		perm += 'x' if bool(mode & stat.S_IXUSR) else '-'
+
+		perm += 'r' if bool(mode & stat.S_IRGRP) else '-'
+		perm += 'w' if bool(mode & stat.S_IWGRP) else '-'
+		perm += 'x' if bool(mode & stat.S_IXGRP) else '-'
+
+		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
+		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
+		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
+		return perm
+
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
 			return
+		treeiter = self._treeiter_sort_to_model(treeiter)
 		confirmed = gui_utilities.show_dialog_yes_no(
 			'Confirm Delete',
 			self.application.get_active_window(),
-			"Are you sure you want to delete the selected {0}?".format('directory' if model[treeiter][5] == -1 else 'file')
+			"Are you sure you want to delete the selected {0}?".format('directory' if self._tv_model[treeiter][5] == -1 else 'file')
 		)
 		if confirmed:
-			self.delete(model, treeiter)
+			self.delete(treeiter)
 
-	def _filter_entries(self, model, tree_iter, _):
-		basename = model[tree_iter][0]
+	def _filter_entries(self, model, treeiter, _):
+		basename = model[treeiter][0]
 		if basename in (None, '.', '..'):
 			return True
 		if not self.show_hidden and basename.startswith('.'):
@@ -656,23 +674,18 @@ class DirectoryBase(object):
 	def _rename_selection(self):
 		selection = self.treeview.get_selection()
 		_, treeiter = selection.get_selected()
+		treeiter = self._treeiter_sort_to_model(treeiter)
 		self.rename(treeiter)
 
-	def _check_perm(self, fullname):
-		mode = self.stat(fullname).st_mode
-		perm = ''
-		perm += 'r' if bool(mode & stat.S_IRUSR) else '-'
-		perm += 'w' if bool(mode & stat.S_IWUSR) else '-'
-		perm += 'x' if bool(mode & stat.S_IXUSR) else '-'
+	def _treeiter_sort_to_model(self, sort_treeiter):
+		filter_treeiter = self._tv_model_sort.convert_iter_to_child_iter(sort_treeiter)
+		return self._tv_model_filter.convert_iter_to_child_iter(filter_treeiter)
 
-		perm += 'r' if bool(mode & stat.S_IRGRP) else '-'
-		perm += 'w' if bool(mode & stat.S_IWGRP) else '-'
-		perm += 'x' if bool(mode & stat.S_IXGRP) else '-'
-
-		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
-		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
-		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
-		return perm
+	def _treepath_sort_to_model(self, sort_treepath):
+		if isinstance(sort_treepath, str):
+			sort_treepath = Gtk.TreePath(sort_treepath)
+		filter_treepath = self._tv_model_sort.convert_path_to_child_path(sort_treepath)
+		return self._tv_model_filter.convert_path_to_child_path(filter_treepath)
 
 	def change_cwd(self, new_dir):
 		"""
@@ -683,8 +696,8 @@ class DirectoryBase(object):
 		new_dir = os.path.normpath(new_dir)
 		if new_dir == self.cwd:
 			return
+		self._chdir(new_dir)
 		self.cwd = new_dir
-		self._chdir(self.cwd)
 		self._tv_model.clear()
 		self.load_dirs(new_dir)
 		# clear and rebuild the model
@@ -773,11 +786,13 @@ class DirectoryBase(object):
 
 		:param treeiter: A TreeIter pointing to the selected row.
 		"""
-		path = self._tv_model.get_path(treeiter)
-		parent = self._tv_model.iter_parent(treeiter)
+		base_path = self._tv_model.get_path(treeiter)
+		filter_path = self._tv_model_filter.convert_child_path_to_path(base_path)
+		sort_path = self._tv_model_sort.convert_child_path_to_path(filter_path)
+
 		col = self.treeview.get_column(0)
 		self.col_name.set_property('editable', True)
-		self.treeview.set_cursor(path, col, True)
+		self.treeview.set_cursor(sort_path, col, True)
 		self.col_name.set_property('editable', False)
 
 	def signal_menu_activate_rename(self, _):
@@ -787,16 +802,19 @@ class DirectoryBase(object):
 		model, treeiter = self.treeview.get_selection().get_selected()
 		if not treeiter:
 			return
+		treeiter = self._treeiter_sort_to_model(treeiter)
 		self.change_cwd(model[treeiter][2])
 
 	def signal_tv_collapse_row(self, _, treeiter, treepath):
+		treeiter = self._treeiter_sort_to_model(treeiter)
 		current = self._tv_model.iter_children(treeiter)
 		while current:
 			self._tv_model.remove(current)
 			current = self._tv_model.iter_children(treeiter)
 		self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
 
-	def signal_tv_expand_row(self, _, treeiter, treepath):
+	def signal_tv_expand_row(self, treeview, treeiter, treepath):
+		treeiter = self._treeiter_sort_to_model(treeiter)
 		new_path = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
 		try:
 			self.load_dirs(new_path, treeiter)
@@ -907,12 +925,12 @@ class DirectoryBase(object):
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
 		_, treeiter = selection.get_selected()
-		if treeiter is not None:
-			path = self._tv_model.get_path(treeiter)
 		if treeiter is None:
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 			self.rename(current)
 			return
+		treeiter = self._treeiter_sort_to_model(treeiter)
+		path = self._tv_model.get_path(treeiter)
 		if not self.treeview.row_expanded(path):
 			self.treeview.expand_row(path, False)
 		if self._tv_model.iter_children(treeiter) is None:
@@ -924,28 +942,26 @@ class DirectoryBase(object):
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 		self.rename(current)
 
-	def signal_text_edited(self, renderer, path, text):
-		_iter = self._tv_model.get_iter(path)
-		parent = self._tv_model.iter_parent(_iter)
+	def signal_text_edited(self, renderer, treepath, text):
+		treepath = self._treepath_sort_to_model(treepath)
+		treeiter = self._tv_model.get_iter(treepath)
+		parent = self._tv_model.iter_parent(treeiter)
 		if parent is None:
 			new_path = self.cwd + '/' + text
 		else:
 			new_path = self._tv_model[parent][2] + '/' + text
-		text = text.strip()
-		if not text or text == self._tv_model[_iter][0]:
-			self.refresh()
+		if not text or text == self._tv_model[treeiter][0]:
 			return
 		if self._already_exists(new_path):
 			gui_utilities.show_dialog_error('Unable to make directory', self.application.get_active_window(), "Directory: {0} already exists".format(new_path))
-			self.refresh()
 			return
-		if self._tv_model[_iter][2] is not None:
+		if self._tv_model[treeiter][2] is not None:
 			try:
-				self._rename_file(_iter, new_path)
+				self._rename_file(treeiter, new_path)
 			except (OSError, IOError):
 				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error renaming file')
 		else:
-			self._tv_model.remove(_iter)
+			self._tv_model.remove(treeiter)
 			try:
 				self._make_file(new_path)
 			except (OSError, IOError):
@@ -987,18 +1003,18 @@ class LocalDirectory(DirectoryBase):
 		os.makedirs(path)
 
 	@handle_permission_denied
-	def delete(self, model, treeiter):
+	def delete(self, treeiter):
 		"""
 		Delete the selected file or directory.
 
-		:param model: The TreeModel to be used.
 		:param treeiter: The TreeIter that points to the selected file.
 		"""
-		if model[treeiter][5] == -1:
-			shutil.rmtree(model[treeiter][2])
+		row = self._tv_model[treeiter]
+		if row[5] == -1:
+			shutil.rmtree(row[2])
 		else:
-			os.remove(model[treeiter][2])
-		model.remove(treeiter)
+			os.remove(row[2])
+		self._tv_model.remove(treeiter)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -1091,20 +1107,19 @@ class RemoteDirectory(DirectoryBase):
 		ftp.mkdir(path)
 
 	@handle_permission_denied
-	def delete(self, model, treeiter):
+	def delete(self, treeiter):
 		"""
 		Delete the selected file or directory.
 
-		:param model: The TreeModel to be used.
 		:param treeiter: The TreeIter that points to the selected file.
 		"""
-		name = model[treeiter][2]  # pylint: disable=unsubscriptable-object
+		name = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
 		if self.get_is_folder(name):
 			if not self.remove_by_folder_name(name):
 				return
 		elif not self.remove_by_file_name(name):
 			return
-		model.remove(treeiter)
+		self._tv_model.remove(treeiter)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
