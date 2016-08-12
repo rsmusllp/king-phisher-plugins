@@ -14,7 +14,10 @@ class Plugin(plugins.ClientPlugin):
 	title = 'Spell Check'
 	description = """
 	Add spell check capabilities to the message editor. This requires GtkSpell
-	to be available with the correct Python GObject Introspection bindings.
+	to be available with the correct Python GObject Introspection bindings. On
+	Ubuntu and Debian based systems, this is provided by the
+	'gir1.2-gtkspell3-3.0' package.
+
 	After being loaded, the language can be changed from the default of en_US
 	via the context menu (available when right clicking in the text view).
 	"""
