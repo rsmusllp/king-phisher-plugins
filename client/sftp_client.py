@@ -4,6 +4,7 @@ import errno
 import hashlib
 import logging
 import os
+import posixpath
 import stat
 import shutil
 import threading
@@ -697,7 +698,8 @@ class DirectoryBase(object):
 
 		:param str new_dir: The directory to change the CWD to.
 		"""
-		new_dir = os.path.normpath(new_dir)
+		self._path_mod.normpath(new_dir)
+		# new_dir = os.path.normpath(new_dir)
 		if new_dir == self.cwd:
 			return
 		self._chdir(new_dir)
@@ -754,7 +756,7 @@ class DirectoryBase(object):
 			entry.set_property('primary-icon-name', 'gtk-apply')
 			return
 		if new_dir == PARENT_DIRECTORY:
-			new_dir = os.path.abspath(os.path.join(self.cwd, PARENT_DIRECTORY))
+			new_dir = os.self._path_mod.abspath(os.self._path_mod.join(self.cwd, PARENT_DIRECTORY))
 		try:
 			with gui_utilities.gobject_signal_blocked(combobox, 'changed'):
 				self.change_cwd(new_dir)
@@ -882,7 +884,7 @@ class DirectoryBase(object):
 
 		:param str node: Keyword arguement that shows the path to be refreshed.
 		"""
-		node = os.path.abspath(node)
+		node = self._path_mod.abspath(node)
 		model = self._tv_model
 		exp_lines = []
 		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference.new(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
@@ -904,7 +906,7 @@ class DirectoryBase(object):
 			else:
 				child = model.iter_children(parent)
 				parent_path = model[parent][2]
-			dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
+			dir_list = [self._path_mod.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
 			while child is not None:
 				old_dir_list.append((model[child][2], Gtk.TreeRowReference.new(model, model.get_path(child))))
 				child = model.iter_next(child)
@@ -985,18 +987,19 @@ class LocalDirectory(DirectoryBase):
 	def __init__(self, builder, application, config):
 		self.stat = os.stat
 		self._chdir = os.chdir
+		self._path_mod = os.path
 		wd_history = config['directories'].get('local', [])
-		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'), wd_history)
+		super(LocalDirectory, self).__init__(builder, application, self._path_mod.expanduser('~'), wd_history)
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
 			yield name
 
 	def _already_exists(self, path):
-		return os.path.isdir(path)
+		return self._path_mod.isdir(path)
 
 	def _already_exists_all(self, path):
-		return os.path.exists(path)
+		return self._path_mod.exists(path)
 
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
@@ -1044,7 +1047,7 @@ class LocalDirectory(DirectoryBase):
 		:param path: The path to get the absolute path from.
 		:return str: The absolute path of the path.
 		"""
-		return os.path.abspath(path)
+		return self._path_mod.abspath(path)
 
 	def walk(self, src_file, src, commands, local_name, old_files):
 		"""
@@ -1080,6 +1083,7 @@ class RemoteDirectory(DirectoryBase):
 		self.ftp = ftp
 		self.ssh = ssh
 		self.stat = ftp.stat
+		self._path_mod = posixpath
 		self._chdir = self.ftp.chdir
 		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
@@ -1133,7 +1137,7 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		# with paramiko, you cannot remove populated dir, so recursive method utilized
 		for path in self._yield_dir_list(name):
-			new_path = os.path.join(name, path)
+			new_path = self._path_mod.join(name, path)
 			if self.get_is_folder(new_path):
 				self.remove_by_folder_name(new_path)
 			else:
@@ -1156,7 +1160,7 @@ class RemoteDirectory(DirectoryBase):
 		:param path: The path to get the absolute path from.
 		:return str: The absolute path of the path.
 		"""
-		return os.path.join(self.cwd, path)
+		return self._path_mod.join(self.cwd, path)
 
 	def walk(self, directory, src, commands, remote_name, old_files):
 		"""
@@ -1184,7 +1188,7 @@ class RemoteDirectory(DirectoryBase):
 		commands.append(command)
 		old_files[parsed_name] = directory
 		for folder in subdirs:
-			new_path = os.path.join(directory, folder)
+			new_path = self._path_mod.join(directory, folder)
 			self.walk(new_path, src, commands, remote_name, old_files)
 
 	def _already_exists_all(self, path):
@@ -1383,7 +1387,7 @@ class FileManager(object):
 
 		if dst.get_is_folder(dst_file):
 			dst_dir = dst_file
-			dst_file = os.path.join(dst_file, os.path.basename(src_file))
+			dst_file = self._path_mod.join(dst_file, self._path_mod.basename(src_file))
 		else:
 			gui_utilities.show_dialog_error(
 				'Error',
