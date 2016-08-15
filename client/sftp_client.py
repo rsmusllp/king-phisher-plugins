@@ -479,7 +479,7 @@ class StatusDisplay(object):
 					0,
 					boltons.strutils.bytes2human(task.size) if not isinstance(task, TransferDirectoryTask) else None
 				])
-				task.treerowref = Gtk.TreeRowReference(self._tv_model, self._tv_model.get_path(treeiter))
+				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))
 			else:
 				row = self._tv_model[task.treerowref.get_path()]  # pylint: disable=unsubscriptable-object
 				row[3] = task.state
@@ -806,7 +806,6 @@ class DirectoryBase(object):
 		model, treeiter = self.treeview.get_selection().get_selected()
 		if not treeiter:
 			return
-		treeiter = self._treeiter_sort_to_model(treeiter)
 		self.change_cwd(model[treeiter][2])
 
 	def signal_tv_collapse_row(self, _, treeiter, treepath):
@@ -886,12 +885,12 @@ class DirectoryBase(object):
 		node = os.path.abspath(node)
 		model = self._tv_model
 		exp_lines = []
-		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
+		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference.new(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
 		_iter = model.get_iter_first()
 		path = model.get_path(_iter)
 		counter = 1
 		if model[path][2].startswith(node):
-			exp_lines.insert(0, Gtk.TreeRowReference(model, path))
+			exp_lines.insert(0, Gtk.TreeRowReference.new(model, path))
 			counter = 0
 		for path in exp_lines:
 			path = path.get_path()
@@ -907,7 +906,7 @@ class DirectoryBase(object):
 				parent_path = model[parent][2]
 			dir_list = [os.path.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
 			while child is not None:
-				old_dir_list.append((model[child][2], Gtk.TreeRowReference(model, model.get_path(child))))
+				old_dir_list.append((model[child][2], Gtk.TreeRowReference.new(model, model.get_path(child))))
 				child = model.iter_next(child)
 			# this is where we add new entries to the model
 			for dir in dir_list:
