@@ -1215,6 +1215,7 @@ class FileManager(object):
 		self.application = application
 		self.ssh = ssh
 		self.config = config
+		self._path_mod = os.path
 		self.queue = TaskQueue()
 		self._threads = []
 		self._threads_max = 1
