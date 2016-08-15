@@ -76,12 +76,10 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="orientation">vertical</property>
-            <property name="wide_handle">True</property>
             <child>
               <object class="GtkPaned" id="paned2">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="wide_handle">True</property>
                 <child>
                   <object class="GtkBox" id="box4">
                     <property name="visible">True</property>

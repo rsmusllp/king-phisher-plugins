@@ -88,7 +88,11 @@ class Plugin(plugins.ClientPlugin):
 				self.application.get_active_window(),
 				'The GTK Builder data file (.ui extension) is not available.'
 			)
-			return
+			return False
+		if not 'directories' in self.config:
+			self.config['directories'] = {}
+		if not 'transfer_hidden' in self.config:
+			self.config['transfer_hidden'] = False
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
 		return True
 
@@ -982,7 +986,7 @@ class LocalDirectory(DirectoryBase):
 	def __init__(self, builder, application, config):
 		self.stat = os.stat
 		self._chdir = os.chdir
-		wd_history = config.get('directories', {}).get('local', [])
+		wd_history = config['directories'].get('local', [])
 		super(LocalDirectory, self).__init__(builder, application, os.path.expanduser('~'), wd_history)
 
 	def _yield_dir_list(self, path):
@@ -1078,7 +1082,7 @@ class RemoteDirectory(DirectoryBase):
 		self.ssh = ssh
 		self.stat = ftp.stat
 		self._chdir = self.ftp.chdir
-		wd_history = config.get('directories', {}).get('remote', {})
+		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
 
@@ -1229,7 +1233,7 @@ class FileManager(object):
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
 		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
-		menu_item.set_active(self.config.get('transfer_hidden', False))
+		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_transfer_hidden)
 		menu_item = self.builder.get_object('menuitem_exit')
 		menu_item.connect('activate', lambda _: self.window.destroy())
@@ -1237,7 +1241,7 @@ class FileManager(object):
 		self.window.show_all()
 
 	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
-		self.config['transfer_hidden'] = not self.config.get('transfer_hidden', False)
+		self.config['transfer_hidden'] = self.config['transfer_hidden']
 
 	def _transfer_folder(self, task, ssh):
 		task.state = 'Transferring'
