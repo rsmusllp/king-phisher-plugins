@@ -634,6 +634,21 @@ class DirectoryBase(object):
 			return False
 		return True
 
+	def _split_all(self, path):
+		all_parts = []
+		while 1:
+			parts = os.path.split(path)
+			if parts[0] == path:
+				all_parts.insert(0, parts[0])
+				break
+			elif parts[1] == path:
+				all_parts.insert(0, parts[1])
+				break
+			else:
+				path = parts[0]
+				all_parts.insert(0, parts[1])
+		return all_parts
+
 	def _get_popup_menu(self):
 		self._menu_items_req_selection = []
 		self.popup_menu = Gtk.Menu.new()
@@ -699,7 +714,6 @@ class DirectoryBase(object):
 		:param str new_dir: The directory to change the CWD to.
 		"""
 		self._path_mod.normpath(new_dir)
-		# new_dir = os.path.normpath(new_dir)
 		if new_dir == self.cwd:
 			return
 		self._chdir(new_dir)
@@ -756,7 +770,7 @@ class DirectoryBase(object):
 			entry.set_property('primary-icon-name', 'gtk-apply')
 			return
 		if new_dir == PARENT_DIRECTORY:
-			new_dir = os.self._path_mod.abspath(os.self._path_mod.join(self.cwd, PARENT_DIRECTORY))
+			new_dir = self._path_mod.abspath(self._path_mod.join(self.cwd, PARENT_DIRECTORY))
 		try:
 			with gui_utilities.gobject_signal_blocked(combobox, 'changed'):
 				self.change_cwd(new_dir)
@@ -847,9 +861,7 @@ class DirectoryBase(object):
 		:param parent: A TreeIter object pointing to the parent node.
 		:param str name: The name of the file.
 		"""
-		if not path.endswith('/'):
-			path = path + '/'
-		fullname = path + name
+		fullname = self._path_mod.join(path, name)
 		try:
 			perm = self._check_perm(fullname)
 			raw_time = self._get_raw_time(fullname)
@@ -884,7 +896,7 @@ class DirectoryBase(object):
 
 		:param str node: Keyword arguement that shows the path to be refreshed.
 		"""
-		node = self._path_mod.abspath(node)
+		node = self._path_mod.relpath(node)
 		model = self._tv_model
 		exp_lines = []
 		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference.new(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
@@ -895,13 +907,13 @@ class DirectoryBase(object):
 			exp_lines.insert(0, Gtk.TreeRowReference.new(model, path))
 			counter = 0
 		for path in exp_lines:
-			path = path.get_path()
+			path = path.get_path() if path.get_path() is not None else 0 # prevents NoneType error
 			old_dir_list = []
 			parent = model.get_iter(path)
 			if counter == 0:
 				child = parent
 				parent = None
-				parent_path = '/'.join(model[path][2].split('/')[:-1])
+				parent_path = self._path_mod.join(self._split_all(model[path][2])[:-1])
 				parent_path = parent_path or self.cwd
 			else:
 				child = model.iter_children(parent)
@@ -911,19 +923,19 @@ class DirectoryBase(object):
 				old_dir_list.append((model[child][2], Gtk.TreeRowReference.new(model, model.get_path(child))))
 				child = model.iter_next(child)
 			# this is where we add new entries to the model
-			for dir in dir_list:
-				if not dir.startswith(node):
+			for dirc in dir_list:
+				if not dirc.startswith(node):
 					continue
-				if dir not in [name_and_ref[0] for name_and_ref in old_dir_list]:
-					self.create_model_entry(parent_path, parent, dir.split('/')[-1])
+				if dirc not in [name_and_ref[0] for name_and_ref in old_dir_list]:
+					self.create_model_entry(parent_path, parent, self._split_all(dirc)[-1])
 			# this is where we remove missing entries from the model
 			for name_and_ref in old_dir_list:
-				dir = name_and_ref[0]
-				if dir is None:
+				dirc = name_and_ref[0]
+				if dirc is None:
 					continue
-				if not dir.startswith(node):
+				if not dirc.startswith(node):
 					continue
-				if dir not in dir_list:
+				if dirc not in dir_list:
 					model.remove(model.get_iter(name_and_ref[1].get_path()))
 			counter += 1
 
@@ -952,9 +964,9 @@ class DirectoryBase(object):
 		treeiter = self._tv_model.get_iter(treepath)
 		parent = self._tv_model.iter_parent(treeiter)
 		if parent is None:
-			new_path = self.cwd + '/' + text
+			new_path = self._path_mod.join(self.cwd, text)
 		else:
-			new_path = self._tv_model[parent][2] + '/' + text
+			new_path = self._path_mod.join(self._tv_model[parent][2], text)
 		if not text or text == self._tv_model[treeiter][0]:
 			return
 		if self._already_exists(new_path):
@@ -1061,13 +1073,14 @@ class LocalDirectory(DirectoryBase):
 		:param old_file: Dictionary used to keep track of the original
 		file names.
 		"""
+		self._path_mod.relpath(src_file)
 		for walker in os.walk(src_file):
 			walker = list(walker)
-			temp = walker[0].split('/')
+			temp = self._split_all(walker[0])
 			loc = temp.index(local_name)
 			# Parse the name relative to the directory selected, i.e /home/osboxes/Music -> /osboxes/Music if osboxes was selected
-			parsed_name = '/'.join(temp[loc:])
-			old_files[parsed_name] = walker[0]
+			parsed_name = self._path_mod.join(*temp[loc:])
+			old_files[parsed_name] = self._path_mod.normpath(walker[0])
 			walker[0] = parsed_name
 			commands.append(walker)
 
@@ -1176,11 +1189,11 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		subdirs = []
 		files = []
-		temp = directory.split('/')
+		temp = self._split_all(directory)
 		loc = temp.index(remote_name)
-		parsed_name = '/'.join(temp[loc:])
+		parsed_name = self._path_mod.join(*temp[loc:])
 		for f in src._yield_dir_list(directory):
-			if src.get_is_folder(directory + '/' + f):
+			if src.get_is_folder(self._path_mod.join(directory, f)):
 				subdirs.append(f)
 			else:
 				files.append(f)
@@ -1215,7 +1228,8 @@ class FileManager(object):
 		self.application = application
 		self.ssh = ssh
 		self.config = config
-		self._path_mod = os.path
+		self._path_mod_local = os.path
+		self._path_mod_remote = posixpath
 		self.queue = TaskQueue()
 		self._threads = []
 		self._threads_max = 1
@@ -1255,7 +1269,9 @@ class FileManager(object):
 				task.state = task.parents[0].state
 				return
 		if isinstance(task, UploadDirectoryTask):
-			new_dir = task.remote_path
+			if '\\' in task.remote_path:
+				task.remote_path = self._path_mod_remote.normpath(task.remote_path.replace('\\', '//'))
+			new_dir = self._path_mod_remote.normpath(task.remote_path)
 			dst = self.remote
 			if dst._already_exists_all(new_dir):
 				return
@@ -1341,6 +1357,21 @@ class FileManager(object):
 				else:
 					self._transfer(task, ssh)
 
+	def _split_all(self, path):
+		all_parts = []
+		while 1:
+			parts = os.path.split(path)
+			if parts[0] == path:
+				all_parts.insert(0, parts[0])
+				break
+			elif parts[1] == path:
+				all_parts.insert(0, parts[1])
+				break
+			else:
+				path = parts[0]
+				all_parts.insert(0, parts[1])
+		return all_parts
+
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
@@ -1361,7 +1392,7 @@ class FileManager(object):
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
 			local_file = self.local.cwd
-			local_name = local_file.split('/')
+			local_name = self._split_all(local_file)
 			local_name = local_name[-1]
 		else:
 			local_file = model[treeiter][2]
@@ -1371,7 +1402,7 @@ class FileManager(object):
 		model, treeiter = selection.get_selected()
 		if treeiter is None:
 			remote_file = self.remote.cwd
-			remote_name = remote_file.split('/')
+			remote_name = self._split_all(remote_file)
 			remote_name = remote_name[-1]
 		else:
 			remote_file = model[treeiter][2]
@@ -1379,23 +1410,36 @@ class FileManager(object):
 
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
-			src_file, dst_file = remote_file, local_file
+			if '\\' in remote_file:
+				remote_file = self._path_mod_remote.normpath(remote_file.replace('\\', '//'))
+			src_file, dst_file = self._path_mod_remote.abspath(remote_file), self._path_mod_local.abspath(local_file)
+			if dst.get_is_folder(dst_file):
+				dst_dir = dst_file
+				dst_file = self._path_mod_local.join(self._path_mod_local.abspath(local_file), self._path_mod_local.basename(remote_file))
+			else:
+				gui_utilities.show_dialog_error(
+					'Error',
+					self.application.get_active_window(),
+					'Not a valid destination.'
+				)
+				return
 		elif issubclass(task_cls, UploadTask):
 			src, dst = self.local, self.remote
-			src_file, dst_file = local_file, remote_file
+			if '\\' in remote_file:
+				remote_file = self._path_mod_remote.normpath(remote_file.replace('\\', '//'))
+			src_file, dst_file = self._path_mod_local.abspath(local_file), self._path_mod_remote.abspath(remote_file)
+			if dst.get_is_folder(dst_file):
+				dst_dir = dst_file
+				dst_file = self._path_mod_remote.join(self._path_mod_remote.abspath(remote_file), self._path_mod_remote.basename(local_file))
+			else:
+				gui_utilities.show_dialog_error(
+					'Error',
+					self.application.get_active_window(),
+					'Not a valid destination.'
+				)
+				return
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
-
-		if dst.get_is_folder(dst_file):
-			dst_dir = dst_file
-			dst_file = self._path_mod.join(dst_file, self._path_mod.basename(src_file))
-		else:
-			gui_utilities.show_dialog_error(
-				'Error',
-				self.application.get_active_window(),
-				'Not a valid destination.'
-			)
-			return
 
 		if src.get_is_folder(src_file):
 			self.handle_folder_transfer(task_cls, remote_name, local_name, src, dst, src_file, dst_file, dst_dir, remote_file, local_file)
@@ -1422,7 +1466,7 @@ class FileManager(object):
 					'Cannot write to the destination folder.'
 				)
 				return
-			local_file, remote_file = dst_file, src_file
+			local_file, remote_file = self._path_mod_local.abspath(dst_file), self._path_mod_remote.abspath(src_file)
 		elif issubclass(task_cls, UploadTask):
 			if not os.access(local_file, os.R_OK):
 				gui_utilities.show_dialog_error(
@@ -1435,7 +1479,7 @@ class FileManager(object):
 				if not dst._make_file(dst_file):
 					return
 				dst.remove_by_folder_name(dst_file)
-			local_file, remote_file = src_file, dst_file
+			local_file, remote_file = self._path_mod_local.abspath(src_file), self._path_mod_remote.abspath(dst_file)
 		file_task = task_cls(local_file, remote_file)
 		if isinstance(file_task, UploadTask):
 			file_size = self.local.get_file_size(local_file)
@@ -1481,10 +1525,10 @@ class FileManager(object):
 		all_parents = []
 		for command in commands:
 			hidden = False
-			new_dir = dst_dir + '/' + command[0]
+			new_dir = self._path_mod_remote.join(dst_dir, command[0])
 			old_dir = old_files[command[0]]
 			if self.config['transfer_hidden']:
-				for part in command[0].split('/'):
+				for part in self._split_all(command[0]):
 					if part.startswith('.'):
 						hidden = True
 						break
@@ -1500,10 +1544,10 @@ class FileManager(object):
 					return
 				if not dst.remove_by_folder_name(new_dir):
 					return
-			temp = command[0].split('/')
+			temp = self._split_all(command[0])
 			for i in range(0, len(temp)):
 				# look for every new directory or subdirectory in path and make it a task
-				name = '/'.join(temp[0:i + 1])
+				name = self._path_mod_remote.join(*temp[0:i + 1])
 				parent_task = (parents[i - 1][0],) if i > 0 else 0
 				if not uload:
 					task = (DownloadDirectoryTask(new_dir, old_dir, parents=parent_task), name)
@@ -1523,8 +1567,12 @@ class FileManager(object):
 			for _file in command[2]:
 				if _file.startswith('.') and not self.config['transfer_hidden']:
 					continue
-				new_file = new_dir + '/' + _file
-				old_file = old_files[command[0]] + '/' + _file
+				new_file = self._path_mod_local.join(new_dir, _file)
+				old_file = self._path_mod_local.join(old_files[command[0]], _file)
+				if not uload:
+					old_file = self._path_mod_remote.normpath(old_file.replace('\\', '//'))
+				else:
+					new_file = self._path_mod_remote.normpath(new_file.replace('\\', '//'))
 				if uload and not os.access(old_file, os.R_OK):
 					logger.warning("cannot read file {0}".format(old_file))
 					continue
