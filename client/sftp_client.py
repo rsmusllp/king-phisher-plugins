@@ -1,7 +1,6 @@
 import collections
 import datetime
 import errno
-import hashlib
 import logging
 import os
 import posixpath
@@ -80,6 +79,7 @@ class Plugin(plugins.ClientPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 	req_min_version = '1.4.0b0'
+	version = '0.9'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
@@ -90,9 +90,9 @@ class Plugin(plugins.ClientPlugin):
 				'The GTK Builder data file (.ui extension) is not available.'
 			)
 			return False
-		if not 'directories' in self.config:
+		if 'directories' not in self.config:
 			self.config['directories'] = {}
-		if not 'transfer_hidden' in self.config:
+		if 'transfer_hidden' not in self.config:
 			self.config['transfer_hidden'] = False
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
 		return True
@@ -613,7 +613,7 @@ class DirectoryBase(object):
 
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
-		model, treeiter = selection.get_selected()
+		_, treeiter = selection.get_selected()
 		if treeiter is None:
 			return
 		treeiter = self._treeiter_sort_to_model(treeiter)
@@ -1302,19 +1302,14 @@ class FileManager(object):
 					self.remote.remove_by_file_name(task.remote_path)
 				elif isinstance(task, DownloadTask):
 					self.local.remove_by_file_name(task.local_path)
-			elif task.state == 'Paused':
-				pass
-			else:
+			elif task.state != 'Paused':
 				task.state = 'Completed'
-				if task.parents:
-					for parent_task in task.parents:
-						parent_task.transferred += 1
-						if parent_task.transferred >= parent_task.size:
-							parent_task.state = 'Completed'
-							if not parent_task.parents:
-								GLib.idle_add(self._idle_refresh_directories)
-				else:
-					GLib.idle_add(self._idle_refresh_directories)
+				for parent_task in task.parents:
+					parent_task.transferred += 1
+					if parent_task.transferred < parent_task.size:
+						continue
+					parent_task.state = 'Completed'
+				GLib.idle_add(self._idle_refresh_directories)
 			src_file_h.close()
 			dst_file_h.close()
 		except Exception:
@@ -1399,7 +1394,7 @@ class FileManager(object):
 			src_file, dst_file = self.local.path_mod.abspath(local_file), self.remote.path_mod.sep.abspath(remote_file)
 			if dst.get_is_folder(dst_file):
 				dst_dir = dst_file
-				dst_file = self.remote.path_mod.sep.join(self.remote.path_mod.sep.abspath(remote_file), self.local.path_mod.basename(local_file))
+				dst_file = self.remote.path_mod.join(self.remote.path_mod.abspath(remote_file), self.local.path_mod.basename(local_file))
 			else:
 				gui_utilities.show_dialog_error(
 					'Error',
@@ -1509,9 +1504,7 @@ class FileManager(object):
 					self.application.get_active_window(),
 					"Folder {0} already exists. Replace?".format(new_dir)
 				)
-				if not confirmed:
-					return
-				if not dst.remove_by_folder_name(new_dir):
+				if not confirmed or not dst.remove_by_folder_name(new_dir):
 					return
 			temp = command[0].split(src.path_mod.sep)
 			for i in range(0, len(temp)):
