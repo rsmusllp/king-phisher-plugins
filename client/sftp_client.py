@@ -716,6 +716,15 @@ class DirectoryBase(object):
 		active_iter = gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir)
 		self.wdcb_dropdown.set_active_iter(active_iter)
 
+	def get_abspath(self, path):
+		"""
+		Get the absolute path of a given path.
+
+		:param path: The path to get the absolute path from.
+		:return str: The absolute path of the path.
+		"""
+		return self.path_mod.abspath(self.path_mod.join(self.cwd, path))
+
 	def get_is_folder(self, fullname):
 		"""
 		Checks if the given path is for a folder.
@@ -1038,15 +1047,6 @@ class LocalDirectory(DirectoryBase):
 		"""
 		os.remove(name)
 
-	def get_abs_path(self, path):
-		"""
-		Get the absolute path of a given path.
-
-		:param path: The path to get the absolute path from.
-		:return str: The absolute path of the path.
-		"""
-		return self.path_mod.abspath(path)
-
 	def walk(self, src_file, src, commands, local_name, old_files):
 		"""
 		Walk through a given directory and return all subdirectories and
@@ -1153,15 +1153,6 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		self.ftp.remove(name)
 
-	def get_abs_path(self, path):
-		"""
-		Get the absolute path of a given path.
-
-		:param path: The path to get the absolute path from.
-		:return str: The absolute path of the path.
-		"""
-		return self.path_mod.join(self.cwd, path)
-
 	def walk(self, directory, src, commands, remote_name, old_files):
 		"""
 		Walk through a given directory and return all subdirectories and
@@ -1215,8 +1206,6 @@ class FileManager(object):
 		self.application = application
 		self.ssh = ssh
 		self.config = config
-		self.local.path_mod = os.path
-		self.remote.path_mod.sep = posixpath
 		self.queue = TaskQueue()
 		self._threads = []
 		self._threads_max = 1
@@ -1256,7 +1245,7 @@ class FileManager(object):
 				task.state = task.parents[0].state
 				return
 		if isinstance(task, UploadDirectoryTask):
-			task.remote_path = self.remote.path_mod.sep.join(*task.remote_path.split(self.local.path_mod.sep))
+			task.remote_path = self.remote.path_mod.join(*task.remote_path.split(self.local.path_mod.sep))
 			new_dir = task.remote_path
 			dst = self.remote
 			if dst._already_exists_all(new_dir):
@@ -1265,7 +1254,7 @@ class FileManager(object):
 			dst._make_file(new_dir, ftp=ftp)
 			ftp.close()
 		elif isinstance(task, DownloadDirectoryTask):
-			new_dir = self.local.path_mod.join(*task.local_path.split(self.remote.path_mod.sep.sep))
+			new_dir = self.local.path_mod.join(*task.local_path.split(self.remote.path_mod.sep))
 			dst = self.local
 			if dst._already_exists_all(new_dir):
 				return
@@ -1356,61 +1345,29 @@ class FileManager(object):
 	def _queue_transfer(self, task_cls):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		if treeiter is None:
-			local_file = self.local.cwd
-			local_name = local_file.split(self.local.path_mod.sep)
-			local_name = local_name[-1]
-		else:
-			local_file = model[treeiter][2]
-			local_name = model[treeiter][0]
+		local_path = self.local.cwd if treeiter is None else model[treeiter][2]
 
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		if treeiter is None:
-			remote_file = self.remote.cwd
-			remote_name = remote_file.split(self.local.path_mod.sep)
-			remote_name = remote_name[-1]
-		else:
-			remote_file = model[treeiter][2]
-			remote_name = model[treeiter][0]
+		remote_path = self.remote.cwd if treeiter is None else model[treeiter][2]
 
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
-			remote_file = self.remote.path_mod.sep.join(*remote_file.split(self.local.path_mod.sep))
-			src_file, dst_file = self.remote.path_mod.sep.abspath(remote_file), self.local.path_mod.abspath(local_file)
-			if dst.get_is_folder(dst_file):
-				dst_dir = dst_file
-				dst_file = self.local.path_mod.join(self.local.path_mod.abspath(local_file), self.local.path_mod.basename(remote_file))
-			else:
-				gui_utilities.show_dialog_error(
-					'Error',
-					self.application.get_active_window(),
-					'Not a valid destination.'
-				)
-				return
+			src_path, dst_path = remote_path, local_path
 		elif issubclass(task_cls, UploadTask):
 			src, dst = self.local, self.remote
-			remote_file = self.remote.path_mod.sep.join(*remote_file.split(self.local.path_mod.sep))
-			src_file, dst_file = self.local.path_mod.abspath(local_file), self.remote.path_mod.sep.abspath(remote_file)
-			if dst.get_is_folder(dst_file):
-				dst_dir = dst_file
-				dst_file = self.remote.path_mod.join(self.remote.path_mod.abspath(remote_file), self.local.path_mod.basename(local_file))
-			else:
-				gui_utilities.show_dialog_error(
-					'Error',
-					self.application.get_active_window(),
-					'Not a valid destination.'
-				)
-				return
+			src_path, dst_path = local_path, remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
 
-		if src.get_is_folder(src_file):
-			self.handle_folder_transfer(task_cls, remote_name, local_name, src_file, dst_file, dst_dir, remote_file, local_file)
+		if dst.get_is_folder(dst_path):
+			dst_path = dst.path_mod.join(dst_path, src.path_mod.basename(src_path))
+		if src.get_is_folder(src_path):
+			self.handle_dir_transfer(task_cls, src_path, dst_path)
 		else:
-			self.handle_file_transfer(task_cls, local_file, src_file, dst_file, dst_dir, dst)
+			self.handle_file_transfer(task_cls, src_path, dst_path)
 
-	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir, dst):
+	def handle_file_transfer(self, task_cls, local_file, src_file, dst_file, dst_dir):
 		"""
 		Handles the file transfer by stopping bad transfers, creating tasks for
 		transfers, and placing them in the queue.
@@ -1420,7 +1377,6 @@ class FileManager(object):
 		:param str src_file: The file to be uploaded or downloaded.
 		:param str dst_file: The file to be created.
 		:param str dst_dir: The folder the file will be placed in.
-		:param dst: The filesystem of the destination.
 		"""
 		if issubclass(task_cls, DownloadTask):
 			if not os.access(dst_dir, os.W_OK):
@@ -1430,7 +1386,7 @@ class FileManager(object):
 					'Cannot write to the destination folder.'
 				)
 				return
-			local_file, remote_file = self.local.path_mod.abspath(dst_file), self.remote.path_mod.sep.abspath(src_file)
+			local_file, remote_file = self.local.get_abspath(dst_file), self.remote.get_abspath(src_file)
 		elif issubclass(task_cls, UploadTask):
 			if not os.access(local_file, os.R_OK):
 				gui_utilities.show_dialog_error(
@@ -1439,11 +1395,11 @@ class FileManager(object):
 					'Cannot read the source file.'
 				)
 				return
-			if not dst._already_exists(dst_file):
-				if not dst._make_file(dst_file):
+			if not self.remote._already_exists(dst_file):
+				if not self.remote._make_file(dst_file):
 					return
 				dst.remove_by_folder_name(dst_file)
-			local_file, remote_file = self.local.path_mod.abspath(src_file), self.remote.path_mod.sep.abspath(dst_file)
+			local_file, remote_file = self.local.get_abspath(src_file), self.remote.get_abspath(dst_file)
 		file_task = task_cls(local_file, remote_file)
 		if isinstance(file_task, UploadTask):
 			file_size = self.local.get_file_size(local_file)
@@ -1452,7 +1408,7 @@ class FileManager(object):
 		file_task.size = file_size
 		self.queue.put(file_task)
 
-	def handle_folder_transfer(self, task_cls, remote_name, local_name, src_file, dst_file, dst_dir, remote_file, local_file):
+	def handle_dir_transfer(self, task_cls, remote_name, local_name, src_file, dst_file, dst_dir):
 		"""
 		Handles the folder transfer by stopping bad transfers, creating tasks
 		for transfers, and placing them in the queue.
@@ -1463,8 +1419,6 @@ class FileManager(object):
 		:param str src_file: The folder to be uploaded or downloaded.
 		:param str dst_file: The folder to be created.
 		:param str dst_dir: The folder the folder will be placed in.
-		:param str local_file: The local folder involved in the transfer.
-		:param str remote_file: The remote folder involved in the transfer.
 		"""
 		commands = []
 		old_files = {}
@@ -1532,9 +1486,9 @@ class FileManager(object):
 				new_file = self.local.path_mod.join(new_dir, _file)
 				old_file = self.local.path_mod.join(old_files[command[0]], _file)
 				if uload:
-					new_file = self.remote.path_mod.sep.join(*new_file.split(self.local.path_mod.sep))
+					new_file = self.remote.path_mod.join(*new_file.split(self.local.path_mod.sep))
 				else:
-					old_file = self.remote.path_mod.sep.join(*old_file.split(self.local.path_mod.sep))
+					old_file = self.remote.path_mod.join(*old_file.split(self.local.path_mod.sep))
 				if uload and not os.access(old_file, os.R_OK):
 					logger.warning("cannot read file {0}".format(old_file))
 					continue
@@ -1561,5 +1515,4 @@ class FileManager(object):
 				file_task.size = file_size
 				self.queue.put(file_task)
 		for parent in all_parents:
-			if parent[0].size is None:
-				parent[0].empty = True
+			parent[0].empty = parent[0].size is None
