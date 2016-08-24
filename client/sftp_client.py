@@ -1513,10 +1513,7 @@ class FileManager(object):
 					return
 				if not dst.remove_by_folder_name(new_dir):
 					return
-			if uload:
-				temp = command[0].split(self.local.path_mod.sep)
-			else:
-				temp = command[0].split(self.remote.path_mod.sep.sep)
+			temp = command[0].split(src.path_mod.sep)
 			for i in range(0, len(temp)):
 				# look for every new directory or subdirectory in path and make it a task
 				name = self.local.path_mod.join(*temp[0:i + 1])
@@ -1541,10 +1538,10 @@ class FileManager(object):
 					continue
 				new_file = self.local.path_mod.join(new_dir, _file)
 				old_file = self.local.path_mod.join(old_files[command[0]], _file)
-				if not uload:
-					old_file = self.remote.path_mod.sep.join(*old_file.split(self.local.path_mod.sep))
-				else:
+				if uload:
 					new_file = self.remote.path_mod.sep.join(*new_file.split(self.local.path_mod.sep))
+				else:
+					old_file = self.remote.path_mod.sep.join(*old_file.split(self.local.path_mod.sep))
 				if uload and not os.access(old_file, os.R_OK):
 					logger.warning("cannot read file {0}".format(old_file))
 					continue
