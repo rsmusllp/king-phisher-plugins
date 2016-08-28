@@ -775,6 +775,19 @@ class DirectoryBase(object):
 			return stat_override(fullname).st_size
 		return self.stat(fullname).st_size
 
+	def path_mode(self, path):
+		"""
+		Return the portion of the st_mode member of a stat operation which
+		indicates the type of the path. If the path does not exist, zero is
+		returned. The return value is suitable for use with the
+		:py:func:`stat.S_ISREG` and :py:func:`stat.S_ISDIR` functions.
+
+		:param stat path: The path to entry to check.
+		:return: The mode of the specified path.
+		:rtype: bool
+		"""
+		raise NotImplementedError()
+
 	@handle_permission_denied
 	def signal_combo_changed(self, combobox):
 		new_dir = combobox.get_active_text()
@@ -988,7 +1001,7 @@ class DirectoryBase(object):
 			new_path = self.path_mod.join(self._tv_model[parent][2], text)
 		if not text or text == self._tv_model[treeiter][0]:
 			return
-		if self.dir_exists(new_path):
+		if stat.S_ISDIR(self.path_mode(new_path)):
 			gui_utilities.show_dialog_error('Unable to make directory', self.application.get_active_window(), "Directory: {0} already exists".format(new_path))
 			return
 		if self._tv_model[treeiter][2] is not None:
@@ -1027,11 +1040,10 @@ class LocalDirectory(DirectoryBase):
 		for name in os.listdir(path):
 			yield name
 
-	def dir_exists(self, path):
-		return self.path_mod.isdir(path)
-
-	def path_exists(self, path):
-		return self.path_mod.exists(path)
+	def path_mode(self, path):
+		if not self.path_mod.exists(path):
+			return 0
+		return stat.S_IFMT(self.stat(path).st_stat)
 
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
@@ -1107,22 +1119,13 @@ class RemoteDirectory(DirectoryBase):
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
 
+	# todo: should this be rename_path?
+	def _rename_file(self, _iter, path):
+		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
+
 	def _yield_dir_list(self, path):
 		for name in self.ftp.listdir(path):
 			yield name
-
-	def dir_exists(self, path):
-		try:
-			self.ftp.stat(path)
-		except IOError as error:
-			if error.errno == errno.ENOENT:
-				return False
-			else:
-				raise error
-		return True
-
-	def _rename_file(self, _iter, path):
-		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
 	def make_dir(self, path, ftp=None):
@@ -1144,6 +1147,18 @@ class RemoteDirectory(DirectoryBase):
 		elif not self.remove_by_file_name(name):
 			return
 		self._tv_model.remove(treeiter)
+
+	def path_mode(self, path):
+		# using self.ftp causes collision errors and raises Garbage Packet Error
+		backup_ftp = self.ssh.open_sftp()
+		try:
+			return stat.S_IFMT(backup_ftp.stat(path).st_mode)
+		except IOError as error:
+			if error.errno in (errno.ENOENT, errno.EACCES):
+				return 0
+			raise
+		finally:
+			backup_ftp.close()
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -1196,20 +1211,6 @@ class RemoteDirectory(DirectoryBase):
 		for folder in subdirs:
 			contents.extend(self.walk(self.path_mod.join(path, folder)))
 		return contents
-
-	def path_exists(self, path):
-		# using self.ftp causes collision errors and raises Garbage Packet Error
-		backup_ftp = self.ssh.open_sftp()
-		try:
-			backup_ftp.stat(path)
-		except IOError as error:
-			backup_ftp.close()
-			if error.errno == errno.ENOENT or error.errno == errno.EACCES:
-				return False
-			raise
-		else:
-			backup_ftp.close()
-			return True
 
 class FileManager(object):
 	"""
@@ -1397,7 +1398,7 @@ class FileManager(object):
 				)
 				return
 			# todo: what is this even doing?
-			if not self.remote.dir_exists(dst_path):
+			if not stat.S_ISDIR(self.remote.path_mode(dst_path)):
 				if not self.remote.make_dir(dst_path):
 					return
 				dst.remove_by_folder_name(dst_path)
@@ -1450,8 +1451,8 @@ class FileManager(object):
 				return
 		elif issubclass(task_cls, UploadTask):
 			src, dst = self.local, self.remote
-			# todo: peform better checking of permissions here
-			if not dst.dir_exists(dst_path):
+			# todo: perform better checking of permissions here
+			if not stat.S_ISDIR(dst.path_mode(dst_path)):
 				if not dst.make_dir(dst_path):
 					return
 				dst.remove_by_folder_name(dst_path)
