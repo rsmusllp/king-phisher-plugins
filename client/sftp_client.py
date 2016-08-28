@@ -1,4 +1,6 @@
+# todo: make show hidden files an option for both and persist the setting
 import collections
+import contextlib
 import datetime
 import errno
 import logging
@@ -34,6 +36,7 @@ CURRENT_DIRECTORY = '.'
 gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 DirectoryContents = collections.namedtuple('DirectoryContents', ('dirpath', 'dirnames', 'filenames'))
+ObjectLock = collections.namedtuple('ObjectLock', ('object', 'lock'))
 
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
 	"""
@@ -206,6 +209,7 @@ class TaskQueue(object):
 			self.queue.append(task)
 			self.unfinished_tasks += 1
 			self.not_empty.notify()
+		logger.debug("task: {0!r} has been added to the queue".format(task))
 
 	def remove(self, task):
 		"""
@@ -288,6 +292,9 @@ class TransferTask(Task):
 		self.treerowref = None
 		"""A TreeRowReference object representing the Tasks position in the treeview."""
 		self.parent = parent
+
+	def __repr__(self):
+		return "<{0} local_path={1!r} remote_path={2!r} state={3!r}>".format(self.__class__.__name__, self.local_path, self.remote_path, self.state)
 
 	@property
 	def parents(self):
@@ -741,14 +748,14 @@ class DirectoryBase(object):
 		"""
 		return self.path_mod.abspath(self.path_mod.join(self.cwd, path))
 
-	def get_relpath(self, path):
+	def get_relpath(self, path, start=None):
 		"""
 		Get the relative path of a given path.
 
 		:param path: The path to get the relative path from.
 		:return str: The relative version of the path.
 		"""
-		return self.path_mod.relpath(path, start=self.cwd)
+		return self.path_mod.relpath(path, start=(start or self.cwd))
 
 	def get_is_folder(self, fullname):
 		"""
@@ -787,6 +794,10 @@ class DirectoryBase(object):
 		:rtype: bool
 		"""
 		raise NotImplementedError()
+
+	def shutdown(self):
+		"""Perform any necessary clean up operations."""
+		pass
 
 	@handle_permission_denied
 	def signal_combo_changed(self, combobox):
@@ -1109,29 +1120,34 @@ class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
 	working_directory_combobox_name = 'comboboxtext_remote_working_directory'
-	def __init__(self, builder, application, config, ftp, ssh):
-		self.ftp = ftp
+	def __init__(self, builder, application, config, ssh):
 		self.ssh = ssh
-		self.stat = ftp.stat
 		self.path_mod = posixpath
-		self._chdir = self.ftp.chdir
 		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
+		self._thread_local_ftp = {}
 		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
+
+	def _chdir(self, path):
+		for obj_lock in self._thread_local_ftp.values():
+			with obj_lock.lock:
+				obj_lock.object.chdir(path)
+		return
 
 	# todo: should this be rename_path?
 	def _rename_file(self, _iter, path):
-		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
+		with self.ftp_handle() as ftp:
+			ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	def _yield_dir_list(self, path):
-		for name in self.ftp.listdir(path):
-			yield name
+		with self.ftp_handle() as ftp:
+			for name in ftp.listdir(path):
+				yield name
 
 	@handle_permission_denied
-	def make_dir(self, path, ftp=None):
-		# If method called when self.ftp is busy, alternate ftp is specified, prevents Garbage Packet Error
-		ftp = ftp or self.ftp
-		ftp.mkdir(path)
+	def make_dir(self, path):
+		with self.ftp_handle() as ftp:
+			ftp.mkdir(path)
 
 	@handle_permission_denied
 	def delete(self, treeiter):
@@ -1148,17 +1164,64 @@ class RemoteDirectory(DirectoryBase):
 			return
 		self._tv_model.remove(treeiter)
 
-	def path_mode(self, path):
-		# using self.ftp causes collision errors and raises Garbage Packet Error
-		backup_ftp = self.ssh.open_sftp()
+	def ftp_acquire(self):
+		"""
+		Get a thread-specific ftp handle. This handle must not be transferred to
+		another thread and it must be closed with a follow up call to
+		:py:meth:`.ftp_release` when it is no longer needed.
+
+		:return: A handle to an FTP session.
+		"""
+		current_tid = threading.current_thread().ident
+		if not current_tid in self._thread_local_ftp:
+			logger.info("opening new sftp session for tid 0x{0:x}".format(current_tid))
+			ftp = self.ssh.open_sftp()
+			ftp.chdir(self.cwd)
+			self._thread_local_ftp[current_tid] = ObjectLock(ftp, threading.RLock())
+		obj_lock = self._thread_local_ftp[current_tid]
+		obj_lock.lock.acquire()
+		return obj_lock.object
+
+	@contextlib.contextmanager
+	def ftp_handle(self):
+		ftp = self.ftp_acquire()
 		try:
-			return stat.S_IFMT(backup_ftp.stat(path).st_mode)
+			yield ftp
+		finally:
+			self.ftp_release()
+
+	def ftp_release(self):
+		"""
+		Return a thread-specific ftp handle previously acquired with
+		:py:meth:`.ftp_acquire`.
+		"""
+		current_tid = threading.current_thread().ident
+		if not current_tid in self._thread_local_ftp:
+			raise ValueError('ftp_release() called for thread before ftp_acquire')
+		self._thread_local_ftp[current_tid].lock.release()
+		return
+
+	def path_mode(self, path):
+		try:
+			with self.ftp_handle() as ftp:
+				return stat.S_IFMT(ftp.stat(path).st_mode)
 		except IOError as error:
 			if error.errno in (errno.ENOENT, errno.EACCES):
 				return 0
 			raise
-		finally:
-			backup_ftp.close()
+
+	def shutdown(self):
+		active_tids = tuple(self._thread_local_ftp.keys())
+		for tid in active_tids:
+			obj_lock = self._thread_local_ftp[tid]
+			logger.info("closing sftp session for tid 0x{0:x}".format(tid))
+			with obj_lock.lock:
+				obj_lock.object.close()
+				del self._thread_local_ftp[tid]
+
+	def stat(self, path):
+		with self.ftp_handle() as ftp:
+			return ftp.stat(path)
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
@@ -1174,7 +1237,8 @@ class RemoteDirectory(DirectoryBase):
 				self.remove_by_folder_name(new_path)
 			else:
 				self.remove_by_file_name(new_path)
-		self.ftp.rmdir(name)
+		with self.ftp_handle() as ftp:
+			ftp.rmdir(name)
 
 	@handle_permission_denied
 	def remove_by_file_name(self, name):
@@ -1183,7 +1247,8 @@ class RemoteDirectory(DirectoryBase):
 
 		:param name: The path of the file to be removed.
 		"""
-		self.ftp.remove(name)
+		with self.ftp_handle() as ftp:
+			ftp.remove(name)
 
 	def walk(self, path):
 		"""
@@ -1220,24 +1285,21 @@ class FileManager(object):
 	"""
 	def __init__(self, application, ssh, config):
 		self.application = application
-		self.ssh = ssh
 		self.config = config
 		self.queue = TaskQueue()
 		self._threads = []
 		self._threads_max = 1
 		self._threads_shutdown = threading.Event()
 		for _ in range(self._threads_max):
-			thread = threading.Thread(target=self._thread_routine, args=(ssh,))
+			thread = threading.Thread(target=self._thread_routine)
 			thread.start()
 			self._threads.append(thread)
-		ftp = ssh.open_sftp()
-		self.ftp = ftp
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(gtk_builder_file)
 		self.window = self.builder.get_object('SFTPClientGUI.window')
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application, config)
-		self.remote = RemoteDirectory(self.builder, self.application, config, ftp, ssh)
+		self.remote = RemoteDirectory(self.builder, self.application, config, ssh)
 		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer(UploadTask))
 		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
@@ -1253,12 +1315,10 @@ class FileManager(object):
 	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
 		self.config['transfer_hidden'] = self.config['transfer_hidden']
 
-	def _transfer_dir(self, task, ssh):
+	def _transfer_dir(self, task):
 		task.state = 'Transferring'
 		if isinstance(task, UploadDirectoryTask):
-			ftp = ssh.open_sftp()
-			self.remote.make_dir(task.remote_path, ftp=ftp)
-			ftp.close()
+			self.remote.make_dir(task.remote_path)
 		elif isinstance(task, DownloadDirectoryTask):
 			self.local.make_dir(task.local_path)
 
@@ -1267,9 +1327,9 @@ class FileManager(object):
 			task.transferred = 0
 			task.state = 'Completed'
 
-	def _transfer_file(self, task, ssh, chunk=0x1000):
+	def _transfer_file(self, task, chunk=0x1000):
 		task.state = 'Transferring'
-		ftp = ssh.open_sftp()
+		ftp = self.remote.ftp_acquire()
 		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
 		try:
 			if isinstance(task, UploadTask):
@@ -1279,7 +1339,9 @@ class FileManager(object):
 				src_file_h = ftp.file(task.remote_path, 'rb')
 				dst_file_h = open(task.local_path, write_mode)
 			else:
+				self.remote.ftp_release()
 				raise ValueError('unsupported task type passed to _transfer_file')
+			self.remote.ftp_release()
 			src_file_h.seek(task.transferred)
 			while task.transferred < task.size:
 				if self._threads_shutdown.is_set():
@@ -1305,19 +1367,17 @@ class FileManager(object):
 			src_file_h.close()
 			dst_file_h.close()
 		except Exception:
-			logger.error("Unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
+			logger.error("unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
 			if not task.is_done:
 				task.state = 'Error'
 				for parent in task.parents:
 					parent.state = 'Error'
-		finally:
-			ftp.close()
 
 	def _idle_refresh_directories(self):
 		self.local.refresh()
 		self.remote.refresh()
 
-	def _thread_routine(self, ssh):
+	def _thread_routine(self):
 		while not self._threads_shutdown.is_set():
 			task = self.queue.get()
 			if isinstance(task, ShutdownTask):
@@ -1326,9 +1386,9 @@ class FileManager(object):
 				break
 			elif isinstance(task, TransferTask):
 				if isinstance(task, TransferDirectoryTask):
-					self._transfer_dir(task, ssh)
+					self._transfer_dir(task)
 				else:
-					self._transfer_file(task, ssh)
+					self._transfer_file(task)
 
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
@@ -1337,7 +1397,8 @@ class FileManager(object):
 			self.queue.put(ShutdownTask())
 		for thread in self._threads:
 			thread.join()
-		self.ftp.close()
+		self.local.shutdown()
+		self.remote.shutdown()
 		directories = self.config.get('directories', {})
 		directories['local'] = list(self.local.wd_history)
 		if not 'remote' in directories:
@@ -1447,28 +1508,35 @@ class FileManager(object):
 		"""
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
-			if not os.access(dst_path, os.W_OK):
-				return
+			task = task_cls.dir_cls(dst_path, src_path, size=0)
 		elif issubclass(task_cls, UploadTask):
 			src, dst = self.local, self.remote
+			task = task_cls.dir_cls(src_path, dst_path, size=0)
 			# todo: perform better checking of permissions here
 			if not stat.S_ISDIR(dst.path_mode(dst_path)):
 				if not dst.make_dir(dst_path):
 					return
 				dst.remove_by_folder_name(dst_path)
+		else:
+			raise ValueError('unknown task class')
 
-		task = task_cls.dir_cls(src_path, dst_path, size=0)
 		self.queue.put(task)
-		parent_directory_tasks = {src.get_relpath(src_path): task}
+		parent_directory_tasks = {src_path: task}
 
 		for dir_cont in src.walk(src_path):
-			rel_path = src.get_relpath(dir_cont.dirpath)
-			parent_task = parent_directory_tasks.pop(rel_path)
+			dst_base_path = dst.path_mod.normpath(dst.path_mod.join(dst_path, src.get_relpath(dir_cont.dirpath, start=src_path)))
+			src_base_path = dir_cont.dirpath
+			parent_task = parent_directory_tasks.pop(src_base_path)
+
+			if issubclass(task_cls, DownloadTask):
+				local_base_path, remote_base_path = (dst_base_path, src_base_path)
+			else:
+				local_base_path, remote_base_path = (src_base_path, dst_base_path)
 
 			for filename in dir_cont.filenames:
 				self.queue.put(task_cls(
-					self.local.get_abspath(self.local.path_mod.join(rel_path, filename)),
-					self.remote.get_abspath(self.remote.path_mod.join(rel_path, filename)),
+					self.local.path_mod.join(local_base_path, filename),
+					self.remote.path_mod.join(remote_base_path, filename),
 					parent=parent_task,
 					size=src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
 				))
@@ -1476,11 +1544,11 @@ class FileManager(object):
 
 			for dirname in dir_cont.dirnames:
 				task = task_cls.dir_cls(
-					self.local.get_abspath(self.local.path_mod.join(rel_path, dirname)),
-					self.remote.get_abspath(self.remote.path_mod.join(rel_path, dirname)),
+					self.local.path_mod.join(local_base_path, dirname),
+					self.remote.path_mod.join(remote_base_path, dirname),
 					parent=parent_task,
 					size=0
 				)
 				parent_task.size += 1
-				parent_directory_tasks[src.path_mod.join(rel_path, dirname)] = task
+				parent_directory_tasks[src.path_mod.join(src_base_path, dirname)] = task
 				self.queue.put(task)
