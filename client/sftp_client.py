@@ -9,6 +9,7 @@ import shutil
 import threading
 import time
 
+from king_phisher import its
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
@@ -22,7 +23,7 @@ from gi.repository import GObject
 from gi.repository import GLib
 import paramiko
 
-if os.name == 'nt':
+if its.on_windows:
 	import win32api
 	import win32con
 
@@ -32,6 +33,7 @@ CURRENT_DIRECTORY = '.'
 
 gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
+DirectoryContents = collections.namedtuple('DirectoryContents', ('dirpath', 'dirnames', 'filenames'))
 
 def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
 	"""
@@ -266,8 +268,8 @@ class TransferTask(Task):
 	occur.
 	"""
 	_states = ('Active', 'Cancelled', 'Completed', 'Error', 'Paused', 'Pending', 'Transferring')
-	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parents')
-	def __init__(self, local_path, remote_path, parents=None, state=None):
+	__slots__ = ('_state', 'local_path', 'remote_path', 'size', 'transferred', 'treerowref', 'parent')
+	def __init__(self, local_path, remote_path, parent=None, size=None, state=None):
 		super(TransferTask, self).__init__(state=state)
 		self.local_path = local_path
 		"""A string representing the local filesystem path of the transfer."""
@@ -278,15 +280,23 @@ class TransferTask(Task):
 		If the task is a file transfer, an integer of the number of bytes transferred,
 		if the task is a directory transfer, the number of children files transferred.
 		"""
-		self.size = None
+		self.size = size
 		"""
 		If the task is a file transfer, an integer of the total number of bytes,
 		if the task is a directory transfer, the total number of children files.
 		"""
 		self.treerowref = None
 		"""A TreeRowReference object representing the Tasks position in the treeview."""
-		self.parents = parents or []
-		"""A list of TransferDirectoryTasks representing all parent directories of the task."""
+		self.parent = parent
+
+	@property
+	def parents(self):
+		parents = []
+		node = self
+		while node.parent is not None:
+			parents.append(node.parent)
+			node = node.parent
+		return parents
 
 	@property
 	def progress(self):
@@ -315,7 +325,7 @@ class UploadTask(TransferTask):
 class TransferDirectoryTask(TransferTask):
 	"""
 	Task to model a folder transfer. Acts as a parent task
-	to other TransferTasks and is passed into _transfer_folder.
+	to other TransferTasks and is passed into _transfer_dir.
 	"""
 	has_children = False
 	folder_clicked = False
@@ -327,6 +337,7 @@ class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	is downloading folders.
 	"""
 	pass
+DownloadTask.dir_cls = DownloadDirectoryTask
 
 class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	"""
@@ -334,6 +345,7 @@ class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	uploading folders.
 	"""
 	pass
+UploadTask.dir_cls = UploadDirectoryTask
 
 class DelayedChangedSignal(object):
 	def __init__(self, handler, delay=500):
@@ -462,27 +474,27 @@ class StatusDisplay(object):
 			self.queue.mutex.release()
 			return
 		for task in self.queue.queue:
-			parent_treerowref = None
-			if task.parents:
-				parent_treerowref = task.parents[-1].treerowref
-				if parent_treerowref is None:
-					continue
-				parent_path = parent_treerowref.get_path()
-				if parent_path is None:
-					continue
-				parent_treerowref = self._tv_model.get_iter(parent_path)
 			if not isinstance(task, TransferTask):
 				continue
 			if task.treerowref is None:
+				parent_treeiter = None
+				if task.parent:
+					parent_treerowref = task.parent.treerowref
+					if parent_treerowref is None:
+						continue
+					parent_treepath = parent_treerowref.get_path()
+					if parent_treepath is None:
+						continue
+					parent_treeiter = self._tv_model.get_iter(parent_treepath)
 				direction = Gtk.STOCK_GO_FORWARD if task.transfer_direction == 'upload' else Gtk.STOCK_GO_BACK
-				image = self.treeview_transfer.render_icon(direction, Gtk.IconSize.BUTTON, None) if parent_treerowref is None else Gtk.Image()
-				treeiter = self._tv_model.append(parent_treerowref, [
+				image = self.treeview_transfer.render_icon(direction, Gtk.IconSize.BUTTON, None) if parent_treeiter is None else Gtk.Image()
+				treeiter = self._tv_model.append(parent_treeiter, [
 					image,
 					task.local_path,
 					task.remote_path,
 					task.state,
 					0,
-					boltons.strutils.bytes2human(task.size) if not isinstance(task, TransferDirectoryTask) else None
+					None if (task.size is None or isinstance(task, TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size)
 				])
 				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))
 			else:
@@ -725,9 +737,18 @@ class DirectoryBase(object):
 		Get the absolute path of a given path.
 
 		:param path: The path to get the absolute path from.
-		:return str: The absolute path of the path.
+		:return str: The absolute version of the path.
 		"""
 		return self.path_mod.abspath(self.path_mod.join(self.cwd, path))
+
+	def get_relpath(self, path):
+		"""
+		Get the relative path of a given path.
+
+		:param path: The path to get the relative path from.
+		:return str: The relative version of the path.
+		"""
+		return self.path_mod.relpath(path, start=self.cwd)
 
 	def get_is_folder(self, fullname):
 		"""
@@ -978,7 +999,7 @@ class DirectoryBase(object):
 		else:
 			self._tv_model.remove(treeiter)
 			try:
-				self._make_file(new_path)
+				self.make_dir(new_path)
 			except (OSError, IOError):
 				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error creating file')
 		self.refresh()
@@ -1016,7 +1037,7 @@ class LocalDirectory(DirectoryBase):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
-	def _make_file(self, path):
+	def make_dir(self, path):
 		os.makedirs(path)
 
 	@handle_permission_denied
@@ -1051,28 +1072,21 @@ class LocalDirectory(DirectoryBase):
 		"""
 		os.remove(name)
 
-	def walk(self, src_file, src, commands, local_name, old_files):
+	def walk(self, path):
 		"""
 		Walk through a given directory and return all subdirectories and
-		subfiles in a format parsed for transfer.
+		subfiles in a format parsed for transfer. This traverses the path in a
+		top-down pattern.
 
-		:param str src_file: The Directory to be traversed through.
-		:param commands: The list to be updated with the file list.
-		:param str local_name: The name selected by the user, used
-		to modify the path to be relative to selected directory.
-		:param old_file: Dictionary used to keep track of the original
-		file names.
+		:param str path: The directory to be traversed through.
+		:return: A list of :py:class:`DirectoryContents` instances representing the contents.
+		:rtype: list
 		"""
-		self.path_mod.relpath(src_file)
-		for walker in os.walk(src_file):
-			walker = list(walker)
-			temp = walker[0].split(self.path_mod.sep)
-			loc = temp.index(local_name)
-			# Parse the name relative to the directory selected, i.e /home/osboxes/Music -> /osboxes/Music if osboxes was selected
-			parsed_name = self.path_mod.join(*temp[loc:])
-			old_files[parsed_name] = self.path_mod.normpath(walker[0])
-			walker[0] = parsed_name
-			commands.append(walker)
+		contents = []
+		path = self.get_abspath(path)
+		for walker in os.walk(path):
+			contents.append(DirectoryContents(*walker))
+		return contents
 
 class RemoteDirectory(DirectoryBase):
 	"""
@@ -1111,10 +1125,9 @@ class RemoteDirectory(DirectoryBase):
 		self.ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
 	@handle_permission_denied
-	def _make_file(self, path, ftp=None):
+	def make_dir(self, path, ftp=None):
 		# If method called when self.ftp is busy, alternate ftp is specified, prevents Garbage Packet Error
-		if ftp is None:
-			ftp = self.ftp
+		ftp = ftp or self.ftp
 		ftp.mkdir(path)
 
 	@handle_permission_denied
@@ -1157,36 +1170,32 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		self.ftp.remove(name)
 
-	def walk(self, directory, src, commands, remote_name, old_files):
+	def walk(self, path):
 		"""
 		Walk through a given directory and return all subdirectories and
-		subfiles in a format parsed for transfer.
+		subfiles in a format parsed for transfer. This traverses the path in a
+		top-down pattern.
 
-		:param str directory: The Directory to be traversed through.
-		:param commands: The list to be updated with the file list.
-		:param str remote_name: The name selected by the user, used
-		to modify the path to be relative to selected directory.
-		:param old_file: Dictionary used to keep track of the original
-		file names.
-
-		# commands = [command=[parsed_name, subdirs, files]]
+		:param str path: The directory to be traversed through.
+		:return: A list of :py:class:`DirectoryContents` instances representing the contents.
+		:rtype: list
 		"""
+		contents = []
+		path = self.get_abspath(path)
 		subdirs = []
 		files = []
-		temp = directory.split(self.path_mod.sep)
-		loc = temp.index(remote_name)
-		parsed_name = self.path_mod.join(*temp[loc:])
-		for f in src._yield_dir_list(directory):
-			if src.get_is_folder(self.path_mod.join(directory, f)):
-				subdirs.append(f)
+		for entry in self._yield_dir_list(path):
+			if self.get_is_folder(self.path_mod.join(path, entry)):
+				subdirs.append(entry)
 			else:
-				files.append(f)
-		command = [parsed_name, subdirs, files]
-		commands.append(command)
-		old_files[parsed_name] = directory
+				files.append(entry)
+		# mimic the behaviour or os.walk by denying empty directories their own
+		# DirectoryContents instance
+		if len(files) or len(subdirs):
+			contents.append(DirectoryContents(path, subdirs, files))
 		for folder in subdirs:
-			new_path = self.path_mod.join(directory, folder)
-			self.walk(new_path, src, commands, remote_name, old_files)
+			contents.extend(self.walk(self.path_mod.join(path, folder)))
+		return contents
 
 	def path_exists(self, path):
 		# using self.ftp causes collision errors and raises Garbage Packet Error
@@ -1243,34 +1252,21 @@ class FileManager(object):
 	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
 		self.config['transfer_hidden'] = self.config['transfer_hidden']
 
-	def _transfer_folder(self, task, ssh):
+	def _transfer_dir(self, task, ssh):
 		task.state = 'Transferring'
-		if task.parents:
-			# prevents any lagging folders/files from causing issues
-			if task.parents[0].state in ('Cancelled', 'Paused'):
-				task.state = task.parents[0].state
-				return
 		if isinstance(task, UploadDirectoryTask):
-			task.remote_path = self.remote.path_mod.join(*task.remote_path.split(self.local.path_mod.sep))
-			new_path = task.remote_path
-			dst = self.remote
-			if dst.path_exists(new_path):
-				return
 			ftp = ssh.open_sftp()
-			dst._make_file(new_path, ftp=ftp)
+			self.remote.make_dir(task.remote_path, ftp=ftp)
 			ftp.close()
 		elif isinstance(task, DownloadDirectoryTask):
-			new_path = self.local.path_mod.join(*task.local_path.split(self.remote.path_mod.sep))
-			dst = self.local
-			if dst.path_exists(new_path):
-				return
-			dst._make_file(new_path)
+			self.local.make_dir(task.local_path)
+
 		if task.empty:
 			task.size = 0
 			task.transferred = 0
 			task.state = 'Completed'
 
-	def _transfer(self, task, ssh, chunk=0x1000):
+	def _transfer_file(self, task, ssh, chunk=0x1000):
 		task.state = 'Transferring'
 		ftp = ssh.open_sftp()
 		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
@@ -1282,7 +1278,7 @@ class FileManager(object):
 				src_file_h = ftp.file(task.remote_path, 'rb')
 				dst_file_h = open(task.local_path, write_mode)
 			else:
-				raise ValueError('unsupported task type passed to _transfer')
+				raise ValueError('unsupported task type passed to _transfer_file')
 			src_file_h.seek(task.transferred)
 			while task.transferred < task.size:
 				if self._threads_shutdown.is_set():
@@ -1329,9 +1325,9 @@ class FileManager(object):
 				break
 			elif isinstance(task, TransferTask):
 				if isinstance(task, TransferDirectoryTask):
-					self._transfer_folder(task, ssh)
+					self._transfer_dir(task, ssh)
 				else:
-					self._transfer(task, ssh)
+					self._transfer_file(task, ssh)
 
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
@@ -1365,6 +1361,7 @@ class FileManager(object):
 			src_path, dst_path = local_path, remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
+		# todo: check for read access on upload and write access on download
 
 		if dst.get_is_folder(dst_path):
 			dst_path = dst.path_mod.join(dst_path, src.path_mod.basename(src_path))
@@ -1399,8 +1396,9 @@ class FileManager(object):
 					'Cannot read the source file.'
 				)
 				return
+			# todo: what is this even doing?
 			if not self.remote.dir_exists(dst_path):
-				if not self.remote._make_file(dst_path):
+				if not self.remote.make_dir(dst_path):
 					return
 				dst.remove_by_folder_name(dst_path)
 			local_path, remote_path = self.local.get_abspath(src_path), self.remote.get_abspath(dst_path)
@@ -1412,28 +1410,30 @@ class FileManager(object):
 		file_task.size = file_size
 		self.queue.put(file_task)
 
-	def _is_path_hidden(self, path, src):
+	def _is_path_hidden(self, path, local):
 		"""
-		Used to determine if any part of the path is hidden.
+		Used to determine if any part of the path is hidden. On Windows this
+		uses the Windows API, on any other operating system this checks for an
+		entry in the path that begins with '.'.
 
 		:param path: The path to iterate through to determine if it is hidden.
-		:param src: the local or remote instance of the path.
+		:param bool local: Whether or not the path is a local path or remote.
 		:return: True if any part of the path is hidden
 		:rtype: bool
 		"""
-		if src.path_mod.sep == '/':
-			for path in path.split(src.path_mod.sep):
-				if not path.startswith('.'):
-					return True
-			return False
-		elif os.name == 'nt':
+		src = self.local if local else self.remote
+		if local and its.on_windows:
 			path_list = path.split(src.path_mod.sep)
 			for i in range(0, len(path_list)):
 				temp_path = src.path_mod.join(*path_list[0:i + 1])
 				attribute = win32api.GetFileAttributes(temp_path)
 				if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
 					return True
-			return False
+		else:
+			for path in path.split(src.path_mod.sep):
+				if not path.startswith('.'):
+					return True
+		return False
 
 	def handle_dir_transfer(self, task_cls, src_path, dst_path):
 		"""
@@ -1443,103 +1443,43 @@ class FileManager(object):
 		:param task_cls: The type of task the transfer will be.
 		:param str src_path: The path to be uploaded or downloaded.
 		:param str dst_path: The path to be created.
-
-		*Sloppy Notes for guide during refactoring of code..
-		commands = [command=[parsed_name, subdirs, files]]
-		src.walk does not return anything but updates the list supplied, which is generally call commands.
-		updated parent list names to my understanding of how the code read. To make it more understandable..
 		"""
-		commands = []
-		old_paths = {}
-		uload = False
 		if issubclass(task_cls, DownloadTask):
 			src, dst = self.remote, self.local
-			name = self.remote.path_mod.dirname(src_path)
 			if not os.access(dst_path, os.W_OK):
 				return
 		elif issubclass(task_cls, UploadTask):
 			src, dst = self.local, self.remote
-			name = self.local.path_mod.dirname(src_path)
-			uload = True
-			if not os.access(src_path, os.R_OK):
-				return
+			# todo: peform better checking of permissions here
 			if not dst.dir_exists(dst_path):
-				if not dst._make_file(dst_path):
+				if not dst.make_dir(dst_path):
 					return
 				dst.remove_by_folder_name(dst_path)
 
-		src.walk(src_path, src, commands, name, old_paths)
-		parents = []
-		all_dir_tasks = []
-		for command in commands:
-			hidden = False
-			new_path = dst.path_mod.join(dst_path, command[0])
-			old_path = old_paths[command[0]]
-			if self.config['transfer_hidden']:
-				hidden = self._is_path_hidden(command[0], src)
-			if hidden:
-				continue
-			if dst.dir_exists(new_path):
-				confirmed = gui_utilities.show_dialog_yes_no(
-					'Warning',
-					self.application.get_active_window(),
-					"Folder {0} already exists. Replace?".format(new_path)
-				)
-				if not confirmed or not dst.remove_by_folder_name(new_path):
-					return
-			temp = command[0].split(src.path_mod.sep)
-			for i in range(0, len(temp)):
-				# look for every new directory or subdirectory in path and make it a task
-				name = self.local.path_mod.join(*temp[0:i + 1])
-				parent_task = (parents[i - 1][0],) if i > 0 else 0
-				if not uload:
-					task = (DownloadDirectoryTask(new_path, old_path, parents=parent_task), name)
-				else:
-					task = (UploadDirectoryTask(old_path, new_path, parents=parent_task), name)
-				if i >= len(parents):
-					parents.append(task)
-					all_dir_tasks.append(task)
-					self.queue.put(task[0])
-				elif name != parents[i][1]:
-					parents[i] = task
-					all_dir_tasks.append(task)
-					self.queue.put(task[0])
+		task = task_cls.dir_cls(src_path, dst_path, size=0)
+		self.queue.put(task)
+		parent_directory_tasks = {src.get_relpath(src_path): task}
 
-			for i in range(0, len(parents) - len(temp)):
-				parents.pop()
-			for file_in_command in command[2]:
-				if file_in_command.startswith('.') and not self.config['transfer_hidden']:
-					continue
-				new_file = self.local.path_mod.join(new_path, file_in_command)
-				old_file = self.local.path_mod.join(old_paths[command[0]], file_in_command)
-				if uload:
-					new_file = self.remote.path_mod.join(*new_file.split(self.local.path_mod.sep))
-				else:
-					old_file = self.remote.path_mod.join(*old_file.split(self.local.path_mod.sep))
-				if uload and not os.access(old_file, os.R_OK):
-					logger.warning("cannot read file {0}".format(old_file))
-					continue
-				if not src.path_exists(old_file):
-					logger.warning("{0} is neither a file nor folder".format(old_file))
-					continue
-				if uload:
-					local_file, remote_file = old_file, new_file
-				else:
-					local_file, remote_file = new_file, old_file
-				file_parents = []
-				for parent in parents:
-					if parent[0].size is None:
-						parent[0].size = 1
-					else:
-						parent[0].size += 1
-					parent[0].has_children = True
-					file_parents.append(parent[0])  # List of parent TASKS
-				file_task = task_cls(local_file, remote_file, parents=file_parents)
-				if isinstance(file_task, UploadTask):
-					file_size = self.local.get_file_size(local_file)
-				elif isinstance(file_task, DownloadTask):
-					file_size = self.remote.get_file_size(remote_file)
-				file_task.size = file_size
-				self.queue.put(file_task)
-		for tasks in all_dir_tasks:
-			tasks[0].empty = tasks[0].size is None
+		for dir_cont in src.walk(src_path):
+			rel_path = src.get_relpath(dir_cont.dirpath)
+			parent_task = parent_directory_tasks.pop(rel_path)
+
+			for filename in dir_cont.filenames:
+				self.queue.put(task_cls(
+					self.local.get_abspath(self.local.path_mod.join(rel_path, filename)),
+					self.remote.get_abspath(self.remote.path_mod.join(rel_path, filename)),
+					parent=parent_task,
+					size=src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
+				))
+				parent_task.size += 1
+
+			for dirname in dir_cont.dirnames:
+				task = task_cls.dir_cls(
+					self.local.get_abspath(self.local.path_mod.join(rel_path, dirname)),
+					self.remote.get_abspath(self.remote.path_mod.join(rel_path, dirname)),
+					parent=parent_task,
+					size=0
+				)
+				parent_task.size += 1
+				parent_directory_tasks[src.path_mod.join(rel_path, dirname)] = task
+				self.queue.put(task)
