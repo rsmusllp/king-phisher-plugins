@@ -804,7 +804,6 @@ class DirectoryBase(object):
 		"""Perform any necessary clean up operations."""
 		pass
 
-	@handle_permission_denied
 	def signal_combo_changed(self, combobox):
 		new_dir = combobox.get_active_text()
 		if not new_dir:
@@ -1138,7 +1137,6 @@ class RemoteDirectory(DirectoryBase):
 			for name in ftp.listdir(path):
 				yield name
 
-	@handle_permission_denied
 	def make_dir(self, path):
 		with self.ftp_handle() as ftp:
 			ftp.mkdir(path)
@@ -1311,10 +1309,14 @@ class FileManager(object):
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
-		if isinstance(task, UploadDirectoryTask):
-			self.remote.make_dir(task.remote_path)
-		elif isinstance(task, DownloadDirectoryTask):
-			self.local.make_dir(task.local_path)
+		if isinstance(task, DownloadTask):
+			dst, dst_path = self.local, task.local_path
+		elif isinstance(task, UploadTask):
+			dst, dst_path = self.remote, task.remote_path
+		else:
+			raise ValueError('task_cls must be a subclass of TransferTask')
+		if not stat.S_ISDIR(dst.path_mode(dst_path)):
+			dst.make_dir(dst_path)
 
 		if not task.size:
 			task.state = 'Completed'
