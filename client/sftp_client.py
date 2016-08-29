@@ -334,8 +334,7 @@ class TransferDirectoryTask(TransferTask):
 	Task to model a folder transfer. Acts as a parent task
 	to other TransferTasks and is passed into _transfer_dir.
 	"""
-	has_children = False
-	folder_clicked = False
+	pass
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	"""
@@ -407,7 +406,7 @@ class StatusDisplay(object):
 		self.treeview_transfer.append_column(col_bar)
 
 		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
-		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str)
+		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str, object)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 
@@ -438,11 +437,10 @@ class StatusDisplay(object):
 		treepaths = self._get_selected_treepaths()
 		if treepaths is None:
 			return None
-		# Find the task selected task then find tall the tasks in the queue with it as a parent.
-		parent_task = [task for task in self.queue.queue if task.treerowref is not None and task.treerowref.valid() and task.treerowref.get_path() in treepaths][0]
-		children = [task for task in self.queue.queue if parent_task in task.parents]
-		children.insert(0, parent_task)
-		return children
+		selected_tasks = set()
+		for treepath in treepaths:
+			self._tv_model.foreach(lambda _, path, treeiter: selected_tasks.add(self._tv_model[treeiter][6]) if path.is_descendant(treepath) else 0)
+		return selected_tasks
 
 	def _get_selected_treepaths(self):
 		selection = self.treeview_transfer.get_selection()
@@ -498,7 +496,8 @@ class StatusDisplay(object):
 					task.remote_path,
 					task.state,
 					0,
-					None if (task.size is None or isinstance(task, TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size)
+					None if (task.size is None or isinstance(task, TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size),
+					task
 				])
 				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))
 			else:
@@ -1055,7 +1054,6 @@ class LocalDirectory(DirectoryBase):
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
 
-	@handle_permission_denied
 	def make_dir(self, path):
 		os.makedirs(path)
 
@@ -1331,48 +1329,41 @@ class FileManager(object):
 		self.status_display.sync_view(task)
 		ftp = self.remote.ftp_acquire()
 		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
-		try:
-			if isinstance(task, UploadTask):
-				src_file_h = open(task.local_path, 'rb')
-				dst_file_h = ftp.file(task.remote_path, write_mode)
-			elif isinstance(task, DownloadTask):
-				src_file_h = ftp.file(task.remote_path, 'rb')
-				dst_file_h = open(task.local_path, write_mode)
-			else:
-				self.remote.ftp_release()
-				raise ValueError('unsupported task type passed to _transfer_file')
+		if isinstance(task, UploadTask):
+			src_file_h = open(task.local_path, 'rb')
+			dst_file_h = ftp.file(task.remote_path, write_mode)
+		elif isinstance(task, DownloadTask):
+			src_file_h = ftp.file(task.remote_path, 'rb')
+			dst_file_h = open(task.local_path, write_mode)
+		else:
 			self.remote.ftp_release()
-			src_file_h.seek(task.transferred)
-			while task.transferred < task.size:
-				if self._threads_shutdown.is_set():
-					task.state = 'Cancelled'
-				if task.state != 'Transferring':
-					break
-				temp = src_file_h.read(chunk)
-				dst_file_h.write(temp)
-				task.transferred += chunk
-				self.status_display.sync_view(task)
-			if task.state == 'Cancelled':
-				if isinstance(task, UploadTask):
-					self.remote.remove_by_file_name(task.remote_path)
-				elif isinstance(task, DownloadTask):
-					self.local.remove_by_file_name(task.local_path)
-			elif task.state != 'Paused':
-				task.state = 'Completed'
-				for parent_task in task.parents:
-					parent_task.transferred += 1
-					if parent_task.transferred < parent_task.size:
-						continue
-					parent_task.state = 'Completed'
-				GLib.idle_add(self._idle_refresh_directories)
-			src_file_h.close()
-			dst_file_h.close()
-		except Exception:
-			logger.error("unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
-			if not task.is_done:
-				task.state = 'Error'
-				for parent in task.parents:
-					parent.state = 'Error'
+			raise ValueError('unsupported task type passed to _transfer_file')
+		self.remote.ftp_release()
+		src_file_h.seek(task.transferred)
+		while task.transferred < task.size:
+			if self._threads_shutdown.is_set():
+				task.state = 'Cancelled'
+			if task.state != 'Transferring':
+				break
+			temp = src_file_h.read(chunk)
+			dst_file_h.write(temp)
+			task.transferred += chunk
+			self.status_display.sync_view(task)
+		if task.state == 'Cancelled':
+			if isinstance(task, UploadTask):
+				self.remote.remove_by_file_name(task.remote_path)
+			elif isinstance(task, DownloadTask):
+				self.local.remove_by_file_name(task.local_path)
+		elif task.state != 'Paused':
+			task.state = 'Completed'
+			for parent_task in task.parents:
+				parent_task.transferred += 1
+				if parent_task.transferred < parent_task.size:
+					continue
+				parent_task.state = 'Completed'
+			GLib.idle_add(self._idle_refresh_directories)
+		src_file_h.close()
+		dst_file_h.close()
 
 	def _idle_refresh_directories(self):
 		self.local.refresh()
@@ -1386,10 +1377,17 @@ class FileManager(object):
 				self.queue.remove(task)
 				break
 			elif isinstance(task, TransferTask):
-				if isinstance(task, TransferDirectoryTask):
-					self._transfer_dir(task)
-				else:
-					self._transfer_file(task)
+				try:
+					if isinstance(task, TransferDirectoryTask):
+						self._transfer_dir(task)
+					else:
+						self._transfer_file(task)
+				except Exception:
+					logger.error("unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
+					if not task.is_done:
+						task.state = 'Error'
+						for parent in task.parents:
+							parent.state = 'Error'
 				self.status_display.sync_view([task] + task.parents)
 
 	def signal_window_destroy(self, _):
