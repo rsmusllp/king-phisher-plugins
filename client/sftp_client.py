@@ -1256,7 +1256,11 @@ class RemoteDirectory(DirectoryBase):
 		path = self.get_abspath(path)
 		subdirs = []
 		files = []
-		for entry in self._yield_dir_list(path):
+		try:
+			entries = list(self._yield_dir_list(path))
+		except (IOError, OSError):
+			return contents
+		for entry in entries:
 			if self.get_is_folder(self.path_mod.join(path, entry)):
 				subdirs.append(entry)
 			else:
@@ -1443,7 +1447,6 @@ class FileManager(object):
 			src_path, dst_path = local_path, remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
-		# todo: check for read access on upload and write access on download
 		self.queue_transfer(task_cls, src_path, dst_path)
 
 	def queue_transfer(self, task_cls, src_path, dst_path):
@@ -1486,11 +1489,6 @@ class FileManager(object):
 					'Cannot read the source file.'
 				)
 				return
-			# todo: what is this even doing?
-			if not stat.S_ISDIR(self.remote.path_mode(dst_path)):
-				if not self.remote.make_dir(dst_path):
-					return
-				dst.remove_by_folder_name(dst_path)
 			local_path, remote_path = self.local.get_abspath(src_path), self.remote.get_abspath(dst_path)
 		file_task = task_cls(local_path, remote_path)
 		if isinstance(file_task, UploadTask):
@@ -1511,16 +1509,23 @@ class FileManager(object):
 		:param str dst_path: The path to be created.
 		"""
 		if issubclass(task_cls, DownloadTask):
+			if not os.access(dst_path, os.W_OK):
+				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not write to the destination directory.')
+				return
 			src, dst = self.remote, self.local
 			task = task_cls.dir_cls(dst_path, src_path, size=0)
 		elif issubclass(task_cls, UploadTask):
+			if not os.access(src_path, os.R_OK):
+				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not read the source directory.')
+				return
 			src, dst = self.local, self.remote
 			task = task_cls.dir_cls(src_path, dst_path, size=0)
-			# todo: perform better checking of permissions here
 			if not stat.S_ISDIR(dst.path_mode(dst_path)):
-				if not dst.make_dir(dst_path):
+				try:
+					dst.make_dir(dst_path)
+				except (IOError, OSError):
+					gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not create the destination directory.')
 					return
-				dst.remove_by_folder_name(dst_path)
 		else:
 			raise ValueError('unknown task class')
 
@@ -1543,11 +1548,15 @@ class FileManager(object):
 			for filename in dir_cont.filenames:
 				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, filename), local=issubclass(task_cls, UploadTask)):
 					continue
+				try:
+					file_size = src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
+				except (IOError, OSError):
+					continue  # skip this file if we can't get it's size
 				task = task_cls(
 					self.local.path_mod.join(local_base_path, filename),
 					self.remote.path_mod.join(remote_base_path, filename),
 					parent=parent_task,
-					size=src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
+					size=file_size
 				)
 				queued_tasks.append(task)
 				self.queue.put(task)
