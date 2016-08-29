@@ -336,7 +336,6 @@ class TransferDirectoryTask(TransferTask):
 	"""
 	has_children = False
 	folder_clicked = False
-	empty = False
 
 class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	"""
@@ -379,8 +378,7 @@ class DelayedChangedSignal(object):
 class StatusDisplay(object):
 	"""
 	Class representing the bottom treeview of the GUI. This contains the logging
-	and graphical representation of all queued transfers. This display is
-	updated every 250ms and otherwise only updated with GLib.idle_add.
+	and graphical representation of all queued transfers.
 	"""
 	def __init__(self, builder, queue):
 		self.builder = builder
@@ -388,8 +386,6 @@ class StatusDisplay(object):
 		self.scroll = self.builder.get_object('scrolledwindow_transfer_statuses')
 		self.treeview_transfer = self.builder.get_object('treeview_transfer_statuses')
 		self._tv_lock = threading.RLock()
-		gsrc_id = GLib.timeout_add(250, self._sync_view, priority=GLib.PRIORITY_DEFAULT_IDLE)  # 250 milliseconds
-		self.treeview_transfer.connect('destroy', self.signal_tv_destroy, gsrc_id)
 
 		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
@@ -473,14 +469,15 @@ class StatusDisplay(object):
 								parent.size -= 1
 				task.state = state_to
 
-	def _sync_view(self):
+	def _sync_view(self, tasks=None):
 		# This value was set to True to prevent the treeview from freezing.
 		if not self.queue.mutex.acquire(blocking=True):
 			return
 		if not self._tv_lock.acquire(blocking=False):
 			self.queue.mutex.release()
 			return
-		for task in self.queue.queue:
+		tasks = (tasks or self.queue.queue)
+		for task in tasks:
 			if not isinstance(task, TransferTask):
 				continue
 			if task.treerowref is None:
@@ -509,7 +506,12 @@ class StatusDisplay(object):
 				row[3] = task.state
 				row[4] = task.progress
 		self.queue.mutex.release()
-		return True
+		return False
+
+	def sync_view(self, tasks=None):
+		if isinstance(tasks, Task):
+			tasks = (tasks,)
+		GLib.idle_add(self._sync_view, tasks, priority=GLib.PRIORITY_HIGH_IDLE)
 
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
@@ -550,11 +552,6 @@ class StatusDisplay(object):
 			self.popup_menu.popup(None, None, None, None, event.button, Gtk.get_current_event_time())
 			return True
 		return
-
-	def signal_tv_destroy(self, _, gsrc_id):
-		self._tv_lock.acquire()
-		GLib.source_remove(gsrc_id)
-		# purposely don't release self._tv_lock, the tv has been destroyed
 
 	def signal_tv_size_allocate(self, _, event, data=None):
 		adj = self.scroll.get_vadjustment()
@@ -704,6 +701,15 @@ class DirectoryBase(object):
 		treeiter = self._treeiter_sort_to_model(treeiter)
 		self.rename(treeiter)
 
+	def _treeiter_model_to_sort(self, model_treeiter):
+		is_valid, filter_treeiter = self._tv_model_filter.convert_child_iter_to_iter(model_treeiter)
+		if not is_valid:
+			return None
+		is_valid, sort_treeiter = self._tv_model_sort.convert_child_iter_to_iter(filter_treeiter)
+		if not is_valid:
+			return None
+		return sort_treeiter
+
 	def _treeiter_sort_to_model(self, sort_treeiter):
 		filter_treeiter = self._tv_model_sort.convert_iter_to_child_iter(sort_treeiter)
 		return self._tv_model_filter.convert_iter_to_child_iter(filter_treeiter)
@@ -831,7 +837,7 @@ class DirectoryBase(object):
 			return True
 		return
 
-	def signal_tv_key_press(self, treeview, event):
+	def signal_tv_key_press(self, _, event):
 		if event.type != Gdk.EventType.KEY_PRESS:
 			return
 		keyval = event.get_keyval()[1]
@@ -892,9 +898,9 @@ class DirectoryBase(object):
 		creating the TreeModel.
 		"""
 		for name in self._yield_dir_list(path):
-			self.create_model_entry(path, parent, name)
+			self.create_model_entry(self.path_mod.join(path, name), parent)
 
-	def create_model_entry(self, path, parent, name):
+	def create_model_entry(self, path, parent):
 		"""
 		Creates a row in the directory model containing a file or directory with
 		its respective name, icon, size, date, and permissions.
@@ -903,25 +909,25 @@ class DirectoryBase(object):
 		:param parent: A TreeIter object pointing to the parent node.
 		:param str name: The name of the file.
 		"""
-		fullname = self.path_mod.join(path, name)
+		basename = self.path_mod.basename(path)
 		try:
-			perm = self._check_perm(fullname)
-			raw_time = self._get_raw_time(fullname)
+			perm = self._check_perm(path)
+			raw_time = self._get_raw_time(path)
 			date = datetime.datetime.fromtimestamp(raw_time)
 			date_modified = '   ' + utilities.format_datetime(date)
-			is_folder = self.get_is_folder(fullname)
+			is_folder = self.get_is_folder(path)
 		except (OSError, IOError):
 			icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-			self._tv_model.append(parent, [name, icon, fullname, None, None, None, None])
+			self._tv_model.append(parent, [basename, icon, path, None, None, None, None])
 			return
 		if is_folder:
 			icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
-			current = self._tv_model.append(parent, (name, icon, fullname, perm, None, -1, date_modified))
+			current = self._tv_model.append(parent, (basename, icon, path, perm, None, -1, date_modified))
 		else:
-			file_size = self.get_file_size(fullname)
+			file_size = self.get_file_size(path)
 			hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
 			icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
-			current = self._tv_model.append(parent, (name, icon, fullname, perm, hr_file_size, file_size, date_modified))
+			current = self._tv_model.append(parent, (basename, icon, path, perm, hr_file_size, file_size, date_modified))
 		if is_folder:
 			self._tv_model.append(current, [None, None, None, None, None, None, None])
 
@@ -932,55 +938,45 @@ class DirectoryBase(object):
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
 
-	def refresh(self, node=None):
+	def refresh(self, treeiter=None):
 		"""
 		Updates the model to reflect additions and removals from other commands.
-
-		:param str node: Keyword arguement that shows the path to be refreshed.
 		"""
-		node = node or self.path_mod.sep
-		node = self.path_mod.relpath(node)
 		model = self._tv_model
-		exp_lines = []
-		model.foreach(lambda _, path, __: exp_lines.append(Gtk.TreeRowReference.new(model, path)) if self.treeview.row_expanded(path) and model[path][2].startswith(node) else 0)
-		_iter = model.get_iter_first()
-		path = model.get_path(_iter)
-		counter = 1
-		if model[path][2].startswith(node):
-			exp_lines.insert(0, Gtk.TreeRowReference.new(model, path))
-			counter = 0
-		for path in exp_lines:
-			path = path.get_path()
-			if path is None:
+		if treeiter is None:
+			parent_treeiter = None
+			parent_path = self.cwd
+			treeiter = model.get_iter_first()
+		else:
+			parent_treeiter = treeiter
+			parent_path = model[parent_treeiter][2]
+			treeiter = model.iter_children(treeiter)
+		self._refresh(treeiter, parent_treeiter, parent_path)
+
+	def _refresh(self, treeiter, parent_treeiter, parent_path):
+		model = self._tv_model
+		tv_model = self.treeview.get_model()
+		dir_list = [self.path_mod.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
+		next_treeiter = treeiter
+		while next_treeiter:
+			treeiter = next_treeiter
+			next_treeiter = model.iter_next(treeiter)
+			row = model[treeiter]
+			path = row[2]
+			if path not in dir_list:
+				model.remove(treeiter)
 				continue
-			old_dir_list = []
-			parent = model.get_iter(path)
-			if counter == 0:
-				child = parent
-				parent = None
-				parent_path = self.path_mod.join(model[path][2].split(self.path_mod.sep)[:-1])
-				parent_path = parent_path or self.cwd
-			else:
-				child = model.iter_children(parent)
-				parent_path = model[parent][2]
-			dir_list = [self.path_mod.join(parent_path, name) for name in self._yield_dir_list(parent_path)]
-			while child is not None:
-				old_dir_list.append((model[child][2], Gtk.TreeRowReference.new(model, model.get_path(child))))
-				child = model.iter_next(child)
-			# this is where we add new entries to the model
-			for dirc in dir_list:
-				if not dirc.startswith(node):
-					continue
-				if dirc not in [name_and_ref[0] for name_and_ref in old_dir_list]:
-					self.create_model_entry(parent_path, parent, dirc.split(self.path_mod.sep)[-1])
-			# this is where we remove missing entries from the model
-			for name_and_ref in old_dir_list:
-				dirc = name_and_ref[0]
-				if dirc is None or not dirc.startswith(node):
-					continue
-				if dirc not in dir_list:
-					model.remove(model.get_iter(name_and_ref[1].get_path()))
-			counter += 1
+			path_is_dir = stat.S_ISDIR(self.path_mode(path))
+			if path_is_dir ^ model.iter_has_child(treeiter):
+				model.remove(treeiter)
+				continue
+			dir_list.remove(path)
+			if path_is_dir and model.iter_has_child(treeiter):
+				tv_treeiter = self._treeiter_model_to_sort(treeiter)
+				if tv_treeiter and self.treeview.row_expanded(tv_model.get_path(tv_treeiter)):
+					self._refresh(model.iter_children(treeiter), treeiter, path)
+		for path in dir_list:
+			self.create_model_entry(path, parent_treeiter)
 
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
@@ -1054,7 +1050,7 @@ class LocalDirectory(DirectoryBase):
 	def path_mode(self, path):
 		if not self.path_mod.exists(path):
 			return 0
-		return stat.S_IFMT(self.stat(path).st_stat)
+		return stat.S_IFMT(self.stat(path).st_mode)
 
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
@@ -1300,10 +1296,10 @@ class FileManager(object):
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application, config)
 		self.remote = RemoteDirectory(self.builder, self.application, config, ssh)
-		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer(UploadTask))
-		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer(DownloadTask))
-		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(UploadTask))
-		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
+		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(UploadTask))
+		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(DownloadTask))
+		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(UploadTask))
+		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(DownloadTask))
 		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
@@ -1322,13 +1318,17 @@ class FileManager(object):
 		elif isinstance(task, DownloadDirectoryTask):
 			self.local.make_dir(task.local_path)
 
-		if task.empty:
-			task.size = 0
-			task.transferred = 0
+		if not task.size:
 			task.state = 'Completed'
+			for parent_task in task.parents:
+				parent_task.transferred += 1
+				if parent_task.transferred < parent_task.size:
+					continue
+				parent_task.state = 'Completed'
 
 	def _transfer_file(self, task, chunk=0x1000):
 		task.state = 'Transferring'
+		self.status_display.sync_view(task)
 		ftp = self.remote.ftp_acquire()
 		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
 		try:
@@ -1351,6 +1351,7 @@ class FileManager(object):
 				temp = src_file_h.read(chunk)
 				dst_file_h.write(temp)
 				task.transferred += chunk
+				self.status_display.sync_view(task)
 			if task.state == 'Cancelled':
 				if isinstance(task, UploadTask):
 					self.remote.remove_by_file_name(task.remote_path)
@@ -1389,6 +1390,7 @@ class FileManager(object):
 					self._transfer_dir(task)
 				else:
 					self._transfer_file(task)
+				self.status_display.sync_view([task] + task.parents)
 
 	def signal_window_destroy(self, _):
 		self.window.set_sensitive(False)
@@ -1406,7 +1408,27 @@ class FileManager(object):
 		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
 		self.config['directories'] = directories
 
-	def _queue_transfer(self, task_cls):
+	def _path_is_hidden(self, path, local):
+		"""
+		Used to determine if the file or directory located at *path* is hidden.
+		On Windows this uses the Windows API, on any other operating system this
+		checks that the basename of the path begins with '.'.
+
+		:param path: The path to iterate through to determine if it is hidden.
+		:param bool local: Whether or not the path is a local path or remote.
+		:return: True if any part of the path is hidden
+		:rtype: bool
+		"""
+		src = self.local if local else self.remote
+		if local and its.on_windows:
+			attribute = win32api.GetFileAttributes(path)
+			if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
+				return True
+		elif src.path_mod.basename(path).startswith('.'):
+			return True
+		return False
+
+	def _queue_transfer_from_selection(self, task_cls):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		local_path = self.local.cwd if treeiter is None else model[treeiter][2]
@@ -1416,23 +1438,29 @@ class FileManager(object):
 		remote_path = self.remote.cwd if treeiter is None else model[treeiter][2]
 
 		if issubclass(task_cls, DownloadTask):
-			src, dst = self.remote, self.local
 			src_path, dst_path = remote_path, local_path
 		elif issubclass(task_cls, UploadTask):
-			src, dst = self.local, self.remote
 			src_path, dst_path = local_path, remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
 		# todo: check for read access on upload and write access on download
+		self.queue_transfer(task_cls, src_path, dst_path)
 
+	def queue_transfer(self, task_cls, src_path, dst_path):
+		if issubclass(task_cls, DownloadTask):
+			src, dst = self.remote, self.local
+		elif issubclass(task_cls, UploadTask):
+			src, dst = self.local, self.remote
+		else:
+			raise ValueError('task_cls must be a subclass of TransferTask')
 		if dst.get_is_folder(dst_path):
 			dst_path = dst.path_mod.join(dst_path, src.path_mod.basename(src_path))
 		if src.get_is_folder(src_path):
-			self.handle_dir_transfer(task_cls, src_path, dst_path)
+			self._queue_dir_transfer(task_cls, src_path, dst_path)
 		else:
-			self.handle_file_transfer(task_cls, src_path, dst_path)
+			self._queue_file_transfer(task_cls, src_path, dst_path)
 
-	def handle_file_transfer(self, task_cls, src_path, dst_path):
+	def _queue_file_transfer(self, task_cls, src_path, dst_path):
 		"""
 		Handles the file transfer by stopping bad transfers, creating tasks for
 		transfers, and placing them in the queue.
@@ -1471,28 +1499,9 @@ class FileManager(object):
 			file_size = self.remote.get_file_size(remote_path)
 		file_task.size = file_size
 		self.queue.put(file_task)
+		self.status_display.sync_view(file_task)
 
-	def _path_is_hidden(self, path, local):
-		"""
-		Used to determine if the file or directory located at *path* is hidden.
-		On Windows this uses the Windows API, on any other operating system this
-		checks that the basename of the path begins with '.'.
-
-		:param path: The path to iterate through to determine if it is hidden.
-		:param bool local: Whether or not the path is a local path or remote.
-		:return: True if any part of the path is hidden
-		:rtype: bool
-		"""
-		src = self.local if local else self.remote
-		if local and its.on_windows:
-			attribute = win32api.GetFileAttributes(path)
-			if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
-				return True
-		elif src.path_mod.basename(path).startswith('.'):
-			return True
-		return False
-
-	def handle_dir_transfer(self, task_cls, src_path, dst_path):
+	def _queue_dir_transfer(self, task_cls, src_path, dst_path):
 		"""
 		Handles the folder transfer by stopping bad transfers, creating tasks
 		for transfers, and placing them in the queue.
@@ -1515,6 +1524,7 @@ class FileManager(object):
 		else:
 			raise ValueError('unknown task class')
 
+		queued_tasks = [task]
 		self.queue.put(task)
 		parent_directory_tasks = {src_path: task}
 
@@ -1533,12 +1543,14 @@ class FileManager(object):
 			for filename in dir_cont.filenames:
 				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, filename), local=issubclass(task_cls, UploadTask)):
 					continue
-				self.queue.put(task_cls(
+				task = task_cls(
 					self.local.path_mod.join(local_base_path, filename),
 					self.remote.path_mod.join(remote_base_path, filename),
 					parent=parent_task,
 					size=src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
-				))
+				)
+				queued_tasks.append(task)
+				self.queue.put(task)
 				parent_task.size += 1
 
 			for dirname in dir_cont.dirnames:
@@ -1552,4 +1564,6 @@ class FileManager(object):
 				)
 				parent_task.size += 1
 				parent_directory_tasks[src.path_mod.join(src_base_path, dirname)] = task
+				queued_tasks.append(task)
 				self.queue.put(task)
+		self.status_display.sync_view(queued_tasks)
