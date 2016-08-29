@@ -1306,14 +1306,14 @@ class FileManager(object):
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer(DownloadTask))
 		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
-		menu_item.connect('toggled', self.signal_toggled_transfer_hidden)
+		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
 		menu_item = self.builder.get_object('menuitem_exit')
 		menu_item.connect('activate', lambda _: self.window.destroy())
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
-	def signal_toggled_transfer_hidden(self, _):  # pylint: disable=method-hidden
-		self.config['transfer_hidden'] = self.config['transfer_hidden']
+	def signal_toggled_config_option(self, menuitem, config_key):
+		self.config[config_key] = menuitem.get_active()
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
@@ -1472,11 +1472,11 @@ class FileManager(object):
 		file_task.size = file_size
 		self.queue.put(file_task)
 
-	def _is_path_hidden(self, path, local):
+	def _path_is_hidden(self, path, local):
 		"""
-		Used to determine if any part of the path is hidden. On Windows this
-		uses the Windows API, on any other operating system this checks for an
-		entry in the path that begins with '.'.
+		Used to determine if the file or directory located at *path* is hidden.
+		On Windows this uses the Windows API, on any other operating system this
+		checks that the basename of the path begins with '.'.
 
 		:param path: The path to iterate through to determine if it is hidden.
 		:param bool local: Whether or not the path is a local path or remote.
@@ -1485,16 +1485,11 @@ class FileManager(object):
 		"""
 		src = self.local if local else self.remote
 		if local and its.on_windows:
-			path_list = path.split(src.path_mod.sep)
-			for i in range(0, len(path_list)):
-				temp_path = src.path_mod.join(*path_list[0:i + 1])
-				attribute = win32api.GetFileAttributes(temp_path)
-				if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
-					return True
-		else:
-			for path in path.split(src.path_mod.sep):
-				if not path.startswith('.'):
-					return True
+			attribute = win32api.GetFileAttributes(path)
+			if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
+				return True
+		elif src.path_mod.basename(path).startswith('.'):
+			return True
 		return False
 
 	def handle_dir_transfer(self, task_cls, src_path, dst_path):
@@ -1526,7 +1521,9 @@ class FileManager(object):
 		for dir_cont in src.walk(src_path):
 			dst_base_path = dst.path_mod.normpath(dst.path_mod.join(dst_path, src.get_relpath(dir_cont.dirpath, start=src_path)))
 			src_base_path = dir_cont.dirpath
-			parent_task = parent_directory_tasks.pop(src_base_path)
+			parent_task = parent_directory_tasks.pop(src_base_path, None)
+			if parent_task is None:
+				continue
 
 			if issubclass(task_cls, DownloadTask):
 				local_base_path, remote_base_path = (dst_base_path, src_base_path)
@@ -1534,6 +1531,8 @@ class FileManager(object):
 				local_base_path, remote_base_path = (src_base_path, dst_base_path)
 
 			for filename in dir_cont.filenames:
+				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, filename), local=issubclass(task_cls, UploadTask)):
+					continue
 				self.queue.put(task_cls(
 					self.local.path_mod.join(local_base_path, filename),
 					self.remote.path_mod.join(remote_base_path, filename),
@@ -1543,6 +1542,8 @@ class FileManager(object):
 				parent_task.size += 1
 
 			for dirname in dir_cont.dirnames:
+				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, dirname), local=issubclass(task_cls, UploadTask)):
+					continue
 				task = task_cls.dir_cls(
 					self.local.path_mod.join(local_base_path, dirname),
 					self.remote.path_mod.join(remote_base_path, dirname),
