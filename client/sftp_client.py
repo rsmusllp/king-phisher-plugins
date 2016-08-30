@@ -1301,10 +1301,7 @@ class RemoteDirectory(DirectoryBase):
 				subdirs.append(entry)
 			else:
 				files.append(entry)
-		# mimic the behaviour or os.walk by denying empty directories their own
-		# DirectoryContents instance
-		if len(files) or len(subdirs):
-			contents.append(DirectoryContents(path, subdirs, files))
+		contents.append(DirectoryContents(path, subdirs, files))
 		for folder in subdirs:
 			contents.extend(self.walk(self.path_mod.join(path, folder)))
 		return contents
@@ -1543,8 +1540,8 @@ class FileManager(object):
 		else:
 			raise ValueError('unknown task class')
 
-		queued_tasks = [task]
-		parent_directory_tasks = {src_path: task}
+		queued_tasks = []
+		parent_directory_tasks = collections.OrderedDict({src_path: task})
 
 		for dir_cont in src.walk(src_path):
 			dst_base_path = dst.path_mod.normpath(dst.path_mod.join(dst_path, src.get_relpath(dir_cont.dirpath, start=src_path)))
@@ -1552,6 +1549,7 @@ class FileManager(object):
 			parent_task = parent_directory_tasks.pop(src_base_path, None)
 			if parent_task is None:
 				continue
+			queued_tasks.append(parent_task)
 
 			new_task_count = 0
 			if issubclass(task_cls, DownloadTask):
@@ -1585,7 +1583,6 @@ class FileManager(object):
 					size=0
 				)
 				parent_directory_tasks[src.path_mod.join(src_base_path, dirname)] = task
-				queued_tasks.append(task)
 				new_task_count += 1
 
 			parent_task.size += new_task_count
