@@ -88,7 +88,7 @@ class Plugin(plugins.ClientPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 	req_min_version = '1.4.0b0'
-	version = '0.9'
+	version = '1.0'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
@@ -212,7 +212,7 @@ class TaskQueue(object):
 			self.queue.append(task)
 			self.unfinished_tasks += 1
 			self.not_empty.notify()
-		logger.debug("task: {0!r} has been added to the queue".format(task))
+		logger.debug('queued task: ' + str(task))
 
 	def remove(self, task):
 		"""
@@ -266,7 +266,8 @@ class ShutdownTask(Task):
 	"""
 	Dummy task used to signal the queue to shutdown.
 	"""
-	pass
+	def __str__(self):
+		return 'shutdown'
 
 class TransferTask(Task):
 	"""
@@ -342,6 +343,8 @@ class DownloadTask(TransferTask):
 	the task is downloading files.
 	"""
 	transfer_direction = 'download'
+	def __str__(self):
+		return "download file {0} -> {1}".format(self.remote_path, self.local_path)
 
 class UploadTask(TransferTask):
 	"""
@@ -349,6 +352,8 @@ class UploadTask(TransferTask):
 	the task is uploading files.
 	"""
 	transfer_direction = 'upload'
+	def __str__(self):
+		return "upload file {0} -> {1}".format(self.local_path, self.remote_path)
 
 class TransferDirectoryTask(TransferTask):
 	"""
@@ -362,7 +367,8 @@ class DownloadDirectoryTask(DownloadTask, TransferDirectoryTask):
 	Subclass of DownloadTask and TransferDirectoryTask that indicates the task
 	is downloading folders.
 	"""
-	pass
+	def __str__(self):
+		return "download directory {0} -> {1}".format(self.remote_path, self.local_path)
 DownloadTask.dir_cls = DownloadDirectoryTask
 
 class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
@@ -370,7 +376,8 @@ class UploadDirectoryTask(UploadTask, TransferDirectoryTask):
 	Subclass of UploadTask and TransferDirectoryTask that indicates the task is
 	uploading folders.
 	"""
-	pass
+	def __str__(self):
+		return "upload directory {0} -> {1}".format(self.remote_path, self.local_path)
 UploadTask.dir_cls = UploadDirectoryTask
 
 class DelayedChangedSignal(object):
@@ -739,7 +746,7 @@ class DirectoryBase(object):
 
 		:param str new_dir: The directory to change the CWD to.
 		"""
-		self.path_mod.normpath(new_dir)
+		new_dir = self.path_mod.normpath(new_dir)
 		if new_dir == self.cwd:
 			return
 		self._chdir(new_dir)
@@ -1060,8 +1067,12 @@ class LocalDirectory(DirectoryBase):
 		self.stat = os.stat
 		self._chdir = os.chdir
 		self.path_mod = os.path
-		wd_history = config['directories'].get('local', [])
-		super(LocalDirectory, self).__init__(builder, application, config, self.path_mod.expanduser('~'), wd_history)
+		local_directories = config['directories'].get('local', {})
+		wd = local_directories.get('current')
+		if wd is None or not os.access(wd, os.R_OK):
+			wd = self.path_mod.expanduser('~')
+		wd_history = local_directories.get('history', [])
+		super(LocalDirectory, self).__init__(builder, application, config, wd, wd_history)
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
@@ -1410,17 +1421,19 @@ class FileManager(object):
 		while not self._threads_shutdown.is_set():
 			task = self.queue.get()
 			if isinstance(task, ShutdownTask):
+				logger.info('processing task: ' + str(task))
 				task.state = 'Completed'
 				self.queue.remove(task)
 				break
 			elif isinstance(task, TransferTask):
+				logger.debug('processing task: ' + str(task))
 				try:
 					if isinstance(task, TransferDirectoryTask):
 						self._transfer_dir(task)
 					else:
 						self._transfer_file(task)
 				except Exception:
-					logger.error("unknown error transferring {0} and {1}".format(task.local_path, task.remote_path), exc_info=True)
+					logger.error("unknown error processing task: {0!r}".format(task), exc_info=True)
 					if not task.is_done:
 						task.state = 'Error'
 						for parent in task.parents:
@@ -1437,8 +1450,11 @@ class FileManager(object):
 		self.local.shutdown()
 		self.remote.shutdown()
 		directories = self.config.get('directories', {})
-		directories['local'] = list(self.local.wd_history)
-		if not 'remote' in directories:
+		directories['local'] = {
+			'current': self.local.cwd,
+			'history': list(self.local.wd_history)
+		}
+		if 'remote' not in directories:
 			directories['remote'] = {}
 		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
 		self.config['directories'] = directories
