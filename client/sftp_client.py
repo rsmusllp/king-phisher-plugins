@@ -669,11 +669,15 @@ class DirectoryBase(object):
 		)
 		if confirmed:
 			self.delete(treeiter)
+			selection.unselect_all()
 
 	def _filter_entries(self, model, treeiter, _):
 		if model[treeiter][0] in (None, '.', '..'):
 			return True
-		if not self.config['show_hidden'] and self.path_is_hidden(model[treeiter][2]):
+		path = model[treeiter][2]
+		if path is None:
+			return True
+		if not self.config['show_hidden'] and self.path_is_hidden(path):
 			return False
 		return True
 
