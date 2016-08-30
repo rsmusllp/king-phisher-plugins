@@ -103,6 +103,8 @@ class Plugin(plugins.ClientPlugin):
 			self.config['directories'] = {}
 		if 'transfer_hidden' not in self.config:
 			self.config['transfer_hidden'] = False
+		if 'show_hidden' not in self.config:
+			self.config['show_hidden'] = False
 		self.signal_connect('sftp-client-start', self.signal_sftp_start)
 		return True
 
@@ -129,15 +131,16 @@ class Plugin(plugins.ClientPlugin):
 			try:
 				manager = FileManager(self.application, ssh, self.config)
 			except paramiko.ssh_exception.ChannelException as error:
+				self.logger.error('an ssh channel exception was raised while initializing', exc_info=True)
 				if len(error.args) == 2:
 					details = "SSH Channel Exception #{0} ({1})".format(*error.args)
 				else:
 					details = 'An unknown SSH Channel Exception occurred.'
-				gui_utilities.show_dialog_error(
-					'SSH Channel Exception',
-					self.application.get_active_window(),
-					details
-				)
+				gui_utilities.show_dialog_error('SSH Channel Exception', self.application.get_active_window(), details)
+				return
+			except paramiko.ssh_exception.SSHException:
+				self.logger.error('an ssh exception was raised while initializing', exc_info=True)
+				gui_utilities.show_dialog_error('SSH Exception', self.application.get_active_window(), 'An error occurred in the SSH transport.')
 				return
 			self.sftp_window = manager.window
 			self.sftp_window.connect('destroy', self.signal_window_destroy)
@@ -561,8 +564,9 @@ class DirectoryBase(object):
 	Base directory object that is used by both the remote and local directory to
 	get and render directory data.
 	"""
-	def __init__(self, builder, application, default_directory, wd_history):
+	def __init__(self, builder, application, config, default_directory, wd_history):
 		self.application = application
+		self.config = config
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
 		self.default_directory = default_directory
 		self.wd_history = collections.deque(wd_history, maxlen=3)
@@ -601,6 +605,7 @@ class DirectoryBase(object):
 		self._tv_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
 		self._tv_model_filter = self._tv_model.filter_new()
 		self._tv_model_filter.set_visible_func(self._filter_entries)
+		self.refilter = self._tv_model_filter.refilter
 		self._tv_model_sort = Gtk.TreeModelSort(model=self._tv_model_filter)
 		self.treeview.set_model(self._tv_model_sort)
 
@@ -645,20 +650,15 @@ class DirectoryBase(object):
 			self.delete(treeiter)
 
 	def _filter_entries(self, model, treeiter, _):
-		basename = model[treeiter][0]
-		if basename in (None, '.', '..'):
+		if model[treeiter][0] in (None, '.', '..'):
 			return True
-		if not self.show_hidden and basename.startswith('.'):
+		if not self.config['show_hidden'] and self.path_is_hidden(model[treeiter][2]):
 			return False
 		return True
 
 	def _get_popup_menu(self):
 		self._menu_items_req_selection = []
 		self.popup_menu = Gtk.Menu.new()
-		menu_item = Gtk.CheckMenuItem.new_with_label('Show Hidden Files')
-		menu_item.connect('toggled', self.signal_menu_toggled_hidden_files)
-		self.signal_menu_toggled_hidden_files = menu_item
-		self.popup_menu.append(menu_item)
 
 		self.menu_item_transfer = Gtk.MenuItem.new_with_label(self.transfer_direction.title())
 		self.popup_menu.append(self.menu_item_transfer)
@@ -786,6 +786,18 @@ class DirectoryBase(object):
 		if stat_override is not None:
 			return stat_override(fullname).st_size
 		return self.stat(fullname).st_size
+
+	def path_is_hidden(self, path):
+		"""
+		Used to determine if the file or directory located at *path* is hidden.
+		On Windows this uses the Windows API, on any other operating system this
+		checks that the basename of the path begins with '.'.
+
+		:param path: The path to iterate through to determine if it is hidden.
+		:return: True if any part of the path is hidden
+		:rtype: bool
+		"""
+		raise NotImplementedError()
 
 	def path_mode(self, path):
 		"""
@@ -929,10 +941,6 @@ class DirectoryBase(object):
 		if is_folder:
 			self._tv_model.append(current, [None, None, None, None, None, None, None])
 
-	def signal_menu_toggled_hidden_files(self, _):  # pylint: disable=method-hidden
-		self.show_hidden = not self.show_hidden
-		self._tv_model_filter.refilter()
-
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
 
@@ -1039,7 +1047,7 @@ class LocalDirectory(DirectoryBase):
 		self._chdir = os.chdir
 		self.path_mod = os.path
 		wd_history = config['directories'].get('local', [])
-		super(LocalDirectory, self).__init__(builder, application, self.path_mod.expanduser('~'), wd_history)
+		super(LocalDirectory, self).__init__(builder, application, config, self.path_mod.expanduser('~'), wd_history)
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
@@ -1055,6 +1063,15 @@ class LocalDirectory(DirectoryBase):
 
 	def make_dir(self, path):
 		os.makedirs(path)
+
+	def path_is_hidden(self, path):
+		if its.on_windows:
+			attribute = win32api.GetFileAttributes(path)
+			if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
+				return True
+		elif self.path_mod.basename(path).startswith('.'):
+			return True
+		return False
 
 	@handle_permission_denied
 	def delete(self, treeiter):
@@ -1119,7 +1136,7 @@ class RemoteDirectory(DirectoryBase):
 		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		self._thread_local_ftp = {}
-		super(RemoteDirectory, self).__init__(builder, application, application.config['server_config']['server.web_root'], wd_history)
+		super(RemoteDirectory, self).__init__(builder, application, config, application.config['server_config']['server.web_root'], wd_history)
 
 	def _chdir(self, path):
 		for obj_lock in self._thread_local_ftp.values():
@@ -1140,6 +1157,11 @@ class RemoteDirectory(DirectoryBase):
 	def make_dir(self, path):
 		with self.ftp_handle() as ftp:
 			ftp.mkdir(path)
+
+	def path_is_hidden(self, path):
+		if self.path_mod.basename(path).startswith('.'):
+			return True
+		return False
 
 	@handle_permission_denied
 	def delete(self, treeiter):
@@ -1303,6 +1325,9 @@ class FileManager(object):
 		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
+		menu_item = self.builder.get_object('menuitem_opts_show_hidden')
+		menu_item.set_active(self.config['show_hidden'])
+		menu_item.connect('toggled', self.signal_toggled_config_option_show_hidden)
 		menu_item = self.builder.get_object('menuitem_exit')
 		menu_item.connect('activate', lambda _: self.window.destroy())
 		self.window.connect('destroy', self.signal_window_destroy)
@@ -1310,6 +1335,11 @@ class FileManager(object):
 
 	def signal_toggled_config_option(self, menuitem, config_key):
 		self.config[config_key] = menuitem.get_active()
+
+	def signal_toggled_config_option_show_hidden(self, menuitem):
+		self.config['show_hidden'] = menuitem.get_active()
+		self.local.refilter()
+		self.remote.refilter()
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
@@ -1411,26 +1441,6 @@ class FileManager(object):
 			directories['remote'] = {}
 		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
 		self.config['directories'] = directories
-
-	def _path_is_hidden(self, path, local):
-		"""
-		Used to determine if the file or directory located at *path* is hidden.
-		On Windows this uses the Windows API, on any other operating system this
-		checks that the basename of the path begins with '.'.
-
-		:param path: The path to iterate through to determine if it is hidden.
-		:param bool local: Whether or not the path is a local path or remote.
-		:return: True if any part of the path is hidden
-		:rtype: bool
-		"""
-		src = self.local if local else self.remote
-		if local and its.on_windows:
-			attribute = win32api.GetFileAttributes(path)
-			if attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM):
-				return True
-		elif src.path_mod.basename(path).startswith('.'):
-			return True
-		return False
 
 	def _queue_transfer_from_selection(self, task_cls):
 		selection = self.local.treeview.get_selection()
@@ -1546,7 +1556,7 @@ class FileManager(object):
 				local_base_path, remote_base_path = (src_base_path, dst_base_path)
 
 			for filename in dir_cont.filenames:
-				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, filename), local=issubclass(task_cls, UploadTask)):
+				if not self.config['transfer_hidden'] and src.path_is_hidden(src.path_mod.join(src_base_path, filename)):
 					continue
 				try:
 					file_size = src.get_file_size(src.path_mod.join(dir_cont.dirpath, filename))
@@ -1563,7 +1573,7 @@ class FileManager(object):
 				parent_task.size += 1
 
 			for dirname in dir_cont.dirnames:
-				if not self.config['transfer_hidden'] and self._path_is_hidden(src.path_mod.join(src_base_path, dirname), local=issubclass(task_cls, UploadTask)):
+				if not self.config['transfer_hidden'] and src.path_is_hidden(src.path_mod.join(src_base_path, dirname)):
 					continue
 				task = task_cls.dir_cls(
 					self.local.path_mod.join(local_base_path, dirname),
