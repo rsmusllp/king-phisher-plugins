@@ -318,6 +318,24 @@ class TransferTask(Task):
 			percent = (float(self.transferred) / float(self.size))
 		return min(int(percent * 100), 100)
 
+	@property
+	def state(self):
+		return Task.state.fget(self)
+
+	@state.setter
+	def state(self, value):
+		if value == Task.state.fget(self):
+			return
+		Task.state.fset(self, value)
+		if value in ('Cancelled', 'Completed'):
+			for parent_task in self.parents:
+				if value == 'Cancelled':
+					parent_task.size -= 1
+				else:
+					parent_task.transferred += 1
+				if parent_task.transferred == parent_task.size:
+					parent_task.state = 'Completed'
+
 class DownloadTask(TransferTask):
 	"""
 	Subclass of TransferTask that indicates
@@ -442,6 +460,8 @@ class StatusDisplay(object):
 			return None
 		selected_tasks = set()
 		for treepath in treepaths:
+			treeiter = self._tv_model.get_iter(treepath)
+			selected_tasks.add(self._tv_model[treeiter][6])
 			self._tv_model.foreach(lambda _, path, treeiter: selected_tasks.add(self._tv_model[treeiter][6]) if path.is_descendant(treepath) else 0)
 		return selected_tasks
 
@@ -455,20 +475,14 @@ class StatusDisplay(object):
 		return treepaths
 
 	def _change_task_state(self, state_from, state_to):
+		modified_tasks = []
 		with self.queue.mutex:
-			for task in self._get_selected_tasks():
-				if task.state not in state_from:
-					continue
-				if state_to == 'Cancelled':
-					if isinstance(task, TransferDirectoryTask):
-						if task.has_children:
-							# Folder clicked indicates a parent task has been clicked and to freeze its progress
-							task.folder_clicked = True
-					elif task.parents:
-						for parent in task.parents:
-							if not parent.folder_clicked:
-								parent.size -= 1
+			selected_tasks = set([task for task in self._get_selected_tasks() if task.state in state_from])
+			for task in selected_tasks:
+				modified_tasks.append(task)
+				modified_tasks.extend(task.parents)  # ensure parents are also synced because state changes may affect them
 				task.state = state_to
+		self.sync_view(set(modified_tasks))
 
 	def _sync_view(self, tasks=None):
 		# This value was set to True to prevent the treeview from freezing.
@@ -503,7 +517,7 @@ class StatusDisplay(object):
 					task
 				])
 				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))
-			else:
+			elif task.treerowref.valid():
 				row = self._tv_model[task.treerowref.get_path()]  # pylint: disable=unsubscriptable-object
 				row[3] = task.state
 				row[4] = task.progress
@@ -517,7 +531,7 @@ class StatusDisplay(object):
 
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
-			for task in self.queue.queue:
+			for task in list(self.queue.queue):
 				if not task.is_done:
 					continue
 				if task.treerowref is not None and task.treerowref.valid():
@@ -1354,11 +1368,6 @@ class FileManager(object):
 
 		if not task.size:
 			task.state = 'Completed'
-			for parent_task in task.parents:
-				parent_task.transferred += 1
-				if parent_task.transferred < parent_task.size:
-					continue
-				parent_task.state = 'Completed'
 
 	def _transfer_file(self, task, chunk=0x1000):
 		task.state = 'Transferring'
@@ -1392,11 +1401,6 @@ class FileManager(object):
 				self.local.remove_by_file_name(task.local_path)
 		elif task.state != 'Paused':
 			task.state = 'Completed'
-			for parent_task in task.parents:
-				parent_task.transferred += 1
-				if parent_task.transferred < parent_task.size:
-					continue
-				parent_task.state = 'Completed'
 			GLib.idle_add(self._idle_refresh_directories)
 		src_file_h.close()
 		dst_file_h.close()
@@ -1540,7 +1544,6 @@ class FileManager(object):
 			raise ValueError('unknown task class')
 
 		queued_tasks = [task]
-		self.queue.put(task)
 		parent_directory_tasks = {src_path: task}
 
 		for dir_cont in src.walk(src_path):
@@ -1550,6 +1553,7 @@ class FileManager(object):
 			if parent_task is None:
 				continue
 
+			new_task_count = 0
 			if issubclass(task_cls, DownloadTask):
 				local_base_path, remote_base_path = (dst_base_path, src_base_path)
 			else:
@@ -1569,8 +1573,7 @@ class FileManager(object):
 					size=file_size
 				)
 				queued_tasks.append(task)
-				self.queue.put(task)
-				parent_task.size += 1
+				new_task_count += 1
 
 			for dirname in dir_cont.dirnames:
 				if not self.config['transfer_hidden'] and src.path_is_hidden(src.path_mod.join(src_base_path, dirname)):
@@ -1581,8 +1584,13 @@ class FileManager(object):
 					parent=parent_task,
 					size=0
 				)
-				parent_task.size += 1
 				parent_directory_tasks[src.path_mod.join(src_base_path, dirname)] = task
 				queued_tasks.append(task)
-				self.queue.put(task)
+				new_task_count += 1
+
+			parent_task.size += new_task_count
+			for grandparent_task in parent_task.parents:
+				grandparent_task.size += new_task_count
+		for task in queued_tasks:
+			self.queue.put(task)
 		self.status_display.sync_view(queued_tasks)
