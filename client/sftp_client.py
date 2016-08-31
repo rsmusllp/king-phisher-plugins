@@ -747,8 +747,11 @@ class DirectoryBase(object):
 		Changes current working directory to given parameter.
 
 		:param str new_dir: The directory to change the CWD to.
+		:return: The absolute path of the new working directory if it was changed.
+		:rtype: str
 		"""
-		new_dir = self.path_mod.normpath(new_dir)
+		if not self.path_mod.isabs(new_dir):
+			new_dir = self.get_abspath(new_dir)
 		if new_dir == self.cwd:
 			return
 		self._chdir(new_dir)
@@ -766,6 +769,7 @@ class DirectoryBase(object):
 			self._wdcb_model.append((directory,))
 		active_iter = gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir)
 		self.wdcb_dropdown.set_active_iter(active_iter)
+		return new_dir
 
 	def get_abspath(self, path):
 		"""
@@ -843,15 +847,12 @@ class DirectoryBase(object):
 		new_dir = combobox.get_active_text()
 		if not new_dir:
 			return
+		if not self.path_mod.isabs(new_dir):
+			new_dir = self.get_abspath(new_dir)
 		entry = combobox.get_child()
 		if not self.get_is_folder(new_dir):
 			entry.set_property('primary-icon-name', 'dialog-warning')
 			return
-		if new_dir == CURRENT_DIRECTORY:
-			entry.set_property('primary-icon-name', 'gtk-apply')
-			return
-		if new_dir == PARENT_DIRECTORY:
-			new_dir = self.path_mod.abspath(self.path_mod.join(self.cwd, PARENT_DIRECTORY))
 		try:
 			with gui_utilities.gobject_signal_blocked(combobox, 'changed'):
 				self.change_cwd(new_dir)
@@ -859,6 +860,7 @@ class DirectoryBase(object):
 			entry.set_property('primary-icon-name', 'dialog-warning')
 		else:
 			entry.set_property('primary-icon-name', 'gtk-apply')
+			entry.set_text(new_dir)
 
 	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
@@ -1069,13 +1071,14 @@ class LocalDirectory(DirectoryBase):
 		self.stat = os.stat
 		self._chdir = os.chdir
 		self.path_mod = os.path
+		self.default_directory = self.path_mod.expanduser('~')
 		local_directories = config['directories'].get('local', {})
 		wd_history = local_directories.get('history', [])
 		super(LocalDirectory, self).__init__(builder, application, config, wd_history)
-		self.default_directory = local_directories.get('current')
-		if self.default_directory is None or not os.access(self.default_directory, os.R_OK):
-			self.default_directory = self.path_mod.expanduser('~')
-		self.change_cwd(self.default_directory)
+		current_directory = local_directories.get('current')
+		if current_directory is None or not os.access(current_directory, os.R_OK):
+			current_directory = self.default_directory
+		self.change_cwd(current_directory)
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
@@ -1088,6 +1091,12 @@ class LocalDirectory(DirectoryBase):
 
 	def _rename_file(self, _iter, path):
 		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
+
+	def change_cwd(self, new_dir):
+		new_dir = super(LocalDirectory, self).change_cwd(new_dir)
+		if new_dir is not None:
+			logger.debug('set the local working directory to: ' + new_dir)
+		return new_dir
 
 	def make_dir(self, path):
 		os.makedirs(path)
@@ -1189,6 +1198,12 @@ class RemoteDirectory(DirectoryBase):
 		with self.ftp_handle() as ftp:
 			for name in ftp.listdir(path):
 				yield name
+
+	def change_cwd(self, new_dir):
+		new_dir = super(RemoteDirectory, self).change_cwd(new_dir)
+		if new_dir is not None:
+			logger.debug('set the remote working directory to: ' + new_dir)
+		return new_dir
 
 	def make_dir(self, path):
 		with self.ftp_handle() as ftp:
