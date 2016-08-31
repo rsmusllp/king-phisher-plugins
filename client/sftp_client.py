@@ -1239,10 +1239,12 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		current_tid = threading.current_thread().ident
 		if current_tid not in self._thread_local_ftp:
-			logger.info("opening new sftp session for tid 0x{0:x}".format(current_tid))
+			logger.info("opening a new sftp session for tid 0x{0:x}".format(current_tid))
 			ftp = self.ssh.open_sftp()
 			ftp.chdir(self.cwd)
 			self._thread_local_ftp[current_tid] = ObjectLock(ftp, threading.RLock())
+		else:
+			logger.debug("leasing an existing sftp session to tid 0x{0:x}".format(current_tid))
 		obj_lock = self._thread_local_ftp[current_tid]
 		obj_lock.lock.acquire()
 		return obj_lock.object
@@ -1261,9 +1263,10 @@ class RemoteDirectory(DirectoryBase):
 		:py:meth:`.ftp_acquire`.
 		"""
 		current_tid = threading.current_thread().ident
-		if not current_tid in self._thread_local_ftp:
-			raise ValueError('ftp_release() called for thread before ftp_acquire')
+		if current_tid not in self._thread_local_ftp:
+			raise RuntimeError('ftp_release() called for thread before ftp_acquire')
 		self._thread_local_ftp[current_tid].lock.release()
+		logger.debug("leased sftp session released from tid 0x{0:x}".format(current_tid))
 		return
 
 	def path_mode(self, path):
@@ -1277,12 +1280,14 @@ class RemoteDirectory(DirectoryBase):
 
 	def shutdown(self):
 		active_tids = tuple(self._thread_local_ftp.keys())
-		for tid in active_tids:
+		logger.info("closing {0} active sftp sessions".format(len(active_tids)))
+		for idx, tid in enumerate(active_tids, 1):
 			obj_lock = self._thread_local_ftp[tid]
-			logger.info("closing sftp session for tid 0x{0:x}".format(tid))
+			logger.debug("closing sftp session {0} of {1} for tid 0x{2:x}".format(idx, len(active_tids), tid))
 			with obj_lock.lock:
 				obj_lock.object.close()
 				del self._thread_local_ftp[tid]
+		logger.debug('all open sftp sessions have been closed')
 
 	def stat(self, path):
 		with self.ftp_handle() as ftp:
