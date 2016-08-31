@@ -585,11 +585,10 @@ class DirectoryBase(object):
 	Base directory object that is used by both the remote and local directory to
 	get and render directory data.
 	"""
-	def __init__(self, builder, application, config, default_directory, wd_history):
+	def __init__(self, builder, application, config, wd_history):
 		self.application = application
 		self.config = config
 		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
-		self.default_directory = default_directory
 		self.wd_history = collections.deque(wd_history, maxlen=3)
 		self.cwd = None
 		self.col_name = Gtk.CellRendererText()
@@ -638,7 +637,6 @@ class DirectoryBase(object):
 
 		self.show_hidden = False
 		self._get_popup_menu()
-		self.change_cwd(default_directory)
 
 	def _check_perm(self, fullname):
 		mode = self.stat(fullname).st_mode
@@ -762,7 +760,7 @@ class DirectoryBase(object):
 		self._wdcb_model.append((self.root_directory,))
 		if self.default_directory != self.root_directory:
 			self._wdcb_model.append((self.default_directory,))
-		if not new_dir in self.wd_history and gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir) is None:
+		if new_dir not in self.wd_history and gui_utilities.gtk_list_store_search(self._wdcb_model, new_dir) is None:
 			self.wd_history.appendleft(new_dir)
 		for directory in self.wd_history:
 			self._wdcb_model.append((directory,))
@@ -1072,11 +1070,12 @@ class LocalDirectory(DirectoryBase):
 		self._chdir = os.chdir
 		self.path_mod = os.path
 		local_directories = config['directories'].get('local', {})
-		wd = local_directories.get('current')
-		if wd is None or not os.access(wd, os.R_OK):
-			wd = self.path_mod.expanduser('~')
 		wd_history = local_directories.get('history', [])
-		super(LocalDirectory, self).__init__(builder, application, config, wd, wd_history)
+		super(LocalDirectory, self).__init__(builder, application, config, wd_history)
+		self.default_directory = local_directories.get('current')
+		if self.default_directory is None or not os.access(self.default_directory, os.R_OK):
+			self.default_directory = self.path_mod.expanduser('~')
+		self.change_cwd(self.default_directory)
 
 	def _yield_dir_list(self, path):
 		for name in os.listdir(path):
@@ -1165,7 +1164,15 @@ class RemoteDirectory(DirectoryBase):
 		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		self._thread_local_ftp = {}
-		super(RemoteDirectory, self).__init__(builder, application, config, application.config['server_config']['server.web_root'], wd_history)
+		super(RemoteDirectory, self).__init__(builder, application, config, wd_history)
+
+		self.default_directory = application.config['server_config']['server.web_root']
+		try:
+			self.change_cwd(self.default_directory)
+		except (IOError, OSError):
+			logger.info('failed to set remote directory to the web root: ' + application.config['server_config']['server.web_root'])
+			self.default_directory = self.root_directory
+			self.change_cwd(self.default_directory)
 
 	def _chdir(self, path):
 		for obj_lock in self._thread_local_ftp.values():
@@ -1216,7 +1223,7 @@ class RemoteDirectory(DirectoryBase):
 		:return: A handle to an FTP session.
 		"""
 		current_tid = threading.current_thread().ident
-		if not current_tid in self._thread_local_ftp:
+		if current_tid not in self._thread_local_ftp:
 			logger.info("opening new sftp session for tid 0x{0:x}".format(current_tid))
 			ftp = self.ssh.open_sftp()
 			ftp.chdir(self.cwd)
