@@ -96,7 +96,7 @@ class Plugin(plugins.ClientPlugin):
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
 				self.application.get_active_window(),
-				'The GTK Builder data file (.ui extension) is not available.'
+				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(gtk_builder_file))
 			)
 			return False
 		if 'directories' not in self.config:
@@ -638,20 +638,19 @@ class DirectoryBase(object):
 		self.show_hidden = False
 		self._get_popup_menu()
 
-	def _check_perm(self, fullname):
-		mode = self.stat(fullname).st_mode
+	def _format_perm(self, st_mode):
 		perm = ''
-		perm += 'r' if bool(mode & stat.S_IRUSR) else '-'
-		perm += 'w' if bool(mode & stat.S_IWUSR) else '-'
-		perm += 'x' if bool(mode & stat.S_IXUSR) else '-'
+		perm += 'r' if bool(st_mode & stat.S_IRUSR) else '-'
+		perm += 'w' if bool(st_mode & stat.S_IWUSR) else '-'
+		perm += 'x' if bool(st_mode & stat.S_IXUSR) else '-'
 
-		perm += 'r' if bool(mode & stat.S_IRGRP) else '-'
-		perm += 'w' if bool(mode & stat.S_IWGRP) else '-'
-		perm += 'x' if bool(mode & stat.S_IXGRP) else '-'
+		perm += 'r' if bool(st_mode & stat.S_IRGRP) else '-'
+		perm += 'w' if bool(st_mode & stat.S_IWGRP) else '-'
+		perm += 'x' if bool(st_mode & stat.S_IXGRP) else '-'
 
-		perm += 'r' if bool(mode & stat.S_IROTH) else '-'
-		perm += 'w' if bool(mode & stat.S_IWOTH) else '-'
-		perm += 'x' if bool(mode & stat.S_IXOTH) else '-'
+		perm += 'r' if bool(st_mode & stat.S_IROTH) else '-'
+		perm += 'w' if bool(st_mode & stat.S_IWOTH) else '-'
+		perm += 'x' if bool(st_mode & stat.S_IXOTH) else '-'
 		return perm
 
 	def _delete_selection(self):
@@ -713,9 +712,6 @@ class DirectoryBase(object):
 		self._menu_items_req_selection.append(menu_item)
 
 		self.popup_menu.show_all()
-
-	def _get_raw_time(self, fullname):
-		return self.stat(fullname).st_mtime
 
 	def _rename_selection(self):
 		selection = self.treeview.get_selection()
@@ -946,25 +942,23 @@ class DirectoryBase(object):
 		"""
 		basename = self.path_mod.basename(path)
 		try:
-			perm = self._check_perm(path)
-			raw_time = self._get_raw_time(path)
-			date = datetime.datetime.fromtimestamp(raw_time)
-			date_modified = '   ' + utilities.format_datetime(date)
-			is_folder = self.get_is_folder(path)
+			stat_info = self.stat(path)
 		except (OSError, IOError):
 			icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
 			self._tv_model.append(parent, [basename, icon, path, None, None, None, None])
 			return
-		if is_folder:
+		perm = self._format_perm(stat_info.st_mode)
+		date = datetime.datetime.fromtimestamp(stat_info.st_mtime)
+		date_modified = utilities.format_datetime(date)
+		if stat.S_ISDIR(stat_info.st_mode):
 			icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
 			current = self._tv_model.append(parent, (basename, icon, path, perm, None, -1, date_modified))
+			self._tv_model.append(current, [None, None, None, None, None, None, None])
 		else:
 			file_size = self.get_file_size(path)
-			hr_file_size = '   ' + boltons.strutils.bytes2human(file_size)
+			hr_file_size = boltons.strutils.bytes2human(file_size)
 			icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
-			current = self._tv_model.append(parent, (basename, icon, path, perm, hr_file_size, file_size, date_modified))
-		if is_folder:
-			self._tv_model.append(current, [None, None, None, None, None, None, None])
+			self._tv_model.append(parent, (basename, icon, path, perm, hr_file_size, file_size, date_modified))
 
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
