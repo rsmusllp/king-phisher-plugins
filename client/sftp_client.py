@@ -313,7 +313,7 @@ class TransferTask(Task):
 	def progress(self):
 		if self.size is None:
 			percent = 0
-		elif self.size == 0 and self.transferred == 0:
+		elif self.size == 0:
 			percent = 1
 		else:
 			percent = (float(self.transferred) / float(self.size))
@@ -334,8 +334,8 @@ class TransferTask(Task):
 					parent_task.size -= 1
 				else:
 					parent_task.transferred += 1
-				if parent_task.transferred == parent_task.size:
-					parent_task.state = 'Completed'
+					if parent_task.transferred == parent_task.size:
+						parent_task.state = 'Completed'
 
 class DownloadTask(TransferTask):
 	"""
@@ -534,7 +534,7 @@ class StatusDisplay(object):
 	def sync_view(self, tasks=None):
 		if isinstance(tasks, Task):
 			tasks = (tasks,)
-		GLib.idle_add(self._sync_view, tasks, priority=GLib.PRIORITY_HIGH_IDLE)
+		GLib.idle_add(self._sync_view, tasks, priority=GLib.PRIORITY_DEFAULT_IDLE)
 
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
