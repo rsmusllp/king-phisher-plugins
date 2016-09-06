@@ -334,8 +334,8 @@ class TransferTask(Task):
 					parent_task.size -= 1
 				else:
 					parent_task.transferred += 1
-					if parent_task.transferred == parent_task.size:
-						parent_task.state = 'Completed'
+				if parent_task.size > 0 and parent_task.transferred == parent_task.size:
+					parent_task.state = 'Completed'
 
 class DownloadTask(TransferTask):
 	"""
@@ -1561,10 +1561,10 @@ class FileManager(object):
 		:param str dst_path: The path to be created.
 		"""
 		if issubclass(task_cls, DownloadTask):
-			if not os.access(dst_path, os.W_OK):
+			src, dst = self.remote, self.local
+			if not os.access(dst.path_mod.dirname(dst_path), os.W_OK):
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not write to the destination directory.')
 				return
-			src, dst = self.remote, self.local
 			task = task_cls.dir_cls(dst_path, src_path, size=0)
 		elif issubclass(task_cls, UploadTask):
 			if not os.access(src_path, os.R_OK):
