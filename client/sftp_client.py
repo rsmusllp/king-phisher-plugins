@@ -662,7 +662,7 @@ class DirectoryBase(object):
 		confirmed = gui_utilities.show_dialog_yes_no(
 			'Confirm Delete',
 			self.application.get_active_window(),
-			"Are you sure you want to delete the selected {0}?".format('directory' if self._tv_model[treeiter][5] == -1 else 'file')
+			"Are you sure you want to delete the selected {0}: {1}?".format(('directory' if self._tv_model[treeiter][5] == -1 else 'file'), self.path_mod.basename(self._tv_model[treeiter][2]))
 		)
 		if confirmed:
 			self.delete(treeiter)
@@ -1117,6 +1117,7 @@ class LocalDirectory(DirectoryBase):
 		else:
 			os.remove(row[2])
 		self._tv_model.remove(treeiter)
+		logger.info("deleted {0}: {1}".format(('directory' if self._tv_model[treeiter][5] == -1 else 'file'), row[2])
 
 	@handle_permission_denied
 	def remove_by_folder_name(self, name):
