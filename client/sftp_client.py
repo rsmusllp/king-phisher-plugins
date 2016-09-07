@@ -334,8 +334,8 @@ class TransferTask(Task):
 					parent_task.size -= 1
 				else:
 					parent_task.transferred += 1
-				if parent_task.size > 0 and parent_task.transferred == parent_task.size:
-					parent_task.state = 'Completed'
+				if parent_task.size == parent_task.transferred:
+					parent_task.state = ('Completed' if parent_task.size else 'Cancelled')
 
 class DownloadTask(TransferTask):
 	"""
@@ -1418,15 +1418,21 @@ class FileManager(object):
 			raise ValueError('unsupported task type passed to _transfer_file')
 		self.remote.ftp_release()
 		src_file_h.seek(task.transferred)
-		while task.transferred < task.size:
-			if self._threads_shutdown.is_set():
-				task.state = 'Cancelled'
-			if task.state != 'Transferring':
-				break
-			temp = src_file_h.read(chunk)
-			dst_file_h.write(temp)
-			task.transferred += chunk
-			self.status_display.sync_view(task)
+		try:
+			while task.transferred < task.size:
+				if self._threads_shutdown.is_set():
+					task.state = 'Cancelled'
+				if task.state != 'Transferring':
+					break
+				temp = src_file_h.read(chunk)
+				dst_file_h.write(temp)
+				task.transferred += chunk
+				self.status_display.sync_view(task)
+		except Exception as error:
+			raise error
+		finally:
+			src_file_h.close()
+			dst_file_h.close()
 		if task.state == 'Cancelled':
 			if isinstance(task, UploadTask):
 				self.remote.remove_by_file_name(task.remote_path)
@@ -1435,8 +1441,6 @@ class FileManager(object):
 		elif task.state != 'Paused':
 			task.state = 'Completed'
 			GLib.idle_add(self._idle_refresh_directories)
-		src_file_h.close()
-		dst_file_h.close()
 
 	def _idle_refresh_directories(self):
 		self.local.refresh()
