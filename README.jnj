@@ -9,7 +9,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 {% for plugin in plugins.client %}
-| [{{ plugin.title }}][c_{{ plugin.name }}] | {{ plugin.formatted_description }} |
+| [{{ plugin.title }}][c_{{ plugin.name }}] | {{ plugin.formatted_description | replace('\n', '<br />') }} |
 {% endfor %}
 
 ## Server Plugins

@@ -41,12 +41,6 @@ import textwrap
 
 import jinja2
 
-try:
-	import tabulate
-except ImportError:
-	print('the tabulate module is required to run this')
-	sys.exit(os.EX_UNAVAILABLE)
-
 def load_plugins(plugin_type, plugins_dir):
 	plugins = []
 	for plugin in glob.glob(os.path.join(plugins_dir, plugin_type, '*.py')):
@@ -56,15 +50,6 @@ def load_plugins(plugin_type, plugins_dir):
 		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
 		plugins.append(plugin_module.Plugin)
 	return plugins
-
-def make_table(plugins):
-	table = []
-	for plugin in plugins:
-		description = textwrap.dedent(plugin.description)
-		description = description.replace('\n', ' ')
-		description = description.strip()
-		table.append((plugin.name, description))
-	return tabulate.tabulate(table, ('Name', 'Description'), tablefmt='pipe')
 
 def main():
 	if sys.version_info < (3, 4):
@@ -82,16 +67,16 @@ def main():
 	sys.path.insert(0, king_phisher_dir)
 	sys.path.insert(0, plugins_dir)
 
-	client_plugins = load_plugins('client', plugins_dir)
-	server_plugins = load_plugins('server', plugins_dir)
-
 	jinja_env = jinja2.Environment(trim_blocks=True)
 	jinja_env.filters['strftime'] = lambda dt, fmt: dt.strftime(fmt)
 	with open(os.path.join(plugins_dir, 'README.jnj'), 'r') as file_h:
 		readme_template = jinja_env.from_string(file_h.read())
 
 	readme = readme_template.render(
-		plugins={'client': client_plugins, 'server': server_plugins},
+		plugins={
+			'client': load_plugins('client', plugins_dir),
+			'server': load_plugins('server', plugins_dir)
+		},
 		timestamp=datetime.datetime.utcnow()
 	)
 
