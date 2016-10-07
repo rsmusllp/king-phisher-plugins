@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2016-10-06 19:11:27 -->
+<!-- generated at: 2016-10-07 00:06:43 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -18,6 +18,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 ## Server Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
+| [Pushbullet Notifications][s_pushbullet_notifications] | A plugin that uses Pushbullet's API to send push notifications on new website visits and submitted credentials. |
 | [XMPP Notifications][s_xmpp_notifications] | A plugin which pushes notifications regarding the King Phisher server to a specified XMPP server. |
 
 ## Plugin Installation
@@ -45,4 +46,5 @@ details see the [LICENSE][license-file] file.
 [c_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/client/hello_world.py
 [c_sftp_client]: https://github.com/securestate/king-phisher-plugins/blob/master/client/sftp_client.py
 [c_file_logging]: https://github.com/securestate/king-phisher-plugins/blob/master/client/file_logging.py
-[s_xmpp_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/client/xmpp_notifications.py
+[s_pushbullet_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/pushbullet_notifications.py
+[s_xmpp_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/xmpp_notifications.py

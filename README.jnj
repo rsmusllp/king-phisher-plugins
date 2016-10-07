@@ -42,5 +42,5 @@ details see the [LICENSE][license-file] file.
 [c_{{ plugin.name }}]: https://github.com/securestate/king-phisher-plugins/blob/master/client/{{ plugin.name }}.py
 {% endfor %}
 {% for plugin in plugins.server %}
-[s_{{ plugin.name }}]: https://github.com/securestate/king-phisher-plugins/blob/master/client/{{ plugin.name }}.py
+[s_{{ plugin.name }}]: https://github.com/securestate/king-phisher-plugins/blob/master/server/{{ plugin.name }}.py
 {% endfor %}
