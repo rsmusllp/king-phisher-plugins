@@ -1,11 +1,9 @@
-import logging
-import re
-
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.database.manager as db_manager
 import king_phisher.server.database.models as db_models
 import king_phisher.server.plugins as plugins
 import king_phisher.server.signals as signals
+import king_phisher.utilities as utilities
 
 try:
 	from pushbullet import Pushbullet
@@ -14,10 +12,9 @@ except ImportError:
 else:
 	has_pushbullet = True
 
-
 class Plugin(plugins.ServerPlugin):
 	authors = ['Brandan Geise']
-	title = 'Pushbullet'
+	title = 'Pushbullet Notifications'
 	description = """
 	A plugin that uses Pushbullet's API to send push notifications
 	on new website visits and submitted credentials.
@@ -38,10 +35,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'pushbullet': has_pushbullet
 	}
-
 	def initialize(self):
-		logger = logging.getLogger('pushbullet')
-		logger.setLevel(logging.INFO)
 		signals.server_initialized.connect(self.on_server_initialized)
 		return True
 
@@ -75,8 +69,7 @@ class Plugin(plugins.ServerPlugin):
 		return target_email, campaign_name
 
 	def mask_string(self, word):
-		email_address = re.match(r'[a-z0-9._-]{1,}@[a-z0-9-]{1,}\.[a-z]{2,}', word, re.I)
-		if email_address:
+		if utilities.is_valid_email_address(email_address):
 			email_user, email_domain = split.word('@')
 			safe_string = "{0}@{1}{2}{3}".format(email_user, email_domain[:1], ('*' * (len(email_domain) - 2)), email_domain[-1:])
 		else:
