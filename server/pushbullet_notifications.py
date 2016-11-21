@@ -33,7 +33,7 @@ class Plugin(plugins.ServerPlugin):
 	]
 	req_min_version = '1.4.0b0'
 	req_packages = {
-		'pushbullet': has_pushbullet
+		'pushbullet.py': has_pushbullet
 	}
 	def initialize(self):
 		signals.server_initialized.connect(self.on_server_initialized)
