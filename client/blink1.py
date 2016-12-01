@@ -44,10 +44,10 @@ class Plugin(plugins.ClientPlugin):
 		)
 		return True
 
-	@server_events.filter_event_type('inserted')
+	@server_events.event_type_filter('inserted')
 	def signal_db_credentials(self, _, event_type, objects):
 		self._blink1.fade_to_color(0, 'blue')
 
-	@server_events.filter_event_type('inserted')
+	@server_events.event_type_filter('inserted')
 	def signal_db_visits(self, _, event_type, objects):
 		self._blink1.fade_to_color(0, 'cyan')
