@@ -40,7 +40,26 @@ class Plugin(plugins.ClientPlugin):
 				'Unable to find the Blink(1) device.'
 			)
 			return False
+		if self.application.server_events is None:
+			self.signal_connect('server-connected', lambda app: self._connect_server_events())
+		else:
+			self._connect_server_events()
+		return True
 
+	def finalize(self):
+		self._blink1_off()
+		self._blink1.close()
+		self._blink1 = None
+
+	def _blink1_set_color(self, color):
+		self._blink1.fade_to_color(250, color)
+		self._color = color
+
+	def _blink1_off(self):
+		self._blink1_set_color('black')
+		self._color = None
+
+	def _connect_server_events(self):
 		self.signal_connect_server_event(
 			'db-credentials',
 			self.signal_db_credentials,
@@ -55,23 +74,10 @@ class Plugin(plugins.ClientPlugin):
 		)
 		return True
 
-	def finalize(self):
-		self._blink1_off()
-		self._blink1.close()
-		self._blink1 = None
-
-	@server_events.event_type_filter('inserted')
+	@server_events.event_type_filter('inserted', is_method=True)
 	def signal_db_credentials(self, _, event_type, objects):
 		self._blink1_set_color('blue')
 
-	@server_events.event_type_filter('inserted')
+	@server_events.event_type_filter('inserted', is_method=True)
 	def signal_db_visits(self, _, event_type, objects):
 		self._blink1_set_color('cyan')
-
-	def _blink1_set_color(self, color):
-		self._blink1.fade_to_color(250, color)
-		self._color = color
-
-	def _blink1_off(self):
-		self._blink1_set_color('black')
-		self._color = None
