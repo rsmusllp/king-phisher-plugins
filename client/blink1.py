@@ -111,7 +111,7 @@ class Plugin(plugins.ClientPlugin):
 		)
 		return True
 
-	def _signal_db(self, color):
+	def _signal_db(self, color, rows):
 		if self.config['filter_campaigns']:
 			if all(str(row.campaign_id) != self.application.config['campaign_id'] for row in rows):
 				return
@@ -119,8 +119,8 @@ class Plugin(plugins.ClientPlugin):
 
 	@server_events.event_type_filter('inserted', is_method=True)
 	def signal_db_credentials(self, _, event_type, rows):
-		self._signal_db(self.config['color_credentials'])
+		self._signal_db(self.config['color_credentials'], rows)
 
 	@server_events.event_type_filter('inserted', is_method=True)
-	def signal_db_visits(self, _, event_type, row):
-		self._signal_db(self.config['color_visits'])
+	def signal_db_visits(self, _, event_type, rows):
+		self._signal_db(self.config['color_visits'], rows)
