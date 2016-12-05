@@ -12,13 +12,38 @@ except ImportError:
 else:
 	has_blink1 = True
 
+COLORS = ('blue', 'cyan', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 'yellow')
+
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'Blink(1) Notifications'
 	description = """
-	A plugin which will flash a Blink(1) peripheral based on campaign events.
+	A plugin which will flash a Blink(1) peripheral based on campaign events
+	such as when a new visit is received or new credentials have been submitted.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	options = [
+		plugins.ClientOptionBoolean(
+			'filter_campaigns',
+			'Only show events for the current campaign.',
+			default=True,
+			display_name='Current Campaign Only'
+		),
+		plugins.ClientOptionEnum(
+			'color_visits',
+			'The color to flash the Blink(1) for new visits.',
+			choices=COLORS,
+			default='yellow',
+			display_name='Visits Flash Color'
+		),
+		plugins.ClientOptionEnum(
+			'color_credentials',
+			'The color to flash the Blink(1) for new credentials.',
+			choices=COLORS,
+			default='red',
+			display_name='Credentials Flash Color'
+		),
+	]
 	req_min_version = '1.6.0b0'
 	req_packages = {
 		'blink1': has_blink1
@@ -86,10 +111,16 @@ class Plugin(plugins.ClientPlugin):
 		)
 		return True
 
-	@server_events.event_type_filter('inserted', is_method=True)
-	def signal_db_credentials(self, _, event_type, objects):
-		self._blink1_set_color('blue')
+	def _signal_db(self, color):
+		if self.config['filter_campaigns']:
+			if all(str(row.campaign_id) != self.application.config['campaign_id'] for row in rows):
+				return
+		self._blink1_set_color(color)
 
 	@server_events.event_type_filter('inserted', is_method=True)
-	def signal_db_visits(self, _, event_type, objects):
-		self._blink1_set_color('cyan')
+	def signal_db_credentials(self, _, event_type, rows):
+		self._signal_db(self.config['color_credentials'])
+
+	@server_events.event_type_filter('inserted', is_method=True)
+	def signal_db_visits(self, _, event_type, row):
+		self._signal_db(self.config['color_visits'])
