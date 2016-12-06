@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2016-11-21 22:31:19 -->
+<!-- generated at: 2016-12-06 19:37:55 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -12,6 +12,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Clockwork SMS][c_clockwork_sms] | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [Save KPM On Exit][c_kpm_export_prompt] | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Hello World!][c_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
+| [Blink(1) Notifications][c_blink1] | A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted. |
 | [SFTP Client][c_sftp_client] | Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server. |
 | [File Logging][c_file_logging] | Write the client's logs to a file in the users data directory. |
 
@@ -45,6 +46,7 @@ details see the [LICENSE][license-file] file.
 [c_clockwork_sms]: https://github.com/securestate/king-phisher-plugins/blob/master/client/clockwork_sms.py
 [c_kpm_export_prompt]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_prompt.py
 [c_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/client/hello_world.py
+[c_blink1]: https://github.com/securestate/king-phisher-plugins/blob/master/client/blink1.py
 [c_sftp_client]: https://github.com/securestate/king-phisher-plugins/blob/master/client/sftp_client.py
 [c_file_logging]: https://github.com/securestate/king-phisher-plugins/blob/master/client/file_logging.py
 [s_pushbullet_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/pushbullet_notifications.py
