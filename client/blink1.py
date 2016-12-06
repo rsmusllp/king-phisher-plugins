@@ -80,7 +80,11 @@ class Plugin(plugins.ClientPlugin):
 		self._blink1 = None
 
 	def _blink1_set_color(self, color):
-		self._blink1.fade_to_color(375, color)
+		try:
+			self._blink1.fade_to_color(375, color)
+		except usb.core.USBError as error:
+			self.logger.warning("encountered a USB error '{0}' while setting the color of the blink(1)".format(error.strerror))
+			return
 		if color != 'black':
 			if self._gsrc_id is not None:
 				GLib.source_remove(self._gsrc_id)
