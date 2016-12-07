@@ -22,7 +22,7 @@ class Plugin(plugins.ClientPlugin):
 	directory.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.6.0b0'
+	req_min_version = '1.6.0b1'
 	version = '2.0'
 	# this is the primary plugin entry point which is executed when the plugin is enabled
 	def initialize(self):

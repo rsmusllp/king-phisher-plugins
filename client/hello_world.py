@@ -16,7 +16,7 @@ class Plugin(plugins.ClientPlugin):
             'The name to which to say goodbye.',  # the description of the option as shown to users
             default='Alice Liddle',               # a default value for the option
             display_name='Your Name'              # a name of the option as shown to users
-        )
+        ),
         plugins.ClientOptionBoolean(
             'validiction',
             'Whether or not this plugin say good bye.',
