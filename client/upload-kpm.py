@@ -15,7 +15,6 @@ class Plugin(plugins.ClientPlugin):
 	Must have keyed authentication enabled to save KPM to server
 	Also must have write permissions to the folder you're uploading to
 	"""
-	
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 
 	options = [
@@ -35,9 +34,7 @@ class Plugin(plugins.ClientPlugin):
 	
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
-		# self.signal_connect('send-finished', self.signal_save_kpm, gobject=mailer_tab)
-		# testing purposes:
-		self.signal_connect('send-precheck', self.signal_save_kpm, gobject=mailer_tab)
+		self.signal_connect('send-finished', self.signal_save_kpm, gobject=mailer_tab)
 		return True
 
 	def signal_save_kpm(self, config):
@@ -69,6 +66,19 @@ class Plugin(plugins.ClientPlugin):
 		remote_directory = os.path.expandvars(self.config['remote_directory'])
 		remote_directory = os.path.expanduser(remote_directory)
 		target_kpm = os.path.join(remote_directory, filename)
+		
+		connection = self.application._ssh_forwarder
+		if connection is None:
+			message = 'The King Phisher client does not have an active SSH connection\n'
+			message += 'to the server. The SFTP client plugin can not be used.'
+			gui_utilities.show_dialog_error(
+				'No SSH Connection',
+				self.application.get_active_window(),
+				message
+			)
+			return
+
 		sftp = self.application._ssh_forwarder.client.open_sftp()
 		sftp.put(local_kpm, target_kpm)
 		self.logger.info( "Upload Sussessful to: " + target_kpm )
+
