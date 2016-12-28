@@ -65,7 +65,7 @@ class Plugin(plugins.ClientPlugin):
 	def upload_kpm(self, local_kpm, filename):
 		remote_directory = os.path.expandvars(self.config['remote_directory'])
 		remote_directory = os.path.expanduser(remote_directory)
-		target_kpm = os.path.join(remote_directory, filename)
+		target_kpm = posixpath.os.path.join(remote_directory, filename)
 		
 		connection = self.application._ssh_forwarder
 		if connection is None:
