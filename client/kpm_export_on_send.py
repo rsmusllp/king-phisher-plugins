@@ -58,6 +58,7 @@ class Plugin(plugins.ClientPlugin):
 		fd, temp_kpm_path = tempfile.mkstemp(suffix='.kpm')
 		os.close(fd)
 
+		self.logger.debug('writing temporary kpm archive file to: ' + temp_kpm_path)
 		if not mailer_tab.export_message_data(path=temp_kpm_path):
 			self.logger.error('failed to export the temporary kpm file')
 			self.text_insert('Failed to export the KPM file\n')
@@ -68,6 +69,7 @@ class Plugin(plugins.ClientPlugin):
 			result = False
 		if self.config['remote_directory'] and not self._save_remote_kpm(temp_kpm_path):
 			result = False
+		os.remove(temp_kpm_path)
 		return result
 
 	def _expand_path(self, path, *args, **kwargs):
