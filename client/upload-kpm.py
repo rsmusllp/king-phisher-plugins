@@ -1,6 +1,7 @@
 import time
 import os
 import paramiko
+import posixpath
 
 import king_phisher.client.plugins as plugins
 import king_phisher.client.gui_utilities as gui_utilities
@@ -21,37 +22,36 @@ class Plugin(plugins.ClientPlugin):
 		plugins.ClientOptionString(
 			'local_directory',
 			'Local directory to save KPM File',
-			default='/$HOME/',
+			default='/$HOME',
 			display_name='Local Directory'
 		),
 		plugins.ClientOptionString(
 			'remote_directory',
 			'Directory on the Server to Upload the KPM',
-			default='/usr/share/',
+			default='/usr/share',
 			display_name='Remote Directory'
-		),
-		plugins.ClientOptionString(
-			'key_path',
-			'Path to Pub SSH Key',
-			default='$HOME/.ssh/id_rsa.pub',
-			display_name='SSH Key Path'
 		)
 	]
 	
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		# self.signal_connect('send-finished', self.signal_save_kpm, gobject=mailer_tab)
+		# testing purposes:
 		self.signal_connect('send-precheck', self.signal_save_kpm, gobject=mailer_tab)
 		return True
 
 	def signal_save_kpm(self, config):
 		mailer_tab = self.application.main_tabs['mailer']
 		username = self.application.config['server_username']
-		current_time = time.strftime('%m-%d-%Y.%H:%M:%S')
+		current_time = time.strftime('%m-%d-%Y_%H:%M:%S')
 		campaign_name = self.application.config['campaign_name']
 		filename = username + '_' + campaign_name + '_' +  str(current_time) + '.kpm'
-		local_kpm = self.config['local_directory'] + '/' + filename
 		
+		local_directory = os.path.expandvars(self.config['local_directory'])
+		local_directory = os.path.expanduser(self.config['local_directory'])
+		
+		local_kpm = os.path.join(local_directory, filename)
+		self.logger.info( "KPM Will be Saved as:  " + local_kpm )
 		config_tab = mailer_tab.tabs.get('config')
 		config_prefix = config_tab.config_prefix
 		config_tab.objects_save_to_config()
@@ -62,31 +62,13 @@ class Plugin(plugins.ClientPlugin):
 			message_config[config_key[7:]] = self.config[config_key]
 		export.message_data_to_kpm(message_config, local_kpm)
 		self.logger.info( "Saved KPM as " + local_kpm )
-		self.upload_kpm(local_kpm, filename, username)
+		self.upload_kpm(local_kpm, filename)
 		return True
 
-	def upload_kpm(self, local_kpm, filename, username):
-		remote = str(self.application.config['server'].split(':', 1)[0])
-		port = int(self.application.config['server'].split(':', 2)[1])
-		target_kpm = self.config['remote_directory'] + '/' + filename		
-		key = paramiko.RSAKey.from_private_key_file(self.config['key_path'])
-		
-		instance = paramiko.Transport((remote, port))
-
-		try:
-			instance.connect(username = username, pkey=key)
-			sftp = paramiko.SFTPClient.from_transport(instance)
-			ret = sftp.put(local_kpm, target_kpm)
-		except paramiko.ssh_exception.ChannelException as error:
-			self.logger.error('Transferring KPM failed', error)
-			err_message = "An error occured: {0}".format(error)
-			gui_utilities.show_dialog_error(
-				'Error',
-				self.application.get_active_window(),
-				err_message
-			)
-			return False
-		else:
-			instance.close()
-
-		self.logger.info( "Upload Sussessful to: " + remote + ': ' + target_kpm )
+	def upload_kpm(self, local_kpm, filename):
+		remote_directory = os.path.expandvars(self.config['remote_directory'])
+		remote_directory = os.path.expanduser(remote_directory)
+		target_kpm = os.path.join(remote_directory, filename)
+		sftp = self.application._ssh_forwarder.client.open_sftp()
+		sftp.put(local_kpm, target_kpm)
+		self.logger.info( "Upload Sussessful to: " + target_kpm )
