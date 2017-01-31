@@ -43,6 +43,21 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def make_page(self, _):
+		if self.config['redir_url'] is None:
+			gui_utilities.show_dialog_error(
+				'Missing Option',
+				self.application.get_active_window(),
+				'Please configure the "Redirect URL" option.'
+			)
+			return
+		if self.config['spoofed_uri'] is None:
+			gui_utilities.show_dialog_error(
+				'Missing Option',
+				self.application.get_active_window(),
+				'Please configure the "Spoofed URI" option.'
+			)
+			return
+
 		outfile = self.expand_path(self.config['output_html_file'])
 		try:
 			with open (outfile, 'w') as file_h:
