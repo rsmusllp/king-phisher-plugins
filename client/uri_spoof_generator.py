@@ -43,18 +43,25 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def make_page(self, _):
-		if self.config['redir_url'] is None:
+		if not self.config['redir_url']:
 			gui_utilities.show_dialog_error(
 				'Missing Option',
 				self.application.get_active_window(),
 				'Please configure the "Redirect URL" option.'
 			)
 			return
-		if self.config['spoofed_uri'] is None:
+		if not self.config['spoofed_uri']:
 			gui_utilities.show_dialog_error(
 				'Missing Option',
 				self.application.get_active_window(),
 				'Please configure the "Spoofed URI" option.'
+			)
+			return
+		if not self.config['output_html_file']:
+			gui_utilities.show_dialog_error(
+				'Missing Option',
+				self.application.get_active_window(),
+				'Please configure the "Output HTML File" option.'
 			)
 			return
 
