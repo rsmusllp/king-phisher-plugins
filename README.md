@@ -11,10 +11,12 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Spell Check][c_spell_check] | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
 | [Clockwork SMS][c_clockwork_sms] | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [Save KPM On Exit][c_kpm_export_prompt] | Prompt to save the message data as a KPM file when King Phisher exits. |
+| [Save KPM On Send][c_export_on_send] | Saves KPM file locally then uploads to remote King Phisher Server when emails are sent. |
 | [Hello World!][c_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
 | [Blink(1) Notifications][c_blink1] | A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted. |
 | [SFTP Client][c_sftp_client] | Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server. |
 | [File Logging][c_file_logging] | Write the client's logs to a file in the users data directory. |
+| [URI Spoof Page Generator][c_uri_spoof_generator] | Adds a menu option under Tools that generates a URI spoofing HTML file. |
 
 ## Server Plugins
 | Name                                      | Description       |
