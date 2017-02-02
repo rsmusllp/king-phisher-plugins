@@ -51,6 +51,8 @@ details see the [LICENSE][license-file] file.
 [c_blink1]: https://github.com/securestate/king-phisher-plugins/blob/master/client/blink1.py
 [c_sftp_client]: https://github.com/securestate/king-phisher-plugins/blob/master/client/sftp_client.py
 [c_file_logging]: https://github.com/securestate/king-phisher-plugins/blob/master/client/file_logging.py
+[c_export_on_send]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_send.py
+[c_uri_spoof_generator]: https://github.com/securestate/king-phisher-plugins/blob/master/client/uri_spoof_generator.py
 [s_pushbullet_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/pushbullet_notifications.py
 [s_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/server/hello_world.py
 [s_xmpp_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/xmpp_notifications.py
