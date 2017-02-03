@@ -65,9 +65,10 @@ class Plugin(plugins.ClientPlugin):
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
+		self.add_menu_item('Tools > Create PDF Preview', self.make_preview)
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
 		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
-#		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
+		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
 	def signal_send_precheck(self, _):
@@ -89,6 +90,17 @@ class Plugin(plugins.ClientPlugin):
 		pdf_file.multiBuild(pdf)
 		self.logger.info('PDF attachement made linking with uid: ' + str(target.uid) )
 		self.attach_pdf(outfile)
+
+	def make_preview(self, _):
+		outfile = self.expand_path(self.config['output_pdf'])
+		pdf_file = SimpleDocTemplate(outfile, pagesize=letter,
+	                        rightMargin=72,leftMargin=72,
+	                        topMargin=72,bottomMargin=18)
+		url = self.application.config['mailer.webserver_url']
+
+		pdf = self.get_template(url)
+		pdf_file.multiBuild(pdf)
+		self.logger.info('PDF preview created. Check ' + self.config['output_pdf'])
 
 	def get_template(self, url):
 		# Variables
@@ -145,6 +157,8 @@ class Plugin(plugins.ClientPlugin):
 			self.logger.info('Deleting PDF file: ' + str(self.config['output_pdf']) )
 			os.remove(self.config['output_pdf'])
 		self.application.config['mailer.attachment_file'] = None
+
+	
 
 	def expand_path(self, outfile, *args, **kwargs):
 		expanded_path = _expand_path(outfile, *args, **kwargs)
