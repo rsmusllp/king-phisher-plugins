@@ -36,18 +36,18 @@ class Plugin(plugins.ClientPlugin):
 			'output_pdf',
 			'pdf being generated',
 			default='$HOME/Attachment1.pdf',
-			display_name='pdf File'
+			display_name='* Output PDF File'
 		),
 		plugins.ClientOptionString(
 			'template_file',
 			'Template file to read from',
 			default='$HOME/template.txt',
-			display_name='Template File'
+			display_name='* Template File'
 		),
 		plugins.ClientOptionString(
 			'logo',
 			'Image to include into the pdf',
-			display_name="Logo Image to Include"
+			display_name="Logo Image"
 		),
 		plugins.ClientOptionString(
 			'link_text',
