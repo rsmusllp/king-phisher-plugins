@@ -59,7 +59,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name="Link Text"
 		)
 	]
-	req_min_version = '1.6'
+	req_min_version = '1.7.0b1'
 	version = '1.1'
 
 	def initialize(self):
@@ -67,7 +67,7 @@ class Plugin(plugins.ClientPlugin):
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
 		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
-		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
+#		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
 	def signal_send_precheck(self, _):
@@ -142,7 +142,7 @@ class Plugin(plugins.ClientPlugin):
 			self.logger.error('No PDF file found at: ' + str(self.config['output_pdf']) )
 			return
 		else:
-			self.logger.info('Deleting Created PDF: ' + str(self.config['output_pdf']) )
+			self.logger.info('Deleting PDF file: ' + str(self.config['output_pdf']) )
 			os.remove(self.config['output_pdf'])
 		self.application.config['mailer.attachment_file'] = None
 
