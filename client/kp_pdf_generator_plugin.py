@@ -15,6 +15,7 @@ from  reportlab.lib.styles import ParagraphStyle as PS
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
 
+import jinja2.exceptions
 
 def _expand_path(outfile, *joins, pathmod=os.path):
         outfile = pathmod.expandvars(outfile)
