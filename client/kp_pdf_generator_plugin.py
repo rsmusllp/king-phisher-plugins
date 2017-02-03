@@ -72,10 +72,10 @@ class Plugin(plugins.ClientPlugin):
 
 	def signal_send_precheck(self, _):
 		if not os.path.isfile(self.config['template_file']):
-			self.logger.error('No template file found' )
+			self.logger.error('No PDF template file found' )
 			return
 		else:
-			self.logger.info('Template File found, exporting PDF File')
+			self.logger.info('PDF template file found, exporting PDF File')
 			return True
 
 	def signal_send_target(self, _, target):
@@ -87,7 +87,7 @@ class Plugin(plugins.ClientPlugin):
 
 		pdf = self.get_template(url)
 		pdf_file.multiBuild(pdf)
-		self.logger.info('Attachment made for uid: ' + str(target.uid) )
+		self.logger.info('PDF attachement made linking with uid: ' + str(target.uid) )
 		self.attach_pdf(outfile)
 
 	def get_template(self, url):
@@ -139,6 +139,7 @@ class Plugin(plugins.ClientPlugin):
 
 	def signal_send_finished(self, _):
 		if not os.path.isfile(self.config['output_pdf']):
+			self.logger.error('No PDF file found at: ' + str(self.config['output_pdf']) )
 			return
 		else:
 			self.logger.info('Deleting Created PDF: ' + str(self.config['output_pdf']) )
