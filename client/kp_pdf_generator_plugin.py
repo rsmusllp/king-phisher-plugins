@@ -65,9 +65,18 @@ class Plugin(plugins.ClientPlugin):
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
+		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
 		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
 		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
+
+	def signal_send_precheck(self, _):
+		if not os.path.isfile(self.config['template_file']):
+			self.logger.error('No template file found' )
+			return
+		else:
+			self.logger.info('Template File found, exporting PDF File')
+			return True
 
 	def signal_send_target(self, _, target):
 		outfile = self.expand_path(self.config['output_pdf'])
@@ -129,7 +138,11 @@ class Plugin(plugins.ClientPlugin):
 		self.application.config['mailer.attachment_file'] = outfile
 
 	def signal_send_finished(self, _):
-		os.remove(self.config['output_pdf'])
+		if not os.path.isfile(self.config['output_pdf']):
+			return
+		else:
+			self.logger.info('Deleting Created PDF: ' + str(self.config['output_pdf']) )
+			os.remove(self.config['output_pdf'])
 		self.application.config['mailer.attachment_file'] = None
 
 	def expand_path(self, outfile, *args, **kwargs):
