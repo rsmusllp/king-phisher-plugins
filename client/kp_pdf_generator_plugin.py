@@ -16,8 +16,6 @@ import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
 
 
-import jinja2.exceptions
-
 def _expand_path(outfile, *joins, pathmod=os.path):
         outfile = pathmod.expandvars(outfile)
         outfile = pathmod.expanduser(outfile)
@@ -67,22 +65,23 @@ class Plugin(plugins.ClientPlugin):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
 		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
+		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
-	def signal_send_target(self, target, _):
+	def signal_send_target(self, _, target):
 		outfile = self.expand_path(self.config['output_pdf'])
 		pdf_file = SimpleDocTemplate(outfile, pagesize=letter,
 	                        rightMargin=72,leftMargin=72,
 	                        topMargin=72,bottomMargin=18)
-		url = self.application.config['mailer.webserver_url'] + self.application.mailer.target.uid
+		url = self.application.config['mailer.webserver_url'] + '?uid=' + str(target.uid)
+
 		pdf = self.get_template(url)
 		pdf_file.multiBuild(pdf)
-		self.logger.info('PDF file written to: ', outfile )
-#		self.attach_pdf(outfile)
+		self.logger.info('Attachment made for uid: ' + str(target.uid) )
+		self.attach_pdf(outfile)
 
 	def get_template(self, url):
 		# Variables
-#		url = self.application.config['mailer.webserver_url'] + target.uid
 		logo = self.config['logo']
 		formatted_time = time.ctime()
 		company = self.application.config['mailer.company_name']
@@ -127,6 +126,10 @@ class Plugin(plugins.ClientPlugin):
 
 	def attach_pdf(self, outfile):
 		self.application.config['mailer.attachment_file'] = outfile
+
+	def signal_send_finished(self, _):
+		os.remove(self.config['output_pdf'])
+		self.application.config['mailer.attachment_file'] = None
 
 	def expand_path(self, outfile, *args, **kwargs):
 		expanded_path = _expand_path(outfile, *args, **kwargs)
