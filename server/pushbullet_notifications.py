@@ -12,6 +12,7 @@ except ImportError:
 else:
 	has_pushbullet = True
 
+
 class Plugin(plugins.ServerPlugin):
 	authors = ['Brandan Geise']
 	title = 'Pushbullet Notifications'
@@ -23,7 +24,17 @@ class Plugin(plugins.ServerPlugin):
 	options = [
 		plugin_opts.OptionString(
 			name='api_keys',
-			description='Pushbullet API key, if multiple, seperate with comma'
+			description='Pushbullet API key, if multiple, separate with comma'
+		),
+		plugin_opts.OptionString(
+			name='identifier',
+			description='King Phisher server identifier to send in push notification header',
+			default='King Phisher'
+		),
+		plugin_opts.OptionString(
+			name='device',
+			description='Send push notifications to a specific Pushbullet device',
+			default='All'
 		),
 		plugin_opts.OptionBoolean(
 			name='mask',
@@ -35,6 +46,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'pushbullet.py': has_pushbullet
 	}
+
 	def initialize(self):
 		signals.server_initialized.connect(self.on_server_initialized)
 		return True
@@ -81,4 +93,12 @@ class Plugin(plugins.ServerPlugin):
 		api_keys = tuple(k.strip() for k in self.config['api_keys'].split(', '))
 		for key in api_keys:
 			pb = Pushbullet(key)
-			pb.push_note('King Phisher', message)
+
+			if self.config['device'].lower() == 'all':
+				pb.push_note(self.config['identifier'], message)
+			else:
+				try:
+					pb_device = pb.get_device(self.config['device'])
+					pb.push_note(self.config['identifier'], message, device=pb_device)
+				except pushbullet.errors.InvalidKeyError:
+					pb.push_note(self.config['identifier'], message)
