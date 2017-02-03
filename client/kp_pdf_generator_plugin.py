@@ -24,7 +24,7 @@ def _expand_path(outfile, *joins, pathmod=os.path):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
-	title = 'generate_pdf_and_send'
+	title = 'Generate PDF and Send'
 	description = """
 	Generates a pdf with a link which includes a url with message_id required to track
 	individual visits to a website.
