@@ -31,11 +31,6 @@ class Plugin(plugins.ServerPlugin):
 			description='King Phisher server identifier to send in push notification header',
 			default='King Phisher'
 		),
-		plugin_opts.OptionString(
-			name='device',
-			description='Send push notifications to a specific Pushbullet device',
-			default='All'
-		),
 		plugin_opts.OptionBoolean(
 			name='mask',
 			description='Partially mask email and campaign values',
@@ -92,13 +87,16 @@ class Plugin(plugins.ServerPlugin):
 	def send_notification(self, message):
 		api_keys = tuple(k.strip() for k in self.config['api_keys'].split(', '))
 		for key in api_keys:
-			pb = Pushbullet(key)
+			device = None
+			if ':' in key:
+				device, key = key.split(':')
 
-			if self.config['device'].lower() == 'all':
-				pb.push_note(self.config['identifier'], message)
-			else:
+			pb = pushbullet.Pushbullet(key)
+
+			if device:
 				try:
-					pb_device = pb.get_device(self.config['device'])
-					pb.push_note(self.config['identifier'], message, device=pb_device)
+					device = pb.get_device(device)
 				except pushbullet.errors.InvalidKeyError:
-					pb.push_note(self.config['identifier'], message)
+					self.logger.error("Failed to get Pushbullet device: {0}".format(device))
+
+			pb.push_note(self.config['identifier'], message, device=device)
