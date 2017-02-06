@@ -6,12 +6,11 @@ import king_phisher.server.signals as signals
 import king_phisher.utilities as utilities
 
 try:
-	from pushbullet import Pushbullet
+	import pushbullet
 except ImportError:
 	has_pushbullet = False
 else:
 	has_pushbullet = True
-
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Brandan Geise']
@@ -41,7 +40,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'pushbullet.py': has_pushbullet
 	}
-
+	version = '1.1'
 	def initialize(self):
 		signals.server_initialized.connect(self.on_server_initialized)
 		return True
@@ -92,11 +91,10 @@ class Plugin(plugins.ServerPlugin):
 				device, key = key.split(':')
 
 			pb = pushbullet.Pushbullet(key)
-
 			if device:
 				try:
 					device = pb.get_device(device)
 				except pushbullet.errors.InvalidKeyError:
-					self.logger.error("Failed to get Pushbullet device: {0}".format(device))
+					self.logger.error("failed to get pushbullet device: {0}".format(device))
 
 			pb.push_note(self.config['identifier'], message, device=device)
