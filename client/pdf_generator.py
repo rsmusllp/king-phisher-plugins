@@ -48,7 +48,7 @@ class Plugin(plugins.ClientPlugin):
 		),
 		plugins.ClientOptionString(
 			'logo',
-			'platypus.Image to include into the pdf',
+			'Image to include into the pdf',
 			display_name='Logo platypus.Image'
 		),
 		plugins.ClientOptionString(
