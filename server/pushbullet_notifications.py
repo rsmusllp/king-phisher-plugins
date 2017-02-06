@@ -6,7 +6,7 @@ import king_phisher.server.signals as signals
 import king_phisher.utilities as utilities
 
 try:
-	from pushbullet import Pushbullet
+	import pushbullet
 except ImportError:
 	has_pushbullet = False
 else:
@@ -23,7 +23,12 @@ class Plugin(plugins.ServerPlugin):
 	options = [
 		plugin_opts.OptionString(
 			name='api_keys',
-			description='Pushbullet API key, if multiple, seperate with comma'
+			description='Pushbullet API key, if multiple, separate with comma'
+		),
+		plugin_opts.OptionString(
+			name='identifier',
+			description='King Phisher server identifier to send in push notification header',
+			default='King Phisher'
 		),
 		plugin_opts.OptionBoolean(
 			name='mask',
@@ -35,6 +40,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'pushbullet.py': has_pushbullet
 	}
+	version = '1.1'
 	def initialize(self):
 		signals.server_initialized.connect(self.on_server_initialized)
 		return True
@@ -80,5 +86,15 @@ class Plugin(plugins.ServerPlugin):
 	def send_notification(self, message):
 		api_keys = tuple(k.strip() for k in self.config['api_keys'].split(', '))
 		for key in api_keys:
-			pb = Pushbullet(key)
-			pb.push_note('King Phisher', message)
+			device = None
+			if ':' in key:
+				device, key = key.split(':')
+
+			pb = pushbullet.Pushbullet(key)
+			if device:
+				try:
+					device = pb.get_device(device)
+				except pushbullet.errors.InvalidKeyError:
+					self.logger.error("failed to get pushbullet device: {0}".format(device))
+
+			pb.push_note(self.config['identifier'], message, device=device)
