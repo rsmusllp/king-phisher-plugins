@@ -3,6 +3,7 @@ import os
 
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
+import king_phisher.client.gui_utilities as gui_utilities
 
 import jinja2.exceptions
 
@@ -17,7 +18,7 @@ except ImportError:
 else:
 	has_reportlab = True
 
-def _expand_path(outfile, *joins, pathmod=os.path):
+def _render_path(outfile, *joins, pathmod=os.path):
 	outfile = pathmod.expandvars(outfile)
 	outfile = pathmod.expanduser(outfile)
 	outfile.join(outfile, *joins)
@@ -27,10 +28,10 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
 	title = 'Generate PDF'
 	description = """
-	Generates a PDF file with a link which includes the campaign url with the
+	Generates a PDF file with a link which includes the campaign URL with the
 	individual message_id required to track individual visits to a website.
 	Visit https://github.com/y4utj4/pdf_generator for example template files to
-	use for this plugin.
+	use with this plugin.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
@@ -75,35 +76,45 @@ class Plugin(plugins.ClientPlugin):
 		# file and option checks
 		if not all((self.config['template_file'], self.config['output_pdf'], self.config['link_text'])):
 			self.logger.debug('skipping exporting any attachments due to lack of information provided to run')
-			return 0
+			return False
 		if not os.path.isfile(self.config['template_file']):
 			self.logger.error('template file does not exist, specify a valid template file')
-			return 0
+			return False
 		if self.config['logo'] and not os.path.isfile(self.config['template_file']):
 			self.logger.error('specified template or logo file not found')
 		self.logger.debug('pdf template file found, generating attachment')
 		return True
 
 	def make_preview(self, _):
-		if not os.path.isfile(self.config['template_file']):
+		if not os.path.isfile(self.render_path(self.config['template_file'])):
 			self.logger.error('template file does not exist, please review your options')
-			return 0
-		else:
-			outfile = self.expand_path(self.config['output_pdf'])
-			pdf_file = platypus.SimpleDocTemplate(outfile,
-				pagesize=letter,
-				rightMargin=72,
-				leftMargin=72,
-				topMargin=72,
-				bottomMargin=18
+			gui_utilities.show_dialog_error(
+				'File Error',
+				self.application.get_active_window(),
+				'Template file not found.'
 			)
-			url = self.application.config['mailer.webserver_url']
-			pdf = self.get_template(url)
-			pdf_file.multiBuild(pdf)
-			self.logger.info('created, check ' + self.config['output_pdf'])
+			return False
+
+		outfile = self.render_path(self.config['output_pdf'])
+		pdf_file = platypus.SimpleDocTemplate(outfile,
+			pagesize=letter,
+			rightMargin=72,
+			leftMargin=72,
+			topMargin=72,
+			bottomMargin=18
+		)
+		url = self.application.config['mailer.webserver_url']
+		pdf = self.get_template(url)
+		pdf_file.multiBuild(pdf)
+		self.logger.info('created, check ' + outfile)
+		gui_utilities.show_dialog_info(
+				'PDF Created',
+				self.application.get_active_window(),
+				'PDF File Created Successfully.'
+			)
 
 	def signal_send_target(self, _, target):
-		outfile = self.expand_path(self.config['output_pdf'])
+		outfile = self.render_path(self.config['output_pdf'])
 		pdf_file = platypus.SimpleDocTemplate(outfile,
 			pagesize=letter,
 			rightMargin=72,
@@ -117,30 +128,29 @@ class Plugin(plugins.ClientPlugin):
 			pdf_file.multiBuild(pdf)
 			self.attach_pdf(outfile)
 		except Exception as err:
-			self.logger.error('pdf could not be opened: ' + repr(err))
+			self.logger.error(..., exc_info=True)
 		else:
 			self.logger.info('pdf attachement made linking with uid: ' + target.uid)
 
 	def get_template(self, url):
-		logo = self.config['logo']
+		logo_path = self.render_path(self.config['logo'])
 		formatted_time = time.ctime()
 		company = self.application.config['mailer.company_name']
 		sender = self.application.config['mailer.source_email_alias']
-
+		template_file = self.render_path(self.config['template_file'])
 		story = []
 		click_me = self.config['link_text']
 		link = '<font color=blue><link href="' + str(url) + '">' + click_me + '</link></font>'
-		if self.config['logo']:
-			img = platypus.Image(logo, 2 * inch, inch)
+		if logo_path:
+			img = platypus.Image(logo_path, 2 * inch, inch)
 			story.append(img)
-
 		style_sheet = styles.getSampleStyleSheet()
 		style_sheet.add(styles.ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
 		ptext = '<font size=10>' + formatted_time + '</font>'
 		story.append(platypus.Spacer(1, 12))
 		story.append(platypus.Paragraph(ptext, style_sheet['Normal']))
 		story.append(platypus.Spacer(1, 12))
-		with open(self.config['template_file'], 'r') as file_h:
+		with open(template_file, 'r') as file_h:
 			for line in file_h:
 				story.append(platypus.Paragraph(line, style_sheet['Normal']))
 		story.append(platypus.Spacer(1, 8))
@@ -167,11 +177,11 @@ class Plugin(plugins.ClientPlugin):
 		try:
 			os.remove(self.config['output_pdf'])
 		except Exception as err:
-			self.logger.debug('cannot delete created attachment: ' + repr(err))
+			self.logger.debug(..., exc_info=True)
 		self.application.config['mailer.attachment_file'] = None
 
-	def expand_path(self, outfile, *args, **kwargs):
-		expanded_path = _expand_path(outfile, *args, **kwargs)
+	def render_path(self, outfile, *args, **kwargs):
+		expanded_path = _render_path(outfile, *args, **kwargs)
 		try:
 			expanded_path = mailer.render_message_template(expanded_path, self.application.config)
 		except jinja2.exceptions.TemplateSyntaxError as error:
@@ -183,4 +193,3 @@ class Plugin(plugins.ClientPlugin):
 			self.text_insert("Value error ({0}) in directory: {1}\n".format(error, outfile))
 			return None
 		return expanded_path
-		
