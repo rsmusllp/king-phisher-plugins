@@ -79,9 +79,12 @@ class Plugin(plugins.ClientPlugin):
 			return False
 		if not os.path.isfile(self.config['template_file']):
 			self.logger.error('template file does not exist, specify a valid template file')
+			gui_utilities.show_dialog_error(
+				'File Error',
+				self.application.get_active_window(),
+				'Template file not found.'
+			)
 			return False
-		if self.config['logo'] and not os.path.isfile(self.config['template_file']):
-			self.logger.error('specified template or logo file not found')
 		self.logger.debug('pdf template file found, generating attachment')
 		return True
 
