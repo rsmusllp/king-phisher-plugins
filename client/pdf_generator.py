@@ -77,7 +77,7 @@ class Plugin(plugins.ClientPlugin):
 		if not all((self.config['template_file'], self.config['output_pdf'], self.config['link_text'])):
 			self.logger.debug('skipping exporting any attachments due to lack of information provided to run')
 			return False
-		if not os.path.isfile(self.config['template_file']):
+		if not os.path.isfile(self.render_path(self.config['template_file'])):
 			self.logger.error('template file does not exist, specify a valid template file')
 			gui_utilities.show_dialog_error(
 				'File Error',
@@ -85,7 +85,7 @@ class Plugin(plugins.ClientPlugin):
 				'Template file not found.'
 			)
 			return False
-		self.logger.debug('pdf template file found, generating attachment')
+		self.logger.debug('pdf template file found, creating attachment')
 		return True
 
 	def make_preview(self, _):
@@ -173,12 +173,12 @@ class Plugin(plugins.ClientPlugin):
 		self.application.config['mailer.attachment_file'] = outfile
 
 	def signal_send_finished(self, _):
-		if not os.path.isfile(self.config['output_pdf']) and os.access(self.config['output_pdf']. os.W_OK):
+		if not os.path.isfile(self.render_path(self.config['output_pdf'])) and os.access(self.render_path(self.config['output_pdf']), os.W_OK):
 			self.logger.error('no pdf file found at: ' + str(self.config['output_pdf']))
 			return
 		self.logger.info('deleting pdf file: ' + str(self.config['output_pdf']))
 		try:
-			os.remove(self.config['output_pdf'])
+			os.remove(self.render_path(self.config['output_pdf']))
 		except Exception as err:
 			self.logger.debug(..., exc_info=True)
 		self.application.config['mailer.attachment_file'] = None
