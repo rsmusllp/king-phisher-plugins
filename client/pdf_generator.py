@@ -19,11 +19,6 @@ except ImportError:
 else:
 	has_reportlab = True
 
-def _expand_path(outfile, pathmod=os.path):
-	outfile = pathmod.expandvars(outfile)
-	outfile = pathmod.expanduser(outfile)
-	return outfile
-
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
 	title = 'Generate PDF'
@@ -35,22 +30,25 @@ class Plugin(plugins.ClientPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
-		plugins.ClientOptionString(
+		plugins.ClientOptionPath(
 			'output_pdf',
 			'pdf being generated',
 			default='~/Attachment1.pdf',
-			display_name='* Output PDF File'
+			display_name='* Output PDF File',
+			path_type='file-save'
 		),
-		plugins.ClientOptionString(
+		plugins.ClientOptionPath(
 			'template_file',
 			'Template file to read from',
 			default='~/template.txt',
-			display_name='* Template File'
+			display_name='* Template File',
+			path_type='file-open'
 		),
-		plugins.ClientOptionString(
+		plugins.ClientOptionPath(
 			'logo',
 			'Image to include into the pdf',
-			display_name='Logo / Inline Image'
+			display_name='Logo / Inline Image',
+			path_type='file-open'
 		),
 		plugins.ClientOptionString(
 			'link_text',
@@ -85,7 +83,7 @@ class Plugin(plugins.ClientPlugin):
 				'One or more of the options required to generate a PDF file are invalid.'
 			)
 			return True
-		template_file = _expand_path(self.config['template_file'])
+		template_file = self.config['template_file']
 		if not os.access(template_file, os.R_OK):
 			self.logger.warning('can not access pdf template file: ' + template_file)
 			gui_utilities.show_dialog_error(
@@ -113,7 +111,7 @@ class Plugin(plugins.ClientPlugin):
 		)
 
 	def build_pdf(self, target=None):
-		output_pdf = _expand_path(self.config['output_pdf'])
+		output_pdf = self.config['output_pdf']
 		pdf_file = platypus.SimpleDocTemplate(output_pdf,
 			pagesize=letter,
 			rightMargin=72,
@@ -137,7 +135,7 @@ class Plugin(plugins.ClientPlugin):
 		formatted_time = time.ctime()
 		company = self.application.config['mailer.company_name']
 		sender = self.application.config['mailer.source_email_alias']
-		template_file = _render_path(self.config['template_file'])
+		template_file = self.config['template_file']
 
 		story = []
 		click_me = saxutils.escape(self.config['link_text'])
@@ -145,7 +143,6 @@ class Plugin(plugins.ClientPlugin):
 
 		logo_path = self.config['logo']
 		if logo_path:
-			logo_path = _expand_path
 			img = platypus.Image(logo_path, 2 * inch, inch)
 			story.append(img)
 
@@ -180,10 +177,10 @@ class Plugin(plugins.ClientPlugin):
 	def signal_send_target(self, _, target):
 		if not self.build_pdf(target):
 			raise RuntimeError('failed to build the target\'s pdf file')
-		self.attach_pdf(_expand_path(self.config['output_pdf']))
+		self.attach_pdf(self.config['output_pdf'])
 
 	def signal_send_finished(self, _):
-		output_pdf = _expand_path(self.config['output_pdf'])
+		output_pdf = self.config['output_pdf']
 		if not os.access(output_pdf, os.W_OK):
 			self.logger.error('no pdf file found at: ' + output_pdf)
 			return
