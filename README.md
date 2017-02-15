@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2016-12-06 19:37:55 -->
+<!-- generated at: 2017-02-15 19:27:43 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -10,11 +10,14 @@ Toolkit. For more information regarding King Phisher, see the project's
 |:------------------------------------------|:------------------|
 | [Spell Check][c_spell_check] | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
 | [Clockwork SMS][c_clockwork_sms] | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
-| [Save KPM On Exit][c_kpm_export_prompt] | Prompt to save the message data as a KPM file when King Phisher exits. |
+| [Upload KPM][c_kpm_export_on_send] | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
+| [Generate PDF][c_pdf_generator] | Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin. |
 | [Hello World!][c_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
+| [Save KPM On Exit][c_kpm_export_on_exit] | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Blink(1) Notifications][c_blink1] | A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted. |
+| [URI Spoof Generator][c_uri_spoof_generator] | Exports a redirect page which allows URI spoofing in the address bar of the target's browser |
 | [SFTP Client][c_sftp_client] | Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server. |
-| [File Logging][c_file_logging] | Write the client's logs to a file in the users data directory. |
+| [File Logging][c_file_logging] | Write the client's logs to a file in the users data directory. Additionally if an unhandled exception occurs, the details will be written to a dedicated directory. |
 
 ## Server Plugins
 | Name                                      | Description       |
@@ -44,9 +47,12 @@ details see the [LICENSE][license-file] file.
 [license-file]: https://github.com/securestate/king-phisher-templates/blob/master/LICENSE
 [c_spell_check]: https://github.com/securestate/king-phisher-plugins/blob/master/client/spell_check.py
 [c_clockwork_sms]: https://github.com/securestate/king-phisher-plugins/blob/master/client/clockwork_sms.py
-[c_kpm_export_prompt]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_prompt.py
+[c_kpm_export_on_send]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_send.py
+[c_pdf_generator]: https://github.com/securestate/king-phisher-plugins/blob/master/client/pdf_generator.py
 [c_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/client/hello_world.py
+[c_kpm_export_on_exit]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_exit.py
 [c_blink1]: https://github.com/securestate/king-phisher-plugins/blob/master/client/blink1.py
+[c_uri_spoof_generator]: https://github.com/securestate/king-phisher-plugins/blob/master/client/uri_spoof_generator.py
 [c_sftp_client]: https://github.com/securestate/king-phisher-plugins/blob/master/client/sftp_client.py
 [c_file_logging]: https://github.com/securestate/king-phisher-plugins/blob/master/client/file_logging.py
 [s_pushbullet_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/pushbullet_notifications.py
