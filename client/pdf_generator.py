@@ -19,10 +19,9 @@ except ImportError:
 else:
 	has_reportlab = True
 
-def _expand_path(outfile, *joins, pathmod=os.path):
+def _expand_path(outfile, pathmod=os.path):
 	outfile = pathmod.expandvars(outfile)
 	outfile = pathmod.expanduser(outfile)
-	outfile.join(outfile, *joins)
 	return outfile
 
 class Plugin(plugins.ClientPlugin):
@@ -73,6 +72,9 @@ class Plugin(plugins.ClientPlugin):
 		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
+	def attach_pdf(self, outfile):
+		self.application.config['mailer.attachment_file'] = outfile
+
 	def missing_options(self):
 		# return true if a required option is missing or otherwise invalid
 		if not all((self.config['template_file'], self.config['output_pdf'], self.config['link_text'])):
@@ -93,9 +95,6 @@ class Plugin(plugins.ClientPlugin):
 			)
 			return True
 		return False
-
-	def signal_send_precheck(self, _):
-		return not self.missing_options()
 
 	def make_preview(self, _):
 		if self.missing_options():
@@ -133,11 +132,6 @@ class Plugin(plugins.ClientPlugin):
 			return False
 		self.logger.info('wrote pdf file to: ' + output_pdf + ('' if target is None else ' with uid: ' + target.uid))
 		return True
-
-	def signal_send_target(self, _, target):
-		if not self.build_pdf(target):
-			raise RuntimeError('failed to build the target\'s pdf file')
-		self.attach_pdf(_expand_path(self.config['output_pdf']))
 
 	def get_template(self, url):
 		formatted_time = time.ctime()
@@ -177,8 +171,16 @@ class Plugin(plugins.ClientPlugin):
 		story.append(platypus.Paragraph(ptext, style_sheet['Normal']))
 		return story
 
-	def attach_pdf(self, outfile):
-		self.application.config['mailer.attachment_file'] = outfile
+	def signal_send_precheck(self, _):
+		if self.missing_options():
+			self.text_insert('One or more of the options required to generate a PDF file are invalid.\n')
+			return False
+		return True
+
+	def signal_send_target(self, _, target):
+		if not self.build_pdf(target):
+			raise RuntimeError('failed to build the target\'s pdf file')
+		self.attach_pdf(_expand_path(self.config['output_pdf']))
 
 	def signal_send_finished(self, _):
 		output_pdf = _expand_path(self.config['output_pdf'])
