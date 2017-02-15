@@ -1,9 +1,10 @@
-import time
 import os
+import time
+import xml.sax.saxutils as saxutils
 
+import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
-import king_phisher.client.gui_utilities as gui_utilities
 
 import jinja2.exceptions
 
@@ -18,10 +19,9 @@ except ImportError:
 else:
 	has_reportlab = True
 
-def _render_path(outfile, *joins, pathmod=os.path):
+def _expand_path(outfile, pathmod=os.path):
 	outfile = pathmod.expandvars(outfile)
 	outfile = pathmod.expanduser(outfile)
-	outfile.join(outfile, *joins)
 	return outfile
 
 class Plugin(plugins.ClientPlugin):
@@ -72,34 +72,49 @@ class Plugin(plugins.ClientPlugin):
 		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
-	def signal_send_precheck(self, _):
-		# file and option checks
+	def attach_pdf(self, outfile):
+		self.application.config['mailer.attachment_file'] = outfile
+
+	def missing_options(self):
+		# return true if a required option is missing or otherwise invalid
 		if not all((self.config['template_file'], self.config['output_pdf'], self.config['link_text'])):
-			self.logger.debug('skipping exporting any attachments due to lack of information provided to run')
-			return False
-		if not os.path.isfile(self.render_path(self.config['template_file'])):
-			self.logger.error('template file does not exist, specify a valid template file')
+			self.logger.warning('options required to generate a pdf are missing')
 			gui_utilities.show_dialog_error(
-				'File Error',
+				'Configuration Error',
 				self.application.get_active_window(),
-				'Template file not found.'
+				'One or more of the options required to generate a PDF file are invalid.'
 			)
-			return False
-		self.logger.debug('pdf template file found, creating attachment')
-		return True
+			return True
+		template_file = _expand_path(self.config['template_file'])
+		if not os.access(template_file, os.R_OK):
+			self.logger.warning('can not access pdf template file: ' + template_file)
+			gui_utilities.show_dialog_error(
+				'Configuration Error',
+				self.application.get_active_window(),
+				'Can not access the PDF template file.'
+			)
+			return True
+		return False
 
 	def make_preview(self, _):
-		if not os.path.isfile(self.render_path(self.config['template_file'])):
-			self.logger.error('template file does not exist, please review your options')
-			gui_utilities.show_dialog_error(
-				'File Error',
-				self.application.get_active_window(),
-				'Template file not found.'
-			)
+		if self.missing_options():
 			return False
+		if not self.build_pdf():
+			gui_utilities.show_dialog_info(
+				'PDF Build Error',
+				self.application.get_active_window(),
+				'Failed to create the PDF file.'
+			)
+			return
+		gui_utilities.show_dialog_info(
+			'PDF Created',
+			self.application.get_active_window(),
+			'Successfully created the PDF file.'
+		)
 
-		outfile = self.render_path(self.config['output_pdf'])
-		pdf_file = platypus.SimpleDocTemplate(outfile,
+	def build_pdf(self, target=None):
+		output_pdf = _expand_path(self.config['output_pdf'])
+		pdf_file = platypus.SimpleDocTemplate(output_pdf,
 			pagesize=letter,
 			rightMargin=72,
 			leftMargin=72,
@@ -107,46 +122,33 @@ class Plugin(plugins.ClientPlugin):
 			bottomMargin=18
 		)
 		url = self.application.config['mailer.webserver_url']
-		pdf = self.get_template(url)
-		pdf_file.multiBuild(pdf)
-		self.logger.info('created, check ' + outfile)
-		gui_utilities.show_dialog_info(
-				'PDF Created',
-				self.application.get_active_window(),
-				'PDF File Created Successfully.'
-			)
-
-	def signal_send_target(self, _, target):
-		outfile = self.render_path(self.config['output_pdf'])
-		pdf_file = platypus.SimpleDocTemplate(outfile,
-			pagesize=letter,
-			rightMargin=72,
-			leftMargin=72,
-			topMargin=72,
-			bottomMargin=18
-		)
-		url = self.application.config['mailer.webserver_url'] + '?uid=' + target.uid
-		pdf = self.get_template(url)
+		if target is not None:
+			url += '?uid=' + target.uid
+		pdf_template = self.get_template(url)
 		try:
-			pdf_file.multiBuild(pdf)
-			self.attach_pdf(outfile)
+			pdf_file.multiBuild(pdf_template)
 		except Exception as err:
-			self.logger.error(..., exc_info=True)
-		else:
-			self.logger.info('pdf attachement made linking with uid: ' + target.uid)
+			self.logger.error('failed to build the pdf document', exc_info=True)
+			return False
+		self.logger.info('wrote pdf file to: ' + output_pdf + ('' if target is None else ' with uid: ' + target.uid))
+		return True
 
 	def get_template(self, url):
-		logo_path = self.render_path(self.config['logo'])
 		formatted_time = time.ctime()
 		company = self.application.config['mailer.company_name']
 		sender = self.application.config['mailer.source_email_alias']
-		template_file = self.render_path(self.config['template_file'])
+		template_file = _render_path(self.config['template_file'])
+
 		story = []
-		click_me = self.config['link_text']
-		link = '<font color=blue><link href="' + str(url) + '">' + click_me + '</link></font>'
+		click_me = saxutils.escape(self.config['link_text'])
+		link = '<font color=blue><link href="' + url + '">' + click_me + '</link></font>'
+
+		logo_path = self.config['logo']
 		if logo_path:
+			logo_path = _expand_path
 			img = platypus.Image(logo_path, 2 * inch, inch)
 			story.append(img)
+
 		style_sheet = styles.getSampleStyleSheet()
 		style_sheet.add(styles.ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
 		ptext = '<font size=10>' + formatted_time + '</font>'
@@ -169,30 +171,22 @@ class Plugin(plugins.ClientPlugin):
 		story.append(platypus.Paragraph(ptext, style_sheet['Normal']))
 		return story
 
-	def attach_pdf(self, outfile):
-		self.application.config['mailer.attachment_file'] = outfile
+	def signal_send_precheck(self, _):
+		if self.missing_options():
+			self.text_insert('One or more of the options required to generate a PDF file are invalid.\n')
+			return False
+		return True
+
+	def signal_send_target(self, _, target):
+		if not self.build_pdf(target):
+			raise RuntimeError('failed to build the target\'s pdf file')
+		self.attach_pdf(_expand_path(self.config['output_pdf']))
 
 	def signal_send_finished(self, _):
-		if not os.path.isfile(self.render_path(self.config['output_pdf'])) and os.access(self.render_path(self.config['output_pdf']), os.W_OK):
-			self.logger.error('no pdf file found at: ' + str(self.config['output_pdf']))
+		output_pdf = _expand_path(self.config['output_pdf'])
+		if not os.access(output_pdf, os.W_OK):
+			self.logger.error('no pdf file found at: ' + output_pdf)
 			return
-		self.logger.info('deleting pdf file: ' + str(self.config['output_pdf']))
-		try:
-			os.remove(self.render_path(self.config['output_pdf']))
-		except Exception as err:
-			self.logger.debug(..., exc_info=True)
+		self.logger.info('deleting pdf file: ' + output_pdf)
+		os.remove(output_pdf)
 		self.application.config['mailer.attachment_file'] = None
-
-	def render_path(self, outfile, *args, **kwargs):
-		expanded_path = _render_path(outfile, *args, **kwargs)
-		try:
-			expanded_path = mailer.render_message_template(expanded_path, self.application.config)
-		except jinja2.exceptions.TemplateSyntaxError as error:
-			self.logger.error("jinja2 syntax error ({0}) in directory: {1}".format(error.message, outfile))
-			self.text_insert("Jinja2 syntax error ({0}) in directory: {1}\n".format(error.message, outfile))
-			return None
-		except ValueError as error:
-			self.logger.error("value error ({0}) in directory: {1}".format(error, outfile))
-			self.text_insert("Value error ({0}) in directory: {1}\n".format(error, outfile))
-			return None
-		return expanded_path
