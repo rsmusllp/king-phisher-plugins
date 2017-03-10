@@ -21,7 +21,7 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'TOTP Self Enrollment'
 	description = """
-	This plugin allows users to manager the two factor authentication settings
+	This plugin allows users to manage the two factor authentication settings
 	on their account. This includes setting a new and removing an existing TOTP
 	secret. The two factor authentication used by King Phisher is compatible
 	with free mobile applications such as Google Authenticator.
