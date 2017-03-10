@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2017-02-15 19:27:43 -->
+<!-- generated at: 2017-03-10 17:02:38 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -12,6 +12,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Clockwork SMS][c_clockwork_sms] | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [Upload KPM][c_kpm_export_on_send] | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
 | [Generate PDF][c_pdf_generator] | Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin. |
+| [TOTP Self Enrollment][c_totp_enrollment] | This plugin allows users to manager the two factor authentication settings on their account. This includes setting a new and removing an existing TOTP secret. The two factor authentication used by King Phisher is compatible with free mobile applications such as Google Authenticator. |
 | [Hello World!][c_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
 | [Save KPM On Exit][c_kpm_export_on_exit] | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Blink(1) Notifications][c_blink1] | A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted. |
@@ -25,6 +26,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Pushbullet Notifications][s_pushbullet_notifications] | A plugin that uses Pushbullet's API to send push notifications on new website visits and submitted credentials. |
 | [Hello World!][s_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning. |
 | [XMPP Notifications][s_xmpp_notifications] | A plugin which pushes notifications regarding the King Phisher server to a specified XMPP server. |
+| [IFTTT Campaign Success Notification][s_ifttt_on_campaign_success] | A plugin that will publish an event to a specified IFTTT Maker channel when a campaign has been deemed 'successful'. |
 
 ## Plugin Installation
 ### Client Plugin Installation
@@ -49,6 +51,7 @@ details see the [LICENSE][license-file] file.
 [c_clockwork_sms]: https://github.com/securestate/king-phisher-plugins/blob/master/client/clockwork_sms.py
 [c_kpm_export_on_send]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_send.py
 [c_pdf_generator]: https://github.com/securestate/king-phisher-plugins/blob/master/client/pdf_generator.py
+[c_totp_enrollment]: https://github.com/securestate/king-phisher-plugins/blob/master/client/totp_enrollment.py
 [c_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/client/hello_world.py
 [c_kpm_export_on_exit]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_exit.py
 [c_blink1]: https://github.com/securestate/king-phisher-plugins/blob/master/client/blink1.py
@@ -58,3 +61,4 @@ details see the [LICENSE][license-file] file.
 [s_pushbullet_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/pushbullet_notifications.py
 [s_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/server/hello_world.py
 [s_xmpp_notifications]: https://github.com/securestate/king-phisher-plugins/blob/master/server/xmpp_notifications.py
+[s_ifttt_on_campaign_success]: https://github.com/securestate/king-phisher-plugins/blob/master/server/ifttt_on_campaign_success.py
