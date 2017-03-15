@@ -90,6 +90,11 @@ class DMARCPolicy(object):
 		record = ''.join([part.decode('utf-8') for part in answers[0].strings])
 		return cls(record)
 
+	def get(self, tag):
+		if not tag in TAGS:
+			raise KeyError(tag)
+		return self.tags.get(tag, TAGS[tag])
+
 	@property
 	def policy(self):
 		return self.tags.get('p')
@@ -102,7 +107,10 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'DMARC Check'
 	description = """
-
+	This plugin adds another safety check to the message precheck routines to
+	verify that if DMARC exists the message will not be quarentined or rejected.
+	If no DMARC policy is present, the policy is set to none or the percentage
+	is set to 0, the message sending operation will proceed.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.5.0'
@@ -130,13 +138,41 @@ class Plugin(plugins.ClientPlugin):
 			return True
 
 		try:
-			dmarc_result = DMARCPolicy.from_domain(test_domain)
+			dmarc_policy = DMARCPolicy.from_domain(test_domain)
+		except DMARCNoRecordError:
+			self.logger.debug('no dmarc policy found for domain: ' + test_domain)
+			text_insert('done, no policy found.\n')
+			return True
 		except DMARCError as error:
 			self.logger.warning('dmarc error: ' + error.message)
 			text_insert("done, encountered exception: {0}.\n".format(error.__class__.__name__))
 			return False
+		text_insert('done.\n')
+		self.logger.debug("dmarc policy set to {0!r} for domain: {1}".format(dmarc_policy.policy, test_domain))
+		text_insert('Found DMARC policy:\n')
+		text_insert('  Policy:  ' + dmarc_policy.policy + '\n')
+		text_insert('  Percent: ' + dmarc_policy.get('pct') + '\n')
+		if dmarc_policy.get('rua'):
+			text_insert('  RUA URI: ' + dmarc_policy.get('rua') + '\n')
+		if dmarc_policy.get('ruf'):
+			text_insert('  RUF URI: ' + dmarc_policy.get('ruf') + '\n')
 
-		return True
+		if spf_result == constants.SPFResult.PASS:
+			return True
+		if dmarc_policy.policy == 'none' or dmarc_policy.get('pct') == '0':
+			return True
+
+		if dmarc_policy.policy == 'quarantine':
+			message = 'The DMARC policy results in these messages being quarantined.'
+		elif dmarc_policy.policy == 'reject':
+			message = 'The DMARC policy results in these messages being rejected.'
+		text_insert('WARNING: ' + message + '\n')
+		ignore = gui_utilities.show_dialog_yes_no(
+			'DMARC Policy Failure',
+			self.application.get_active_window(),
+			message + '\nContinue sending messages anyways?'
+		)
+		return ignore
 
 def main():
 	parser = argparse.ArgumentParser(description='DMARC Check Utility', conflict_handler='resolve')
