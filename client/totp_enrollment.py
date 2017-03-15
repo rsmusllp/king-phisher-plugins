@@ -50,8 +50,8 @@ class Plugin(plugins.ClientPlugin):
 			gui_utilities.show_dialog_warning(
 				'Incorrect TOTP',
 				self.application.get_active_window(),
-				'The specified TOTP code is invalid. Make sure your time\n' +\
-				'is correct, rescan the QR code and try again.'
+				'The specified TOTP code is invalid. Make sure your time\n'\
+				+ 'is correct, rescan the QR code and try again.'
 			)
 			return
 		this_user.otp_secret = new_otp.secret
@@ -59,9 +59,9 @@ class Plugin(plugins.ClientPlugin):
 		gui_utilities.show_dialog_info(
 			'TOTP Enrollment',
 			self.application.get_active_window(),
-			'Successfully set the TOTP secret. Your account is now enrolled\n' +\
-			'in two factor authentication. You will be prompted to enter the\n' +\
-			'value the next time you login.'
+			'Successfully set the TOTP secret. Your account is now enrolled\n'\
+			+ 'in two factor authentication. You will be prompted to enter the\n'
+			+ 'value the next time you login.'
 		)
 		window.destroy()
 
@@ -72,15 +72,15 @@ class Plugin(plugins.ClientPlugin):
 			gui_utilities.show_dialog_info(
 				'Not Enrolled',
 				self.application.get_active_window(),
-				'This account is not currently enrolled in two factor\n' +\
-				'authentication. There are no changes to make.'
+				'This account is not currently enrolled in two factor\n'\
+				+ 'authentication. There are no changes to make.'
 			)
 			return
 		remove = gui_utilities.show_dialog_yes_no(
 			'Already Enrolled',
 			self.application.get_active_window(),
-			'Are you sure you want to unenroll in TOTP? This will remove\n' +\
-			'two factor authentication on your account.'
+			'Are you sure you want to unenroll in TOTP? This will remove\n'\
+			+ 'two factor authentication on your account.'
 		)
 		if not remove:
 			return
@@ -89,9 +89,9 @@ class Plugin(plugins.ClientPlugin):
 		gui_utilities.show_dialog_info(
 			'TOTP Unenrollment',
 			self.application.get_active_window(),
-			'Successfully removed the TOTP secret. Your account is now unenrolled\n' +\
-			'in two factor authentication. You will no longer be prompted to enter\n' +\
-			'the value when you login.'
+			'Successfully removed the TOTP secret. Your account is now unenrolled\n'\
+			+ 'in two factor authentication. You will no longer be prompted to enter\n'\
+			+ 'the value when you login.'
 		)
 
 	def enrollment_setup(self, _):
