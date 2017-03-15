@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2017-03-10 17:46:11 -->
+<!-- generated at: 2017-03-15 19:42:21 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -11,6 +11,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Spell Check][c_spell_check] | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
 | [Clockwork SMS][c_clockwork_sms] | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [Upload KPM][c_kpm_export_on_send] | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
+| [DMARC Check][c_dmarc] | This plugin adds another safety check to the message precheck routines to verify that if DMARC exists the message will not be quarentined or rejected. If no DMARC policy is present, the policy is set to none or the percentage is set to 0, the message sending operation will proceed. |
 | [Generate PDF][c_pdf_generator] | Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin. |
 | [TOTP Self Enrollment][c_totp_enrollment] | This plugin allows users to manage the two factor authentication settings on their account. This includes setting a new and removing an existing TOTP secret. The two factor authentication used by King Phisher is compatible with free mobile applications such as Google Authenticator. |
 | [Hello World!][c_hello_world] | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
@@ -50,6 +51,7 @@ details see the [LICENSE][license-file] file.
 [c_spell_check]: https://github.com/securestate/king-phisher-plugins/blob/master/client/spell_check.py
 [c_clockwork_sms]: https://github.com/securestate/king-phisher-plugins/blob/master/client/clockwork_sms.py
 [c_kpm_export_on_send]: https://github.com/securestate/king-phisher-plugins/blob/master/client/kpm_export_on_send.py
+[c_dmarc]: https://github.com/securestate/king-phisher-plugins/blob/master/client/dmarc.py
 [c_pdf_generator]: https://github.com/securestate/king-phisher-plugins/blob/master/client/pdf_generator.py
 [c_totp_enrollment]: https://github.com/securestate/king-phisher-plugins/blob/master/client/totp_enrollment.py
 [c_hello_world]: https://github.com/securestate/king-phisher-plugins/blob/master/client/hello_world.py
