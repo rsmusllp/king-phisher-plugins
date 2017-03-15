@@ -9,14 +9,14 @@ Toolkit. For more information regarding King Phisher, see the project's
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 {% for plugin in plugins.client %}
-| [{{ plugin.title }}][c_{{ plugin.name }}] | {{ plugin.formatted_description | replace('\n', '<br />') }} |
+| [{{ plugin.title }}](/client/{{ plugin.name }}.py) | {{ plugin.formatted_description | replace('\n', '<br />') }} |
 {% endfor %}
 
 ## Server Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 {% for plugin in plugins.server %}
-| [{{ plugin.title }}][s_{{ plugin.name }}] | {{ plugin.formatted_description }} |
+| [{{ plugin.title }}](/server/{{ plugin.name }}.py) | {{ plugin.formatted_description }} |
 {% endfor %}
 
 ## Plugin Installation
@@ -32,15 +32,9 @@ being copied into the necessary directory, the server's configuration file
 needs to be updated to enable the plugin.
 
 ## License
-King Phisher Templates are released under the BSD 3-clause license, for more
+King Phisher Plugins are released under the BSD 3-clause license, for more
 details see the [LICENSE][license-file] file.
 
 [king-phisher-repo]: https://github.com/securestate/king-phisher
 [king-phisher-wiki]: https://github.com/securestate/king-phisher/wiki
-[license-file]: https://github.com/securestate/king-phisher-templates/blob/master/LICENSE
-{% for plugin in plugins.client %}
-[c_{{ plugin.name }}]: https://github.com/securestate/king-phisher-plugins/blob/master/client/{{ plugin.name }}.py
-{% endfor %}
-{% for plugin in plugins.server %}
-[s_{{ plugin.name }}]: https://github.com/securestate/king-phisher-plugins/blob/master/server/{{ plugin.name }}.py
-{% endfor %}
+[license-file]: /LICENSE
