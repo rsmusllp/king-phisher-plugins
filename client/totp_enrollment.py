@@ -37,7 +37,7 @@ class Plugin(plugins.ClientPlugin):
 	req_min_version = '1.7.0b2'
 	req_packages = {
 		'qrcode': has_qrcode,
-		'Pillow': has_pil
+		'pillow': has_pillow
 	}
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
