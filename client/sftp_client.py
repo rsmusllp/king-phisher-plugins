@@ -1,4 +1,3 @@
-# todo: make show hidden files an option for both and persist the setting
 import collections
 import contextlib
 import datetime
@@ -410,8 +409,8 @@ class StatusDisplay(object):
 	def __init__(self, builder, queue):
 		self.builder = builder
 		self.queue = queue
-		self.scroll = self.builder.get_object('scrolledwindow_transfer_statuses')
-		self.treeview_transfer = self.builder.get_object('treeview_transfer_statuses')
+		self.scroll = self.builder.get_object('SFTPClient.notebook.page_stfp.scrolledwindow_transfer_statuses')
+		self.treeview_transfer = self.builder.get_object('SFTPClient.notebook.page_stfp.treeview_transfer_statuses')
 		self._tv_lock = threading.RLock()
 
 		col_text = Gtk.CellRendererText()
@@ -588,7 +587,7 @@ class DirectoryBase(object):
 	def __init__(self, builder, application, config, wd_history):
 		self.application = application
 		self.config = config
-		self.treeview = builder.get_object('SFTPClientGUI.' + self.treeview_name)
+		self.treeview = builder.get_object('SFTPClient.notebook.page_stfp.' + self.treeview_name)
 		self.wd_history = collections.deque(wd_history, maxlen=3)
 		self.cwd = None
 		self.col_name = Gtk.CellRendererText()
@@ -1060,7 +1059,7 @@ class LocalDirectory(DirectoryBase):
 	root_directory = os.path.abspath(os.sep)
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
-	working_directory_combobox_name = 'comboboxtext_local_working_directory'
+	working_directory_combobox_name = 'SFTPClient.notebook.page_stfp.comboboxtext_local_working_directory'
 	def __init__(self, builder, application, config):
 		self.stat = os.stat
 		self._chdir = os.chdir
@@ -1161,7 +1160,7 @@ class RemoteDirectory(DirectoryBase):
 	root_directory = posixpath.abspath(posixpath.sep)
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
-	working_directory_combobox_name = 'comboboxtext_remote_working_directory'
+	working_directory_combobox_name = 'SFTPClient.notebook.page_stfp.comboboxtext_remote_working_directory'
 	def __init__(self, builder, application, config, ssh):
 		self.ssh = ssh
 		self.path_mod = posixpath
@@ -1362,22 +1361,23 @@ class FileManager(object):
 			self._threads.append(thread)
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(gtk_builder_file)
-		self.window = self.builder.get_object('SFTPClientGUI.window')
+		self.window = self.builder.get_object('SFTPClient.window')
+		self.notebook = self.builder.get_object('SFTPClient.notebook')
 		self.status_display = StatusDisplay(self.builder, self.queue)
 		self.local = LocalDirectory(self.builder, self.application, config)
 		self.remote = RemoteDirectory(self.builder, self.application, config, ssh)
-		self.builder.get_object('button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(UploadTask))
-		self.builder.get_object('button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(DownloadTask))
+		self.builder.get_object('SFTPClient.notebook.page_stfp.button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(UploadTask))
+		self.builder.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(DownloadTask))
-		menu_item = self.builder.get_object('menuitem_opts_transfer_hidden')
+		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
-		menu_item = self.builder.get_object('menuitem_opts_show_hidden')
+		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_show_hidden')
 		menu_item.set_active(self.config['show_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option_show_hidden)
-		menu_item = self.builder.get_object('menuitem_exit')
-		menu_item.connect('activate', lambda _: self.window.destroy())
+		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_exit')
+		menu_item.connect('activate', lambda _: self.notebook.destroy())
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
