@@ -15,6 +15,13 @@ except ImportError:
 else:
 	has_qrcode = True
 
+try:
+	import PIL
+except ImportError:
+	has_pillow = False
+else:
+	has_pillow = True
+
 gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 
 class Plugin(plugins.ClientPlugin):
@@ -29,7 +36,8 @@ class Plugin(plugins.ClientPlugin):
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.7.0b2'
 	req_packages = {
-		'qrcode': has_qrcode
+		'qrcode': has_qrcode,
+		'pillow': has_pillow
 	}
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
