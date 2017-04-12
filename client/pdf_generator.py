@@ -48,6 +48,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', object)):
 	req_packages = {
 		'reportlab': has_reportlab
 	}
+	version = '1.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.add_menu_item('Tools > Create PDF Preview', self.make_preview)

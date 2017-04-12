@@ -30,6 +30,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', object)):
 		)
 	]
 	req_min_version = '1.8.0b0'
+	version = '1.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
