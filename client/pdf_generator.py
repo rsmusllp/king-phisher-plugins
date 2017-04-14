@@ -20,7 +20,7 @@ except ImportError:
 else:
 	has_reportlab = True
 
-class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', object)):
+class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Jeremy Schoeneman']
 	title = 'Generate PDF'
 	description = """

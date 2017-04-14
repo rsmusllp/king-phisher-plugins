@@ -7,7 +7,7 @@ import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
 
-class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', object)):
+class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Spencer McIntyre']
 	title = 'Phishery DOCX URL Injector'
 	description = """
