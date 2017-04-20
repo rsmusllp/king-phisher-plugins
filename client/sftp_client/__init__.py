@@ -14,7 +14,7 @@ from gi.repository import GObject
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob', 'Spencer McIntyre', 'Erik Daguerre']
-	title = 'SFTP Client with Editor'
+	title = 'SFTP Client'
 	description = """
 	Secure File Transfer Protocol Client that can be used to upload, download,
 	create, and delete local and remote files on the King Phisher Server.
