@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.10"/>
+  <requires lib="gtksourceview" version="3.0"/>
   <object class="GtkImage" id="SFTPClient.notebook.page_stfp.image2">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -20,6 +21,7 @@
         <property name="height_request">500</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="show_tabs">False</property>
         <property name="scrollable">True</property>
         <child>
           <object class="GtkBox" id="SFTPClient.notebook.page_stfp.box">
@@ -360,13 +362,83 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkBox" id="SFTPClient.notebook.page_editor.box">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkToolbar" id="SFTPClient.notebook.page_editor.toolbar1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="toolbar_style">icons</property>
+                <child>
+                  <object class="GtkToolButton" id="SFTPClient.notebook.page_editor.toolbutton_save_html_file">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Save</property>
+                    <property name="label" translatable="yes">Save</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-save</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="SFTPClient.notebook.page_editor.toolbutton_template_wiki">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Message Template Help</property>
+                    <property name="label" translatable="yes">Template Help</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-info</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="SFTPClient.notebook.page_editor.scrolledwindow">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkSourceView" id="SFTPClient.notebook.page_editor.sourceview">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="left_margin">2</property>
+                    <property name="right_margin">2</property>
+                    <property name="show_line_numbers">True</property>
+                    <property name="tab_width">4</property>
+                    <property name="insert_spaces_instead_of_tabs">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child type="tab">
           <object class="GtkLabel" id="SFTPClient.notebook.editor_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">editor</property>
+            <property name="label" translatable="yes">Editor</property>
           </object>
           <packing>
             <property name="position">1</property>
@@ -377,15 +449,7 @@
           <placeholder/>
         </child>
         <child type="tab">
-          <object class="GtkLabel" id="SFTPClient.notebook.view_label">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">View</property>
-          </object>
-          <packing>
-            <property name="position">2</property>
-            <property name="tab_fill">False</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
     </child>
