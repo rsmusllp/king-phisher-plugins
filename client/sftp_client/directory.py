@@ -115,6 +115,12 @@ class DirectoryBase(object):
 		if treeiter is None:
 			return
 		treeiter = self._treeiter_sort_to_model(treeiter)
+
+		# if empty placeholder just delete
+		if not self._tv_model[treeiter][2]:
+			self._tv_model.remove(treeiter)
+			return
+
 		confirmed = gui_utilities.show_dialog_yes_no(
 			'Confirm Delete',
 			self.application.get_active_window(),
@@ -357,6 +363,14 @@ class DirectoryBase(object):
 		model, treeiter = self.treeview.get_selection().get_selected()
 		if not treeiter:
 			return
+		if not self.get_is_folder(model[treeiter][2]):
+			logger.warning('cannot set a file as an active working directory')
+			gui_utilities.show_dialog_error(
+				'Plugin Error',
+				self.application.get_active_window(),
+				'Cannot set a file the working directory.'
+			)
+			return
 		self.change_cwd(model[treeiter][2])
 
 	def signal_tv_collapse_row(self, _, treeiter, treepath):
@@ -461,7 +475,16 @@ class DirectoryBase(object):
 
 	def signal_menu_activate_create_folder(self, _):
 		selection = self.treeview.get_selection()
-		_, treeiter = selection.get_selected()
+		model, treeiter = selection.get_selected()
+		if treeiter:
+			if not self.get_is_folder(model[treeiter][2]):
+				logger.warning('cannot create a directory under a file')
+				gui_utilities.show_dialog_error(
+					'Plugin Error',
+					self.application.get_active_window(),
+					'Cannot create a directory under a file.'
+				)
+				return
 		if treeiter is None:
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
 			self.rename(current)
@@ -487,6 +510,10 @@ class DirectoryBase(object):
 			new_path = self.path_mod.join(self.cwd, text)
 		else:
 			new_path = self.path_mod.join(self._tv_model[parent][2], text)
+		# if empty placeholder was not named assume user bailed creation
+		if not text or text == ' ' and not self._tv_model[treeiter][2]:
+			self._tv_model.remove(treeiter)
+			return
 		if not text or text == self._tv_model[treeiter][0]:
 			return
 		if stat.S_ISDIR(self.path_mode(new_path)):
@@ -496,13 +523,13 @@ class DirectoryBase(object):
 			try:
 				self._rename_file(treeiter, new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error renaming file')
+				gui_utilities.show_dialog_error('Plugin Error', self.application.get_active_window(), 'Error renaming the file.')
 		else:
 			self._tv_model.remove(treeiter)
 			try:
 				self.make_dir(new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error creating file')
+				gui_utilities.show_dialog_error('Plugin Error', self.application.get_active_window(), 'Error creating the directory.')
 		self.refresh()
 
 	def signal_menu_activate_delete_prompt(self, _):
