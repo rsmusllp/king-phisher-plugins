@@ -364,12 +364,12 @@ class DirectoryBase(object):
 		if not treeiter:
 			return
 		if not self.get_is_folder(model[treeiter][2]):
+			logger.warning('cannot set a file as an active working directory')
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
 				self.application.get_active_window(),
-				'Cannot set a file as an active directory'
+				'Cannot set a file the working directory.'
 			)
-			logger.warning('cannot set a file as an active working directory')
 			return
 		self.change_cwd(model[treeiter][2])
 
@@ -478,12 +478,12 @@ class DirectoryBase(object):
 		model, treeiter = selection.get_selected()
 		if treeiter:
 			if not self.get_is_folder(model[treeiter][2]):
+				logger.warning('cannot create a directory under a file')
 				gui_utilities.show_dialog_error(
 					'Plugin Error',
 					self.application.get_active_window(),
-					'Cannot create a directory under a file'
+					'Cannot create a directory under a file.'
 				)
-				logger.warning('cannot create a directory under a file')
 				return
 		if treeiter is None:
 			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
@@ -523,13 +523,13 @@ class DirectoryBase(object):
 			try:
 				self._rename_file(treeiter, new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error renaming file')
+				gui_utilities.show_dialog_error('Plugin Error', self.application.get_active_window(), 'Error renaming the file.')
 		else:
 			self._tv_model.remove(treeiter)
 			try:
 				self.make_dir(new_path)
 			except (OSError, IOError):
-				gui_utilities.show_dialog_error('Error', self.application.get_active_window(), 'Error creating directory')
+				gui_utilities.show_dialog_error('Plugin Error', self.application.get_active_window(), 'Error creating the directory.')
 		self.refresh()
 
 	def signal_menu_activate_delete_prompt(self, _):
