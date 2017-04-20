@@ -1,11 +1,7 @@
 import os
 import paramiko
 
-from .client import StatusDisplay
-from .client import FileManager
-from .client import gtk_builder_file
-from .sftp_utilities import DelayedChangedSignal
-from .sftp_utilities import get_treeview_column
+from . import client
 
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
@@ -28,11 +24,11 @@ class Plugin(plugins.ClientPlugin):
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
-		if not os.access(gtk_builder_file, os.R_OK):
+		if not os.access(client.gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
 				self.application.get_active_window(),
-				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(gtk_builder_file))
+				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(client.gtk_builder_file))
 			)
 			return False
 		if 'directories' not in self.config:
@@ -63,9 +59,9 @@ class Plugin(plugins.ClientPlugin):
 				)
 				return
 			ssh = connection.client
-			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
+			self.logger.debug('loading gtk builder file from: ' + client.gtk_builder_file)
 			try:
-				manager = FileManager(self.application, ssh, self.config)
+				manager = client.FileManager(self.application, ssh, self.config)
 			except paramiko.ssh_exception.ChannelException as error:
 				self.logger.error('an ssh channel exception was raised while initializing', exc_info=True)
 				if len(error.args) == 2:

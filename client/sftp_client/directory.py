@@ -12,10 +12,7 @@ import threading
 import boltons.strutils
 import boltons.timeutils
 
-from .sftp_utilities import get_treeview_column
-from .sftp_utilities import handle_permission_denied
-from .sftp_utilities import DelayedChangedSignal
-from .sftp_utilities import GTYPE_LONG
+from . import sftp_utilities
 
 from king_phisher import its
 from king_phisher import utilities
@@ -28,6 +25,8 @@ from gi.repository import GdkPixbuf
 if its.on_windows:
 	import win32api
 	import win32con
+
+GTYPE_LONG = sftp_utilities.GTYPE_LONG
 
 PARENT_DIRECTORY = '..'
 CURRENT_DIRECTORY = '.'
@@ -62,9 +61,9 @@ class DirectoryBase(object):
 		col.set_sort_column_id(0)
 
 		self.treeview.append_column(col)
-		self.treeview.append_column(get_treeview_column('Permissions', col_text, 3, m_col_sort=3, resizable=True))
-		self.treeview.append_column(get_treeview_column('Size', col_text, 4, m_col_sort=5, resizable=True))
-		self.treeview.append_column(get_treeview_column('Date Modified', col_text, 6, m_col_sort=6, resizable=True))
+		self.treeview.append_column(sftp_utilities.get_treeview_column('Permissions', col_text, 3, m_col_sort=3, resizable=True))
+		self.treeview.append_column(sftp_utilities.get_treeview_column('Size', col_text, 4, m_col_sort=5, resizable=True))
+		self.treeview.append_column(sftp_utilities.get_treeview_column('Date Modified', col_text, 6, m_col_sort=6, resizable=True))
 
 		self.treeview.connect('button_press_event', self.signal_tv_button_press)
 		self.treeview.connect('key-press-event', self.signal_tv_key_press)
@@ -90,7 +89,7 @@ class DirectoryBase(object):
 		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
 		self.wdcb_dropdown.set_model(self._wdcb_model)
 		self.wdcb_dropdown.set_entry_text_column(0)
-		self.wdcb_dropdown.connect('changed', DelayedChangedSignal(self.signal_combo_changed))
+		self.wdcb_dropdown.connect('changed', sftp_utilities.DelayedChangedSignal(self.signal_combo_changed))
 
 		self.show_hidden = False
 		self._get_popup_menu()
@@ -561,7 +560,7 @@ class LocalDirectory(DirectoryBase):
 			return True
 		return False
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
 		"""
 		Delete the selected file or directory.
@@ -576,7 +575,7 @@ class LocalDirectory(DirectoryBase):
 		logger.info("deleting {0}: {1}".format(('directory' if self._tv_model[treeiter][5] == -1 else 'file'), row[2]))
 		self._tv_model.remove(treeiter)
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def remove_by_folder_name(self, name):
 		"""
 		Removes a folder given its absolute path.
@@ -585,7 +584,7 @@ class LocalDirectory(DirectoryBase):
 		"""
 		shutil.rmtree(name)
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def remove_by_file_name(self, name):
 		"""
 		Removes a file given its absolute path.
@@ -666,7 +665,7 @@ class RemoteDirectory(DirectoryBase):
 			return True
 		return False
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
 		"""
 		Delete the selected file or directory.
@@ -745,7 +744,7 @@ class RemoteDirectory(DirectoryBase):
 		with self.ftp_handle() as ftp:
 			return ftp.stat(path)
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def remove_by_folder_name(self, name):
 		"""
 		Removes a folder given its absolute path.
@@ -762,7 +761,7 @@ class RemoteDirectory(DirectoryBase):
 		with self.ftp_handle() as ftp:
 			ftp.rmdir(name)
 
-	@handle_permission_denied
+	@sftp_utilities.handle_permission_denied
 	def remove_by_file_name(self, name):
 		"""
 		Removes a file given its absolute path.

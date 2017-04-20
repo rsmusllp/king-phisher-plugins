@@ -7,9 +7,9 @@ import threading
 import boltons.strutils
 import boltons.timeutils
 
-from . import sftp_tasks
-from . import sftp_directory
-from .sftp_utilities import get_treeview_column
+from . import tasks
+from . import directory
+from . import sftp_utilities
 
 from king_phisher.client import gui_utilities
 
@@ -40,9 +40,9 @@ class StatusDisplay(object):
 		col.add_attribute(col_img, 'pixbuf', 0)
 		self.treeview_transfer.append_column(col)
 
-		self.treeview_transfer.append_column(get_treeview_column('Local File', col_text, 1, m_col_sort=1, resizable=True))
-		self.treeview_transfer.append_column(get_treeview_column('Remote File', col_text, 2, m_col_sort=2, resizable=True))
-		self.treeview_transfer.append_column(get_treeview_column('Status', col_text, 3, m_col_sort=3, resizable=True))
+		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Local File', col_text, 1, m_col_sort=1, resizable=True))
+		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Remote File', col_text, 2, m_col_sort=2, resizable=True))
+		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Status', col_text, 3, m_col_sort=3, resizable=True))
 
 		col_bar = Gtk.TreeViewColumn('Progress')
 		progress = Gtk.CellRendererProgress()
@@ -52,7 +52,7 @@ class StatusDisplay(object):
 		col_bar.set_min_width(125)
 		self.treeview_transfer.append_column(col_bar)
 
-		self.treeview_transfer.append_column(get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
+		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
 		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str, object)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
@@ -110,16 +110,16 @@ class StatusDisplay(object):
 				task.state = state_to
 		self.sync_view(set(modified_tasks))
 
-	def _sync_view(self, tasks=None):
+	def _sync_view(self, sftp_tasks=None):
 		# This value was set to True to prevent the treeview from freezing.
 		if not self.queue.mutex.acquire(blocking=True):
 			return
 		if not self._tv_lock.acquire(blocking=False):
 			self.queue.mutex.release()
 			return
-		tasks = (tasks or self.queue.queue)
-		for task in tasks:
-			if not isinstance(task, sftp_tasks.TransferTask):
+		sftp_tasks = (sftp_tasks or self.queue.queue)
+		for task in sftp_tasks:
+			if not isinstance(task, tasks.TransferTask):
 				continue
 			if task.treerowref is None:
 				parent_treeiter = None
@@ -139,7 +139,7 @@ class StatusDisplay(object):
 					task.remote_path,
 					task.state,
 					0,
-					None if (task.size is None or isinstance(task, sftp_tasks.TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size),
+					None if (task.size is None or isinstance(task, tasks.TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size),
 					task
 				])
 				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))
@@ -150,10 +150,10 @@ class StatusDisplay(object):
 		self.queue.mutex.release()
 		return False
 
-	def sync_view(self, tasks=None):
-		if isinstance(tasks, sftp_tasks.Task):
-			tasks = (tasks,)
-		GLib.idle_add(self._sync_view, tasks, priority=GLib.PRIORITY_DEFAULT_IDLE)
+	def sync_view(self, sftp_tasks=None):
+		if isinstance(sftp_tasks, tasks.Task):
+			sftp_tasks = (sftp_tasks,)
+		GLib.idle_add(self._sync_view, sftp_tasks, priority=GLib.PRIORITY_DEFAULT_IDLE)
 
 	def signal_menu_activate_clear(self, _):
 		with self.queue.mutex:
@@ -208,7 +208,7 @@ class FileManager(object):
 	def __init__(self, application, ssh, config):
 		self.application = application
 		self.config = config
-		self.queue = sftp_tasks.TaskQueue()
+		self.queue = tasks.TaskQueue()
 		self._threads = []
 		self._threads_max = 1
 		self._threads_shutdown = threading.Event()
@@ -221,12 +221,12 @@ class FileManager(object):
 		self.window = self.builder.get_object('SFTPClient.window')
 		self.notebook = self.builder.get_object('SFTPClient.notebook')
 		self.status_display = StatusDisplay(self.builder, self.queue)
-		self.local = sftp_directory.LocalDirectory(self.builder, self.application, config)
-		self.remote = sftp_directory.RemoteDirectory(self.builder, self.application, config, ssh)
-		self.builder.get_object('SFTPClient.notebook.page_stfp.button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(sftp_tasks.UploadTask))
-		self.builder.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(sftp_tasks.DownloadTask))
-		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(sftp_tasks.UploadTask))
-		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(sftp_tasks.DownloadTask))
+		self.local = directory.LocalDirectory(self.builder, self.application, config)
+		self.remote = directory.RemoteDirectory(self.builder, self.application, config, ssh)
+		self.builder.get_object('SFTPClient.notebook.page_stfp.button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.UploadTask))
+		self.builder.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.DownloadTask))
+		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.UploadTask))
+		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.DownloadTask))
 		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
@@ -248,9 +248,9 @@ class FileManager(object):
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
-		if isinstance(task, sftp_tasks.DownloadTask):
+		if isinstance(task, tasks.DownloadTask):
 			dst, dst_path = self.local, task.local_path
-		elif isinstance(task, sftp_tasks.UploadTask):
+		elif isinstance(task, tasks.UploadTask):
 			dst, dst_path = self.remote, task.remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
@@ -265,10 +265,10 @@ class FileManager(object):
 		self.status_display.sync_view(task)
 		ftp = self.remote.ftp_acquire()
 		write_mode = 'ab+' if task.transferred > 0 else 'wb+'
-		if isinstance(task, sftp_tasks.UploadTask):
+		if isinstance(task, tasks.UploadTask):
 			src_file_h = open(task.local_path, 'rb')
 			dst_file_h = ftp.file(task.remote_path, write_mode)
-		elif isinstance(task, sftp_tasks.DownloadTask):
+		elif isinstance(task, tasks.DownloadTask):
 			src_file_h = ftp.file(task.remote_path, 'rb')
 			dst_file_h = open(task.local_path, write_mode)
 		else:
@@ -292,9 +292,9 @@ class FileManager(object):
 			src_file_h.close()
 			dst_file_h.close()
 		if task.state == 'Cancelled':
-			if isinstance(task, sftp_tasks.UploadTask):
+			if isinstance(task, tasks.UploadTask):
 				self.remote.remove_by_file_name(task.remote_path)
-			elif isinstance(task, sftp_tasks.DownloadTask):
+			elif isinstance(task, tasks.DownloadTask):
 				self.local.remove_by_file_name(task.local_path)
 		elif task.state != 'Paused':
 			task.state = 'Completed'
@@ -307,15 +307,15 @@ class FileManager(object):
 	def _thread_routine(self):
 		while not self._threads_shutdown.is_set():
 			task = self.queue.get()
-			if isinstance(task, sftp_tasks.ShutdownTask):
+			if isinstance(task, tasks.ShutdownTask):
 				logger.info('processing task: ' + str(task))
 				task.state = 'Completed'
 				self.queue.remove(task)
 				break
-			elif isinstance(task, sftp_tasks.TransferTask):
+			elif isinstance(task, tasks.TransferTask):
 				logger.debug('processing task: ' + str(task))
 				try:
-					if isinstance(task, sftp_tasks.TransferDirectoryTask):
+					if isinstance(task, tasks.TransferDirectoryTask):
 						self._transfer_dir(task)
 					else:
 						self._transfer_file(task)
@@ -331,7 +331,7 @@ class FileManager(object):
 		self.window.set_sensitive(False)
 		self._threads_shutdown.set()
 		for _ in self._threads:
-			self.queue.put(sftp_tasks.ShutdownTask())
+			self.queue.put(tasks.ShutdownTask())
 		for thread in self._threads:
 			thread.join()
 		self.local.shutdown()
@@ -355,18 +355,18 @@ class FileManager(object):
 		model, treeiter = selection.get_selected()
 		remote_path = self.remote.cwd if treeiter is None else model[treeiter][2]
 
-		if issubclass(task_cls, sftp_tasks.DownloadTask):
+		if issubclass(task_cls, tasks.DownloadTask):
 			src_path, dst_path = remote_path, local_path
-		elif issubclass(task_cls, sftp_tasks.UploadTask):
+		elif issubclass(task_cls, tasks.UploadTask):
 			src_path, dst_path = local_path, remote_path
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
 		self.queue_transfer(task_cls, src_path, dst_path)
 
 	def queue_transfer(self, task_cls, src_path, dst_path):
-		if issubclass(task_cls, sftp_tasks.DownloadTask):
+		if issubclass(task_cls, tasks.DownloadTask):
 			src, dst = self.remote, self.local
-		elif issubclass(task_cls, sftp_tasks.UploadTask):
+		elif issubclass(task_cls, tasks.UploadTask):
 			src, dst = self.local, self.remote
 		else:
 			raise ValueError('task_cls must be a subclass of TransferTask')
@@ -386,7 +386,7 @@ class FileManager(object):
 		:param str src_path: The source path to be uploaded or downloaded.
 		:param str dst_path: The destination path to be created and data transferred into.
 		"""
-		if issubclass(task_cls, sftp_tasks.DownloadTask):
+		if issubclass(task_cls, tasks.DownloadTask):
 			if not os.access(os.path.dirname(dst_path), os.W_OK):
 				gui_utilities.show_dialog_error(
 					'Permission Denied',
@@ -395,7 +395,7 @@ class FileManager(object):
 				)
 				return
 			local_path, remote_path = self.local.get_abspath(dst_path), self.remote.get_abspath(src_path)
-		elif issubclass(task_cls, sftp_tasks.UploadTask):
+		elif issubclass(task_cls, tasks.UploadTask):
 			if not os.access(src_path, os.R_OK):
 				gui_utilities.show_dialog_error(
 					'Permission Denied',
@@ -405,9 +405,9 @@ class FileManager(object):
 				return
 			local_path, remote_path = self.local.get_abspath(src_path), self.remote.get_abspath(dst_path)
 		file_task = task_cls(local_path, remote_path)
-		if isinstance(file_task, sftp_tasks.UploadTask):
+		if isinstance(file_task, tasks.UploadTask):
 			file_size = self.local.get_file_size(local_path)
-		elif isinstance(file_task, sftp_tasks.DownloadTask):
+		elif isinstance(file_task, tasks.DownloadTask):
 			file_size = self.remote.get_file_size(remote_path)
 		file_task.size = file_size
 		self.queue.put(file_task)
@@ -422,13 +422,13 @@ class FileManager(object):
 		:param str src_path: The path to be uploaded or downloaded.
 		:param str dst_path: The path to be created.
 		"""
-		if issubclass(task_cls, sftp_tasks.DownloadTask):
+		if issubclass(task_cls, tasks.DownloadTask):
 			src, dst = self.remote, self.local
 			if not os.access(dst.path_mod.dirname(dst_path), os.W_OK):
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not write to the destination directory.')
 				return
 			task = task_cls.dir_cls(dst_path, src_path, size=0)
-		elif issubclass(task_cls, sftp_tasks.UploadTask):
+		elif issubclass(task_cls, tasks.UploadTask):
 			if not os.access(src_path, os.R_OK):
 				gui_utilities.show_dialog_error('Permission Denied', self.application.get_active_window(), 'Can not read the source directory.')
 				return
@@ -455,7 +455,7 @@ class FileManager(object):
 			queued_tasks.append(parent_task)
 
 			new_task_count = 0
-			if issubclass(task_cls, sftp_tasks.DownloadTask):
+			if issubclass(task_cls, tasks.DownloadTask):
 				local_base_path, remote_base_path = (dst_base_path, src_base_path)
 			else:
 				local_base_path, remote_base_path = (src_base_path, dst_base_path)
