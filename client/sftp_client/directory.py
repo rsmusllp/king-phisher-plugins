@@ -212,10 +212,31 @@ class DirectoryBase(object):
 			new_dir = self.get_abspath(new_dir)
 		if new_dir == self.cwd:
 			return
-		self._chdir(new_dir)
-		self.cwd = new_dir
+		try:
+			self._chdir(new_dir)
+		except PermissionError:
+			logger.warning("User does not have permissions to read {}".format(new_dir))
+			gui_utilities.show_dialog_error(
+				'Plugin Error',
+				self.application.get_active_window(),
+				"You do not have permissions to access {}.".format(new_dir)
+			)
+			return
+
 		self._tv_model.clear()
-		self.load_dirs(new_dir)
+		try:
+			self.load_dirs(new_dir)
+		except PermissionError:
+			logger.warning("User does not have permissions to read {}".format(new_dir))
+			self.load_dirs(self.cwd)
+			gui_utilities.show_dialog_error(
+				'Plugin Error',
+				self.application.get_active_window(),
+				"You do not have permissions to access {}.".format(new_dir)
+			)
+			return
+
+		self.cwd = new_dir
 		# clear and rebuild the model
 		self._wdcb_model.clear()
 		self._wdcb_model.append((self.root_directory,))
