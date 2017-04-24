@@ -214,8 +214,8 @@ class DirectoryBase(object):
 			return
 		try:
 			self._chdir(new_dir)
-		except PermissionError:
-			logger.warning("User does not have permissions to read {}".format(new_dir))
+		except OSError:
+			logger.warning("user does not have permissions to read {}".format(new_dir))
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
 				self.application.get_active_window(),
@@ -226,8 +226,8 @@ class DirectoryBase(object):
 		self._tv_model.clear()
 		try:
 			self.load_dirs(new_dir)
-		except PermissionError:
-			logger.warning("User does not have permissions to read {}".format(new_dir))
+		except OSError:
+			logger.warning("user does not have permissions to read {}".format(new_dir))
 			self.load_dirs(self.cwd)
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
