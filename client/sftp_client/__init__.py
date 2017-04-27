@@ -2,6 +2,7 @@ import os
 import paramiko
 
 from . import client
+from . import sftp_utilities
 
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
@@ -24,11 +25,11 @@ class Plugin(plugins.ClientPlugin):
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
-		if not os.access(client.gtk_builder_file, os.R_OK):
+		if not os.access(sftp_utilities.gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
 				self.application.get_active_window(),
-				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(client.gtk_builder_file))
+				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(sftp_utilities.gtk_builder_file))
 			)
 			return False
 		if 'directories' not in self.config:
@@ -59,7 +60,7 @@ class Plugin(plugins.ClientPlugin):
 				)
 				return
 			ssh = connection.client
-			self.logger.debug('loading gtk builder file from: ' + client.gtk_builder_file)
+			self.logger.debug('loading gtk builder file from: ' + sftp_utilities.gtk_builder_file)
 			try:
 				manager = client.FileManager(self.application, ssh, self.config)
 			except paramiko.ssh_exception.ChannelException as error:

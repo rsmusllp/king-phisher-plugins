@@ -13,6 +13,7 @@ import boltons.strutils
 import boltons.timeutils
 
 from . import sftp_utilities
+from . import editor
 
 from king_phisher import its
 from king_phisher import utilities
@@ -39,12 +40,11 @@ class DirectoryBase(object):
 	Base directory object that is used by both the remote and local directory to
 	get and render directory data.
 	"""
-	def __init__(self, builder, application, config, wd_history):
-		self.builder = builder
+	def __init__(self, application, config, wd_history):
 		self.application = application
 		self.config = config
-		self.treeview = self.builder.get_object('SFTPClient.notebook.page_stfp.' + self.treeview_name)
-		self.notebook = self.builder.get_object('SFTPClient.notebook')
+		self.treeview = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.' + self.treeview_name)
+		self.notebook = sftp_utilities.get_object('SFTPClient.notebook')
 		self.wd_history = collections.deque(wd_history, maxlen=3)
 		self.cwd = None
 		self.col_name = Gtk.CellRendererText()
@@ -86,7 +86,7 @@ class DirectoryBase(object):
 		self.treeview.set_model(self._tv_model_sort)
 
 		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox
-		self.wdcb_dropdown = builder.get_object(self.working_directory_combobox_name)
+		self.wdcb_dropdown = sftp_utilities.get_object(self.working_directory_combobox_name)
 		self.wdcb_dropdown.set_model(self._wdcb_model)
 		self.wdcb_dropdown.set_entry_text_column(0)
 		self.wdcb_dropdown.connect('changed', sftp_utilities.DelayedChangedSignal(self.signal_combo_changed))
@@ -146,6 +146,9 @@ class DirectoryBase(object):
 
 		self.menu_item_transfer = Gtk.MenuItem.new_with_label(self.transfer_direction.title())
 		self.popup_menu.append(self.menu_item_transfer)
+
+		self.menu_item_edit = Gtk.MenuItem.new_with_label('Edit')
+		self.popup_menu.append(self.menu_item_edit)
 
 		menu_item = Gtk.MenuItem.new_with_label('Collapse All')
 		menu_item.connect('activate', self.signal_menu_activate_collapse_all)
@@ -321,6 +324,15 @@ class DirectoryBase(object):
 	def shutdown(self):
 		"""Perform any necessary clean up operations."""
 		pass
+
+	def signal_edit_file(self, _):
+		location = None
+		if isinstance(self, RemoteDirectory):
+			location = 'remote'
+		elif isinstance(self, LocalDirectory):
+			location = 'local'
+		if location:
+			editor.SftpEditor(self, location)
 
 	def signal_combo_changed(self, combobox):
 		new_dir = combobox.get_active_text()
@@ -565,14 +577,14 @@ class LocalDirectory(DirectoryBase):
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
 	working_directory_combobox_name = 'SFTPClient.notebook.page_stfp.comboboxtext_local_working_directory'
-	def __init__(self, builder, application, config):
+	def __init__(self, application, config):
 		self.stat = os.stat
 		self._chdir = os.chdir
 		self.path_mod = os.path
 		self.default_directory = self.path_mod.expanduser('~')
 		local_directories = config['directories'].get('local', {})
 		wd_history = local_directories.get('history', [])
-		super(LocalDirectory, self).__init__(builder, application, config, wd_history)
+		super(LocalDirectory, self).__init__(application, config, wd_history)
 		current_directory = local_directories.get('current')
 		if current_directory is None or not os.access(current_directory, os.R_OK):
 			current_directory = self.default_directory
@@ -607,6 +619,13 @@ class LocalDirectory(DirectoryBase):
 		elif self.path_mod.basename(path).startswith('.'):
 			return True
 		return False
+
+	def read_file(self, local_file_path):
+		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.R_OK)):
+			raise ValueError("Cannot read file {}".format(local_file_path))
+		with open(local_file_path, 'r') as f:
+			file_contents = f.read()
+		return file_contents
 
 	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
@@ -666,13 +685,13 @@ class RemoteDirectory(DirectoryBase):
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
 	working_directory_combobox_name = 'SFTPClient.notebook.page_stfp.comboboxtext_remote_working_directory'
-	def __init__(self, builder, application, config, ssh):
+	def __init__(self, application, config, ssh):
 		self.ssh = ssh
 		self.path_mod = posixpath
 		wd_history = config['directories'].get('remote', {})
 		wd_history = wd_history.get(application.config['server'].split(':', 1)[0], [])
 		self._thread_local_ftp = {}
-		super(RemoteDirectory, self).__init__(builder, application, config, wd_history)
+		super(RemoteDirectory, self).__init__(application, config, wd_history)
 
 		self.default_directory = application.config['server_config']['server.web_root']
 		try:
@@ -818,6 +837,32 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		with self.ftp_handle() as ftp:
 			ftp.remove(name)
+
+	def ftp_read_file(self, file_path):
+		"""
+		Reads the contents of a file and returns as a string
+
+		:param str file_path: The path to the file to open and read. 
+		:return: The contents of the file
+		:rtype: bytes
+		"""
+		with self.ftp_handle() as ftp:
+			with ftp.file(file_path, 'r') as file:
+				file_contents = file.read()
+		print("file contents from remote ftp is {}".format(type(file_contents)))
+		return file_contents
+
+	def ftp_save_file(self, file_path, file_contents):
+		"""
+		Saves a raw string to the remote file path
+		
+		:param file_path: Remote file path
+		:param file_contents: the contents to place in the file
+		"""
+		with self.ftp_handle() as ftp:
+			file = ftp.file(file_path, 'w')
+			file.write(file_contents)
+			file.close()
 
 	def walk(self, path):
 		"""

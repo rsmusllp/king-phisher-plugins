@@ -10,6 +10,7 @@ import boltons.timeutils
 from . import tasks
 from . import directory
 from . import sftp_utilities
+from . import editor
 
 from king_phisher.client import gui_utilities
 
@@ -18,7 +19,7 @@ from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 from gi.repository import GLib
 
-gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
+#gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
 class StatusDisplay(object):
@@ -26,11 +27,10 @@ class StatusDisplay(object):
 	Class representing the bottom treeview of the GUI. This contains the logging
 	and graphical representation of all queued transfers.
 	"""
-	def __init__(self, builder, queue):
-		self.builder = builder
+	def __init__(self, queue):
 		self.queue = queue
-		self.scroll = self.builder.get_object('SFTPClient.notebook.page_stfp.scrolledwindow_transfer_statuses')
-		self.treeview_transfer = self.builder.get_object('SFTPClient.notebook.page_stfp.treeview_transfer_statuses')
+		self.scroll = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.scrolledwindow_transfer_statuses')
+		self.treeview_transfer = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.treeview_transfer_statuses')
 		self._tv_lock = threading.RLock()
 
 		col_text = Gtk.CellRendererText()
@@ -216,27 +216,68 @@ class FileManager(object):
 			thread = threading.Thread(target=self._thread_routine)
 			thread.start()
 			self._threads.append(thread)
-		self.builder = Gtk.Builder()
-		self.builder.add_from_file(gtk_builder_file)
-		self.window = self.builder.get_object('SFTPClient.window')
-		self.notebook = self.builder.get_object('SFTPClient.notebook')
-		self.status_display = StatusDisplay(self.builder, self.queue)
-		self.local = directory.LocalDirectory(self.builder, self.application, config)
-		self.remote = directory.RemoteDirectory(self.builder, self.application, config, ssh)
-		self.builder.get_object('SFTPClient.notebook.page_stfp.button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.UploadTask))
-		self.builder.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.DownloadTask))
+		self.editor = None
+		self.window = sftp_utilities.get_object('SFTPClient.window')
+		self.notebook = sftp_utilities.get_object('SFTPClient.notebook')
+		self.editor_tab_save_button = sftp_utilities.get_object('SFTPClient.notebook.page_editor.toolbutton_save_html_file')
+		self.editor_tab_save_button.set_sensitive(False)
+		self.editor_tab_save_button.connect('clicked', self.signal_editor_save)
+		self.status_display = StatusDisplay(self.queue)
+		self.local = directory.LocalDirectory(self.application, config)
+		self.remote = directory.RemoteDirectory(self.application, config, ssh)
+		sftp_utilities.get_object('SFTPClient.notebook.page_stfp.button_upload').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.UploadTask))
+		sftp_utilities.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.DownloadTask))
-		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_transfer_hidden')
+		self.local.menu_item_edit.connect('activate', self.signal_edit_local_file)
+		self.remote.menu_item_edit.connect('activate', self.signal_edit_remote_file)
+		menu_item = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
-		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_show_hidden')
+		menu_item = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_show_hidden')
 		menu_item.set_active(self.config['show_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option_show_hidden)
-		menu_item = self.builder.get_object('SFTPClient.notebook.page_stfp.menuitem_exit')
+		menu_item = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.menuitem_exit')
 		menu_item.connect('activate', lambda _: self.window.destroy())
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
+
+	def signal_edit_local_file(self, _):
+		selection = self.local.treeview.get_selection()
+		model, treeiter = selection.get_selected()
+		local_file_path = self.local.get_abspath(model[treeiter][2])
+		try:
+			file_contents = self.local.read_file(local_file_path)
+		except ValueError:
+			logger.warning("cannot read file {}".format(local_file_path))
+			gui_utilities.show_dialog_error(
+				'Permission Denied',
+				self.application.get_active_window(),
+				'Cannot read to the file.'
+			)
+			return
+		self.editor = editor.SftpEditor(file_contents, local_file_path, 'local')
+
+	def signal_edit_remote_file(self, _):
+		selection = self.remote.treeview.get_selection()
+		model, treeiter = selection.get_selected()
+		remote_file_path = self.remote.get_abspath(model[treeiter][2])
+		try:
+			file_contents = self.remote.ftp_read_file(remote_file_path)
+			print(type(file_contents))
+		except IOError:
+			logger.warning("cannot read remote file {}".format(remote_file_path))
+			gui_utilities.show_dialog_error(
+				'Permission Denied',
+				self.application.get_active_window(),
+				'Cannot read remote file'
+			)
+			return
+		print("Type of file contents going into editor {}".format(type(file_contents)))
+		self.editor = editor.SftpEditor(file_contents, remote_file_path, 'remote')
+
+	def signal_editor_save(self, _):
+		self._save_editor_file()
 
 	def signal_toggled_config_option(self, menuitem, config_key):
 		self.config[config_key] = menuitem.get_active()
@@ -245,6 +286,46 @@ class FileManager(object):
 		self.config['show_hidden'] = menuitem.get_active()
 		self.local.refilter()
 		self.remote.refilter()
+
+	def _save_editor_file(self):
+		if not self.editor:
+			self.editor_tab_save_button.set_sensitive(False)
+			return
+
+		buffer_contents = self.editor.sourceview_buffer.get_text(
+			self.editor.sourceview_buffer.get_start_iter(),
+			self.editor.sourceview_buffer.get_end_iter(),
+			False
+		)
+		if buffer_contents == self.editor.file_contents:
+			logger.info('no changes found in file')
+			return
+
+		if self.editor.location == 'local':
+			if not (self.editor.file_path and os.path.isfile(self.editor.file_path) and os.access(self.editor.file_path, os.W_OK)):
+				self.editor_tab_save_button.set_sensitive(False)
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot write to local file'
+				)
+			file = open(self.editor.file_path, 'w')
+			file.write(buffer_contents)
+			file.close()
+			self.editor.file_contents = buffer_contents
+			logger.info('saved edited to file {}'.format(self.editor.file_path))
+			return
+		elif self.editor.location == 'remote':
+			try:
+				self.remote.ftp_save_file(self.editor.file_path, buffer_contents)
+				self.editor.file_contents = buffer_contents
+			except IOError:
+				self.editor_tab_save_button.set_sensitive(False)
+				gui_utilities.show_dialog_error(
+					'Permission Denied',
+					self.application.get_active_window(),
+					'Cannot write to remote file'
+				)
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
@@ -345,6 +426,7 @@ class FileManager(object):
 			directories['remote'] = {}
 		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
 		self.config['directories'] = directories
+		sftp_utilities._gtk_objects = {}
 
 	def _queue_transfer_from_selection(self, task_cls):
 		selection = self.local.treeview.get_selection()
