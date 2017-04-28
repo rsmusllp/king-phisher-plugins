@@ -8,20 +8,24 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import GObject
 
-logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
+logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.utilities')
 GTYPE_LONG = GObject.type_from_name('glong')
 gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'client.ui')
 _gtk_objects = {}
 _builder = Gtk.Builder()
 
 def get_object(gtk_object):
+	"""
+	Used to maintain a diction of GTK objects to share through the SFTP Client
+
+	:param str gtk_object: The name of the GTK Object to fetch
+	:return: The requested gtk object
+	"""
 	if not _gtk_objects:
 		_builder.add_from_file(gtk_builder_file)
 	if gtk_object in _gtk_objects:
-		print('--------found gtk object----------')
 		return _gtk_objects[gtk_object]
 	else:
-		print('adding {} gtk object'.format(gtk_object))
 		_gtk_objects[gtk_object] = _builder.get_object(gtk_object)
 		return _gtk_objects[gtk_object]
 

@@ -219,6 +219,8 @@ class FileManager(object):
 		self.editor = None
 		self.window = sftp_utilities.get_object('SFTPClient.window')
 		self.notebook = sftp_utilities.get_object('SFTPClient.notebook')
+		self.notebook.set_show_tabs(False)
+		self.notebook.connect('switch-page', self.signal_change_page)
 		self.editor_tab_save_button = sftp_utilities.get_object('SFTPClient.notebook.page_editor.toolbutton_save_html_file')
 		self.editor_tab_save_button.set_sensitive(False)
 		self.editor_tab_save_button.connect('clicked', self.signal_editor_save)
@@ -242,21 +244,43 @@ class FileManager(object):
 		self.window.connect('destroy', self.signal_window_destroy)
 		self.window.show_all()
 
+	def signal_change_page(self, _, __, page_number):
+		# page_number is the page switched from
+		if page_number != 0:
+			return
+		if not self.editor_tab_save_button.is_sensitive():
+			return
+		if not gui_utilities.show_dialog_yes_no('Changes not saved', self.application.get_active_window(), 'Do you want to save your changes?'):
+			return
+
+		self._save_editor_file()
+
 	def signal_edit_local_file(self, _):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		local_file_path = self.local.get_abspath(model[treeiter][2])
+
 		try:
 			file_contents = self.local.read_file(local_file_path)
+		except UnicodeDecodeError:
+			logger.warning("could not decode content of local file {}".format(local_file_path))
+			gui_utilities.show_dialog_error(
+				'Error decoding file',
+				self.application.get_active_window(),
+				'Can only edit utf-8 encoded file types.'
+			)
+			return
 		except ValueError:
 			logger.warning("cannot read file {}".format(local_file_path))
 			gui_utilities.show_dialog_error(
 				'Permission Denied',
 				self.application.get_active_window(),
-				'Cannot read to the file.'
+				'Cannot read the file'
 			)
 			return
-		self.editor = editor.SftpEditor(file_contents, local_file_path, 'local')
+
+		self.notebook.set_show_tabs(True)
+		self.editor = editor.SftpEditor(file_contents, local_file_path, 'Local')
 
 	def signal_edit_remote_file(self, _):
 		selection = self.remote.treeview.get_selection()
@@ -264,7 +288,6 @@ class FileManager(object):
 		remote_file_path = self.remote.get_abspath(model[treeiter][2])
 		try:
 			file_contents = self.remote.ftp_read_file(remote_file_path)
-			print(type(file_contents))
 		except IOError:
 			logger.warning("cannot read remote file {}".format(remote_file_path))
 			gui_utilities.show_dialog_error(
@@ -273,8 +296,20 @@ class FileManager(object):
 				'Cannot read remote file'
 			)
 			return
-		print("Type of file contents going into editor {}".format(type(file_contents)))
-		self.editor = editor.SftpEditor(file_contents, remote_file_path, 'remote')
+
+		try:
+			file_contents = file_contents.decode('utf-8')
+		except UnicodeDecodeError:
+			logger.warning("could not decode content of remote file {}".format(remote_file_path))
+			gui_utilities.show_dialog_error(
+				'Error decoding file',
+				self.application.get_active_window(),
+				'Can only edit utf-8 encoded file types.'
+			)
+			return
+
+		self.notebook.set_show_tabs(True)
+		self.editor = editor.SftpEditor(file_contents, remote_file_path, 'Remote')
 
 	def signal_editor_save(self, _):
 		self._save_editor_file()
@@ -298,34 +333,38 @@ class FileManager(object):
 			False
 		)
 		if buffer_contents == self.editor.file_contents:
-			logger.info('no changes found in file')
+			logger.debug('editor found nothing to save')
+			self.editor_tab_save_button.set_sensitive(False)
 			return
 
-		if self.editor.location == 'local':
-			if not (self.editor.file_path and os.path.isfile(self.editor.file_path) and os.access(self.editor.file_path, os.W_OK)):
+		if self.editor.location.lower() == 'local':
+			try:
+				self.local.save_file(self.editor.file_path, buffer_contents)
+				self.editor.file_contents = buffer_contents
+				logger.info("saved editor contents to local file path {}".format(self.editor.file_path))
+			except IOError:
+				logger.warning("could not write to local file: {}".format(self.editor.file_path))
 				self.editor_tab_save_button.set_sensitive(False)
 				gui_utilities.show_dialog_error(
 					'Permission Denied',
 					self.application.get_active_window(),
 					'Cannot write to local file'
 				)
-			file = open(self.editor.file_path, 'w')
-			file.write(buffer_contents)
-			file.close()
-			self.editor.file_contents = buffer_contents
-			logger.info('saved edited to file {}'.format(self.editor.file_path))
 			return
-		elif self.editor.location == 'remote':
+		elif self.editor.location.lower() == 'remote':
 			try:
 				self.remote.ftp_save_file(self.editor.file_path, buffer_contents)
 				self.editor.file_contents = buffer_contents
+				logger.info("saved editor contents to remote file path {}".format(self.editor.file_path))
 			except IOError:
+				logger.warning("could not write to remote file {}".format(self.editor.file_path))
 				self.editor_tab_save_button.set_sensitive(False)
 				gui_utilities.show_dialog_error(
 					'Permission Denied',
 					self.application.get_active_window(),
 					'Cannot write to remote file'
 				)
+		self.editor_tab_save_button.set_sensitive(False)
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'
@@ -426,6 +465,7 @@ class FileManager(object):
 			directories['remote'] = {}
 		directories['remote'][self.application.config['server'].split(':', 1)[0]] = list(self.remote.wd_history)
 		self.config['directories'] = directories
+		self.editor = None
 		sftp_utilities._gtk_objects = {}
 
 	def _queue_transfer_from_selection(self, task_cls):

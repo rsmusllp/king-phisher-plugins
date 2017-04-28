@@ -621,11 +621,33 @@ class LocalDirectory(DirectoryBase):
 		return False
 
 	def read_file(self, local_file_path):
+		"""
+		Used to fetch the contents of target file
+		:param str local_file_path: the absolute path to target file
+		:return: the utf-8 contents of the file
+		:rtype: str
+		"""
 		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.R_OK)):
+			logger.warning('no path given')
 			raise ValueError("Cannot read file {}".format(local_file_path))
 		with open(local_file_path, 'r') as f:
 			file_contents = f.read()
 		return file_contents
+
+	def save_file(self, local_file_path, buffer_contents):
+		"""
+		Saves a string to a file
+
+		:param str local_file_path: The absolute path to target file.
+		:param str buffer_contents: The data to place in file.
+		"""
+		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.W_OK)):
+			logger.warning('cannot write to local file, or file not found')
+			raise IOError("Cannot write to local file, or file not found")
+		file = open(local_file_path, 'w')
+		file.write(buffer_contents)
+		file.close()
+		logger.info('saved edited to file {}'.format(local_file_path))
 
 	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
@@ -697,7 +719,7 @@ class RemoteDirectory(DirectoryBase):
 		try:
 			self.change_cwd(self.default_directory)
 		except (IOError, OSError):
-			logger.info('failed to set remote directory to the web root: ' + application.config['server_config']['server.web_root'])
+			logger.info("failed to set remote directory to the web root: " + application.config['server_config']['server.web_root'])
 			self.default_directory = self.root_directory
 			self.change_cwd(self.default_directory)
 
@@ -840,7 +862,7 @@ class RemoteDirectory(DirectoryBase):
 
 	def ftp_read_file(self, file_path):
 		"""
-		Reads the contents of a file and returns as a string
+		Reads the contents of a file and returns as bytes
 
 		:param str file_path: The path to the file to open and read. 
 		:return: The contents of the file
@@ -849,15 +871,14 @@ class RemoteDirectory(DirectoryBase):
 		with self.ftp_handle() as ftp:
 			with ftp.file(file_path, 'r') as file:
 				file_contents = file.read()
-		print("file contents from remote ftp is {}".format(type(file_contents)))
 		return file_contents
 
 	def ftp_save_file(self, file_path, file_contents):
 		"""
 		Saves a raw string to the remote file path
 		
-		:param file_path: Remote file path
-		:param file_contents: the contents to place in the file
+		:param str file_path: Remote file path
+		:param str file_contents: the contents to place in the file
 		"""
 		with self.ftp_handle() as ftp:
 			file = ftp.file(file_path, 'w')

@@ -17,11 +17,11 @@ class Plugin(plugins.ClientPlugin):
 	create, and delete local and remote files on the King Phisher Server.
 	
 	The editor allows you edit files on remote or local system. It is primarily
-	designed for the use of editing remote landing pages on the King Phisher Server.
+	designed for the use of editing remote web pages on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 	req_min_version = '1.4.0b0'
-	version = '1.2'
+	version = '1.3'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
