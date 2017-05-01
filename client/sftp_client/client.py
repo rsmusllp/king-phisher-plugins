@@ -246,7 +246,7 @@ class FileManager(object):
 
 	def signal_change_page(self, _, __, page_number):
 		# page_number is the page switched from
-		if page_number != 0:
+		if page_number:
 			return
 		if not self.editor_tab_save_button.is_sensitive():
 			return
@@ -258,73 +258,35 @@ class FileManager(object):
 	def signal_edit_local_file(self, _):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		local_file_path = self.local.get_abspath(model[treeiter][2])
-
 		try:
-			file_contents = self.local.read_file(local_file_path)
-		except UnicodeDecodeError:
-			logger.warning("could not decode content of local file {}".format(local_file_path))
-			gui_utilities.show_dialog_error(
-				'Error decoding file',
-				self.application.get_active_window(),
-				'Can only edit utf-8 encoded file types.'
-			)
-			return
-		except ValueError:
-			logger.warning("cannot read file {}".format(local_file_path))
-			gui_utilities.show_dialog_error(
-				'Permission Denied',
-				self.application.get_active_window(),
-				'Cannot read the file'
-			)
+			local_file_path = self.local.get_abspath(model[treeiter][2])
+		except TypeError:
+			logger.warning('no file selected to edit')
 			return
 
-		self.notebook.set_show_tabs(True)
-		self.editor = editor.SftpEditor(file_contents, local_file_path, 'Local')
+		self.editor = editor.SFTPEditor(local_file_path, self.local, 'Local')
+		self._load_editor_file()
 
 	def signal_edit_remote_file(self, _):
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
-		remote_file_path = self.remote.get_abspath(model[treeiter][2])
 		try:
-			file_contents = self.remote.ftp_read_file(remote_file_path)
-		except IOError:
-			logger.warning("cannot read remote file {}".format(remote_file_path))
-			gui_utilities.show_dialog_error(
-				'Permission Denied',
-				self.application.get_active_window(),
-				'Cannot read remote file'
-			)
+			remote_file_path = self.remote.get_abspath(model[treeiter][2])
+		except TypeError:
+			logger.warning('no file selected to edit')
 			return
 
-		try:
-			file_contents = file_contents.decode('utf-8')
-		except UnicodeDecodeError:
-			logger.warning("could not decode content of remote file {}".format(remote_file_path))
-			gui_utilities.show_dialog_error(
-				'Error decoding file',
-				self.application.get_active_window(),
-				'Can only edit utf-8 encoded file types.'
-			)
-			return
-
-		self.notebook.set_show_tabs(True)
-		self.editor = editor.SftpEditor(file_contents, remote_file_path, 'Remote')
+		self.editor = editor.SFTPEditor(remote_file_path, self.remote, 'Remote')
+		self._load_editor_file()
 
 	def signal_editor_save(self, _):
 		self._save_editor_file()
 
-	def signal_toggled_config_option(self, menuitem, config_key):
-		self.config[config_key] = menuitem.get_active()
-
-	def signal_toggled_config_option_show_hidden(self, menuitem):
-		self.config['show_hidden'] = menuitem.get_active()
-		self.local.refilter()
-		self.remote.refilter()
-
 	def _save_editor_file(self):
 		if not self.editor:
 			self.editor_tab_save_button.set_sensitive(False)
+			self.notebook.set_current_page(0)
+			self.notebook.set_show_tabs(False)
 			return
 
 		buffer_contents = self.editor.sourceview_buffer.get_text(
@@ -337,34 +299,66 @@ class FileManager(object):
 			self.editor_tab_save_button.set_sensitive(False)
 			return
 
-		if self.editor.location.lower() == 'local':
-			try:
-				self.local.save_file(self.editor.file_path, buffer_contents)
-				self.editor.file_contents = buffer_contents
-				logger.info("saved editor contents to local file path {}".format(self.editor.file_path))
-			except IOError:
-				logger.warning("could not write to local file: {}".format(self.editor.file_path))
-				self.editor_tab_save_button.set_sensitive(False)
-				gui_utilities.show_dialog_error(
-					'Permission Denied',
-					self.application.get_active_window(),
-					'Cannot write to local file'
-				)
+		try:
+			self.editor.directory.save_file(self.editor.file_path, buffer_contents)
+			self.editor.file_contents = buffer_contents
+			logger.info("saved editor contents to {} file path {}".format(self.editor.location, self.editor.file_path))
+		except IOError:
+			logger.warning("could not write to {} file: {}".format(self.editor.location, self.editor.file_path))
+			self.editor_tab_save_button.set_sensitive(False)
+			gui_utilities.show_dialog_error(
+				'Permission Denied',
+				self.application.get_active_window(),
+				"Cannot write to {} file".format(self.editor.location)
+			)
 			return
-		elif self.editor.location.lower() == 'remote':
-			try:
-				self.remote.ftp_save_file(self.editor.file_path, buffer_contents)
-				self.editor.file_contents = buffer_contents
-				logger.info("saved editor contents to remote file path {}".format(self.editor.file_path))
-			except IOError:
-				logger.warning("could not write to remote file {}".format(self.editor.file_path))
-				self.editor_tab_save_button.set_sensitive(False)
-				gui_utilities.show_dialog_error(
-					'Permission Denied',
-					self.application.get_active_window(),
-					'Cannot write to remote file'
-				)
 		self.editor_tab_save_button.set_sensitive(False)
+
+	def _load_editor_file(self):
+		if not self.editor:
+			return
+
+		try:
+			file_contents = self.editor.directory.read_file(self.editor.file_path)
+		except IOError:
+			logger.warning("cannot read {} file {}".format(self.editor.location, self.editor.file_path))
+			gui_utilities.show_dialog_error(
+				'Permission Denied',
+				self.application.get_active_window(),
+				"Cannot read {} file".format(self.editor.location)
+			)
+			return
+		except UnicodeDecodeError:
+			logger.warning("could not decode content of {} file {}".format(self.editor.location, self.editor.file_path))
+			gui_utilities.show_dialog_error(
+				'Error decoding file',
+				self.application.get_active_window(),
+				'Can only edit utf-8 encoded file types.'
+			)
+			return
+
+		if isinstance(file_contents, bytes):
+			try:
+				file_contents = file_contents.decode('utf-8')
+			except UnicodeDecodeError:
+				logger.warning("could not decode content of {} file {}".format(self.editor.location, self.editor.file_path))
+				gui_utilities.show_dialog_error(
+					'Error decoding file',
+					self.application.get_active_window(),
+					'Can only edit utf-8 encoded file types.'
+				)
+				return
+
+		self.notebook.set_show_tabs(True)
+		self.editor.load_file(file_contents)
+
+	def signal_toggled_config_option(self, menuitem, config_key):
+		self.config[config_key] = menuitem.get_active()
+
+	def signal_toggled_config_option_show_hidden(self, menuitem):
+		self.config['show_hidden'] = menuitem.get_active()
+		self.local.refilter()
+		self.remote.refilter()
 
 	def _transfer_dir(self, task):
 		task.state = 'Transferring'

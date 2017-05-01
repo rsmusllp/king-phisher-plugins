@@ -628,10 +628,10 @@ class LocalDirectory(DirectoryBase):
 		:rtype: str
 		"""
 		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.R_OK)):
-			logger.warning('no path given')
+			logger.warning('cannot write to local file, or file not found')
 			raise ValueError("Cannot read file {}".format(local_file_path))
-		with open(local_file_path, 'r') as f:
-			file_contents = f.read()
+		with open(local_file_path, 'r') as file_:
+			file_contents = file_.read()
 		return file_contents
 
 	def save_file(self, local_file_path, buffer_contents):
@@ -644,9 +644,9 @@ class LocalDirectory(DirectoryBase):
 		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.W_OK)):
 			logger.warning('cannot write to local file, or file not found')
 			raise IOError("Cannot write to local file, or file not found")
-		file = open(local_file_path, 'w')
-		file.write(buffer_contents)
-		file.close()
+		file_ = open(local_file_path, 'w')
+		file_.write(buffer_contents)
+		file_.close()
 		logger.info('saved edited to file {}'.format(local_file_path))
 
 	@sftp_utilities.handle_permission_denied
@@ -860,7 +860,7 @@ class RemoteDirectory(DirectoryBase):
 		with self.ftp_handle() as ftp:
 			ftp.remove(name)
 
-	def ftp_read_file(self, file_path):
+	def read_file(self, file_path):
 		"""
 		Reads the contents of a file and returns as bytes
 
@@ -869,11 +869,11 @@ class RemoteDirectory(DirectoryBase):
 		:rtype: bytes
 		"""
 		with self.ftp_handle() as ftp:
-			with ftp.file(file_path, 'r') as file:
-				file_contents = file.read()
+			with ftp.file(file_path, 'r') as file_:
+				file_contents = file_.read()
 		return file_contents
 
-	def ftp_save_file(self, file_path, file_contents):
+	def save_file(self, file_path, file_contents):
 		"""
 		Saves a raw string to the remote file path
 		
@@ -881,9 +881,9 @@ class RemoteDirectory(DirectoryBase):
 		:param str file_contents: the contents to place in the file
 		"""
 		with self.ftp_handle() as ftp:
-			file = ftp.file(file_path, 'w')
-			file.write(file_contents)
-			file.close()
+			file_ = ftp.file(file_path, 'w')
+			file_.write(file_contents)
+			file_.close()
 
 	def walk(self, path):
 		"""

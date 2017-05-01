@@ -1,38 +1,35 @@
-import os
 import logging
 
 from . import sftp_utilities
 
 from king_phisher.client.widget import completion_providers
 from king_phisher import utilities
-from king_phisher.client import gui_utilities
 
 from gi.repository import GtkSource
 
-logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.editor')
+logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
-class SftpEditor(object):
+class SFTPEditor(object):
 	"""
 	Handles the editor tab functions
 	"""
-	def __init__(self, file_contents, file_path, location):
+	def __init__(self, file_path, directory, location):
 		"""
 		This class is used to set up the Gtk.SourceView instance to edit the file
 
 		:param str file_contents: 
-		:param file_path: the path of the file to edit
-		:param location: the locate either remote or local
+		:param str file_path: the path of the file to edit
+		:param directory: the local or remote directory instance
+		:param str location: the locate either remote or local
 		"""
 		# get editor tab objects
-		if not isinstance(file_contents, str):
-			logger.info("error got file_contents type of {} should be utf-8 string".format(type(file_contents)))
-			file_contents = file_contents.decode('utf-8')
 		if location not in ('Remote', 'Local'):
 			logger.warning("location must be remote or local not {}".format(location))
 			return
 		self.location = location
 		self.file_path = file_path
-		self.file_contents = file_contents
+		self.file_contents = None
+		self.directory = directory
 
 		self.notebook = sftp_utilities.get_object('SFTPClient.notebook')
 		self.sourceview_editor = sftp_utilities.get_object('SFTPClient.notebook.page_editor.sourceview')
@@ -53,16 +50,17 @@ class SftpEditor(object):
 			logger.info('successfully loaded HTML and Jinja comletion providers')
 		self.sourceview_buffer.connect('changed', self.signal_buff_changed)
 
-		self._loadfile()
-
 	def signal_buff_changed(self, _):
 		if self.save_button.is_sensitive():
 			return
 		self.save_button.set_sensitive(True)
 
-	def _loadfile(self):
+	def load_file(self, file_contents):
+		if not isinstance(file_contents, str):
+			logger.info("error got file_contents type of {} should be utf-8 string".format(type(file_contents)))
+			file_contents = file_contents.decode('utf-8')
 		self.sourceview_buffer.begin_not_undoable_action()
-		self.sourceview_buffer.set_text(self.file_contents)
+		self.sourceview_buffer.set_text(file_contents)
 		self.file_contents = self.sourceview_buffer.get_text(
 			self.sourceview_buffer.get_start_iter(),
 			self.sourceview_buffer.get_end_iter(),
