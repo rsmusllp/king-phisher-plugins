@@ -13,25 +13,19 @@ class SFTPEditor(object):
 	"""
 	Handles the editor tab functions
 	"""
-	def __init__(self, file_path, directory, location):
+	def __init__(self, file_path, directory):
 		"""
 		This class is used to set up the Gtk.SourceView instance to edit the file
 
-		:param str file_contents: 
 		:param str file_path: the path of the file to edit
 		:param directory: the local or remote directory instance
-		:param str location: the locate either remote or local
 		"""
 		# get editor tab objects
-		if location not in ('Remote', 'Local'):
-			logger.warning("location must be remote or local not {}".format(location))
-			return
-		self.location = location
+		self.file_location = directory.location
 		self.file_path = file_path
 		self.file_contents = None
 		self.directory = directory
 
-		self.notebook = sftp_utilities.get_object('SFTPClient.notebook')
 		self.sourceview_editor = sftp_utilities.get_object('SFTPClient.notebook.page_editor.sourceview')
 		self.save_button = sftp_utilities.get_object('SFTPClient.notebook.page_editor.toolbutton_save_html_file')
 		self.template_button = sftp_utilities.get_object('SFTPClient.notebook.page_editor.toolbutton_template_wiki')
@@ -69,9 +63,8 @@ class SFTPEditor(object):
 		self.sourceview_buffer.end_not_undoable_action()
 		self.save_button.set_sensitive(False)
 		self.sourceview_buffer.set_highlight_syntax(True)
-		self.statusbar.push(self.statusbar.get_context_id(self.location + ' File: ' + self.file_path), self.location + ' File: ' + self.file_path)
-		self.notebook.set_current_page(1)
-		logger.info("sftp editor set to {} file {}".format(self.location, self.file_path))
+		self.statusbar.push(self.statusbar.get_context_id(self.file_location + ' file: ' + self.file_path), self.file_location + ' file: ' + self.file_path)
+		logger.info("sftp editor set to {} file {}".format(self.file_location, self.file_path))
 
 	def signal_template_help(self, _):
 		utilities.open_uri('https://github.com/securestate/king-phisher/wiki/Templates#web-page-templates')

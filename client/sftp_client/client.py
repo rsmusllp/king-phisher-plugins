@@ -231,8 +231,8 @@ class FileManager(object):
 		sftp_utilities.get_object('SFTPClient.notebook.page_stfp.button_download').connect('button-press-event', lambda widget, event: self._queue_transfer_from_selection(tasks.DownloadTask))
 		self.local.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.UploadTask))
 		self.remote.menu_item_transfer.connect('activate', lambda widget: self._queue_transfer_from_selection(tasks.DownloadTask))
-		self.local.menu_item_edit.connect('activate', self.signal_edit_local_file)
-		self.remote.menu_item_edit.connect('activate', self.signal_edit_remote_file)
+		self.local.menu_item_edit.connect('activate', self.signal_edit_file, self.local)
+		self.remote.menu_item_edit.connect('activate', self.signal_edit_file, self.remote)
 		menu_item = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.menuitem_opts_transfer_hidden')
 		menu_item.set_active(self.config['transfer_hidden'])
 		menu_item.connect('toggled', self.signal_toggled_config_option, 'transfer_hidden')
@@ -245,6 +245,10 @@ class FileManager(object):
 		self.window.show_all()
 
 	def signal_change_page(self, _, __, page_number):
+		"""
+		will check to is if the page change is from editor to sftp, and then ask if the user if they
+		want to save detected changes. If yes it passes to the save editor file to take action.
+		"""
 		# page_number is the page switched from
 		if page_number:
 			return
@@ -255,34 +259,31 @@ class FileManager(object):
 
 		self._save_editor_file()
 
-	def signal_edit_local_file(self, _):
-		selection = self.local.treeview.get_selection()
+	def signal_edit_file(self, _, directory):
+		"""
+		Handles the signal when edit is selected on a file.
+
+		:param _: Gtkmenuitem unused
+		:param directory: The local or remote directory 
+		"""
+		selection = directory.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		try:
-			local_file_path = self.local.get_abspath(model[treeiter][2])
+			file_path = directory.get_abspath(model[treeiter][2])
 		except TypeError:
 			logger.warning('no file selected to edit')
 			return
 
-		self.editor = editor.SFTPEditor(local_file_path, self.local, 'Local')
-		self._load_editor_file()
-
-	def signal_edit_remote_file(self, _):
-		selection = self.remote.treeview.get_selection()
-		model, treeiter = selection.get_selected()
-		try:
-			remote_file_path = self.remote.get_abspath(model[treeiter][2])
-		except TypeError:
-			logger.warning('no file selected to edit')
-			return
-
-		self.editor = editor.SFTPEditor(remote_file_path, self.remote, 'Remote')
+		self.editor = editor.SFTPEditor(file_path, directory)
 		self._load_editor_file()
 
 	def signal_editor_save(self, _):
 		self._save_editor_file()
 
 	def _save_editor_file(self):
+		"""
+		Handles the save file action for the editor instance when button is pressed or when tabs are changed
+		"""
 		if not self.editor:
 			self.editor_tab_save_button.set_sensitive(False)
 			self.notebook.set_current_page(0)
@@ -302,34 +303,39 @@ class FileManager(object):
 		try:
 			self.editor.directory.save_file(self.editor.file_path, buffer_contents)
 			self.editor.file_contents = buffer_contents
-			logger.info("saved editor contents to {} file path {}".format(self.editor.location, self.editor.file_path))
+			logger.info("saved editor contents to {} file path {}".format(self.editor.file_location, self.editor.file_path))
 		except IOError:
-			logger.warning("could not write to {} file: {}".format(self.editor.location, self.editor.file_path))
+			logger.warning("could not write to {} file: {}".format(self.editor.file_location, self.editor.file_path))
 			self.editor_tab_save_button.set_sensitive(False)
 			gui_utilities.show_dialog_error(
 				'Permission Denied',
 				self.application.get_active_window(),
-				"Cannot write to {} file".format(self.editor.location)
+				"Cannot write to {} file".format(self.editor.file_location)
 			)
 			return
 		self.editor_tab_save_button.set_sensitive(False)
 
 	def _load_editor_file(self):
+		"""
+		Used to get and load the file contains of the SFTPEditor instance, 
+		and handle any errors found during the process
+		:return: 
+		"""
 		if not self.editor:
 			return
 
 		try:
 			file_contents = self.editor.directory.read_file(self.editor.file_path)
 		except IOError:
-			logger.warning("cannot read {} file {}".format(self.editor.location, self.editor.file_path))
+			logger.warning("cannot read {} file {}".format(self.editor.file_location, self.editor.file_path))
 			gui_utilities.show_dialog_error(
 				'Permission Denied',
 				self.application.get_active_window(),
-				"Cannot read {} file".format(self.editor.location)
+				"Cannot read {} file".format(self.editor.file_location)
 			)
 			return
 		except UnicodeDecodeError:
-			logger.warning("could not decode content of {} file {}".format(self.editor.location, self.editor.file_path))
+			logger.warning("could not decode content of {} file {}".format(self.editor.file_location, self.editor.file_path))
 			gui_utilities.show_dialog_error(
 				'Error decoding file',
 				self.application.get_active_window(),
@@ -341,7 +347,7 @@ class FileManager(object):
 			try:
 				file_contents = file_contents.decode('utf-8')
 			except UnicodeDecodeError:
-				logger.warning("could not decode content of {} file {}".format(self.editor.location, self.editor.file_path))
+				logger.warning("could not decode content of {} file {}".format(self.editor.file_location, self.editor.file_path))
 				gui_utilities.show_dialog_error(
 					'Error decoding file',
 					self.application.get_active_window(),
@@ -351,6 +357,7 @@ class FileManager(object):
 
 		self.notebook.set_show_tabs(True)
 		self.editor.load_file(file_contents)
+		self.notebook.set_current_page(1)
 
 	def signal_toggled_config_option(self, menuitem, config_key):
 		self.config[config_key] = menuitem.get_active()

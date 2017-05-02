@@ -325,15 +325,6 @@ class DirectoryBase(object):
 		"""Perform any necessary clean up operations."""
 		pass
 
-	def signal_edit_file(self, _):
-		location = None
-		if isinstance(self, RemoteDirectory):
-			location = 'remote'
-		elif isinstance(self, LocalDirectory):
-			location = 'local'
-		if location:
-			editor.SftpEditor(self, location)
-
 	def signal_combo_changed(self, combobox):
 		new_dir = combobox.get_active_text()
 		if not new_dir:
@@ -573,6 +564,7 @@ class LocalDirectory(DirectoryBase):
 	Local Directory object that defines private methods for rendering local data
 	using the os module.
 	"""
+	location = 'local'
 	root_directory = os.path.abspath(os.sep)
 	transfer_direction = 'upload'
 	treeview_name = 'treeview_local'
@@ -703,6 +695,7 @@ class RemoteDirectory(DirectoryBase):
 	Remote Directory object that defines private methods for rendering remote
 	data using Paramiko's SFTP functionality.
 	"""
+	location = 'remote'
 	root_directory = posixpath.abspath(posixpath.sep)
 	transfer_direction = 'download'
 	treeview_name = 'treeview_remote'
