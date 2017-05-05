@@ -12,7 +12,7 @@ logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.utilities')
 GTYPE_LONG = GObject.type_from_name('glong')
 gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'client.ui')
 _gtk_objects = {}
-_builder = Gtk.Builder()
+_builder = None
 
 def get_object(gtk_object):
 	"""
@@ -21,6 +21,9 @@ def get_object(gtk_object):
 	:param str gtk_object: The name of the GTK Object to fetch
 	:return: The requested gtk object
 	"""
+	global _builder
+	if not _builder:
+		_builder = Gtk.Builder()
 	if not _gtk_objects:
 		_builder.add_from_file(gtk_builder_file)
 	if gtk_object in _gtk_objects:

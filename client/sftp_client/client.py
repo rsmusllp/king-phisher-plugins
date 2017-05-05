@@ -468,6 +468,7 @@ class FileManager(object):
 		self.config['directories'] = directories
 		self.editor = None
 		sftp_utilities._gtk_objects = {}
+		sftp_utilities._builder = None
 
 	def _queue_transfer_from_selection(self, task_cls):
 		selection = self.local.treeview.get_selection()

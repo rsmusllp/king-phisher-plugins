@@ -612,34 +612,35 @@ class LocalDirectory(DirectoryBase):
 			return True
 		return False
 
-	def read_file(self, local_file_path):
+	def read_file(self, file_path):
 		"""
-		Used to fetch the contents of target file
-		:param str local_file_path: the absolute path to target file
-		:return: the utf-8 contents of the file
-		:rtype: str
+		Reads the contents of a file and returns as bytes
+
+		:param str file_path: The path to the file to open and read. 
+		:return: The contents of the file
+		:rtype: bytes
 		"""
-		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.R_OK)):
+		if not (file_path and os.path.isfile(file_path) and os.access(file_path, os.R_OK)):
 			logger.warning('cannot write to local file, or file not found')
-			raise ValueError("Cannot read file {}".format(local_file_path))
-		with open(local_file_path, 'r') as file_:
+			raise ValueError("Cannot read file {}".format(file_path))
+		with open(file_path, 'rb') as file_:
 			file_contents = file_.read()
 		return file_contents
 
-	def save_file(self, local_file_path, buffer_contents):
+	def save_file(self, file_path, file_contents):
 		"""
 		Saves a string to a file
 
-		:param str local_file_path: The absolute path to target file.
-		:param str buffer_contents: The data to place in file.
+		:param str file_path: The absolute path to target file.
+		:param str file_contents: The data to place in file.
 		"""
-		if not (local_file_path and os.path.isfile(local_file_path) and os.access(local_file_path, os.W_OK)):
+		if not (file_path and os.path.isfile(file_path) and os.access(file_path, os.W_OK)):
 			logger.warning('cannot write to local file, or file not found')
 			raise IOError("Cannot write to local file, or file not found")
-		file_ = open(local_file_path, 'w')
-		file_.write(buffer_contents)
+		file_ = open(file_path, 'w')
+		file_.write(file_contents)
 		file_.close()
-		logger.info('saved edited to file {}'.format(local_file_path))
+		logger.info('saved edited to file {}'.format(file_path))
 
 	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
@@ -868,10 +869,10 @@ class RemoteDirectory(DirectoryBase):
 
 	def save_file(self, file_path, file_contents):
 		"""
-		Saves a raw string to the remote file path
-		
-		:param str file_path: Remote file path
-		:param str file_contents: the contents to place in the file
+		Saves a string to a file
+
+		:param str file_path: The absolute path to target file.
+		:param str file_contents: The data to place in file.
 		"""
 		with self.ftp_handle() as ftp:
 			file_ = ftp.file(file_path, 'w')
