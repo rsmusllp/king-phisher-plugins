@@ -264,7 +264,7 @@ class FileManager(object):
 		Handles the signal when edit is selected on a file.
 
 		:param _: Gtkmenuitem unused
-		:param directory: The local or remote directory 
+		:param directory: The local or remote directory
 		"""
 		selection = directory.treeview.get_selection()
 		model, treeiter = selection.get_selected()
@@ -300,8 +300,10 @@ class FileManager(object):
 			self.editor_tab_save_button.set_sensitive(False)
 			return
 
+		buffer_contents = buffer_contents.encode('utf-8')
+
 		try:
-			self.editor.directory.save_file(self.editor.file_path, buffer_contents)
+			self.editor.directory.write_file(self.editor.file_path, buffer_contents)
 			self.editor.file_contents = buffer_contents
 			logger.info("saved editor contents to {} file path {}".format(self.editor.file_location, self.editor.file_path))
 		except IOError:
@@ -317,15 +319,15 @@ class FileManager(object):
 
 	def _load_editor_file(self):
 		"""
-		Used to get and load the file contains of the SFTPEditor instance, 
+		Used to get and load the file contains of the SFTPEditor instance,
 		and handle any errors found during the process
-		:return: 
 		"""
 		if not self.editor:
 			return
 
 		try:
 			file_contents = self.editor.directory.read_file(self.editor.file_path)
+			file_contents = file_contents.decode('utf-8')
 		except IOError:
 			logger.warning("cannot read {} file {}".format(self.editor.file_location, self.editor.file_path))
 			gui_utilities.show_dialog_error(

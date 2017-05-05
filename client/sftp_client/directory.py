@@ -616,7 +616,7 @@ class LocalDirectory(DirectoryBase):
 		"""
 		Reads the contents of a file and returns as bytes
 
-		:param str file_path: The path to the file to open and read. 
+		:param str file_path: The path to the file to open and read.
 		:return: The contents of the file
 		:rtype: bytes
 		"""
@@ -627,20 +627,19 @@ class LocalDirectory(DirectoryBase):
 			file_contents = file_.read()
 		return file_contents
 
-	def save_file(self, file_path, file_contents):
+	def write_file(self, file_path, file_contents):
 		"""
-		Saves a string to a file
+		Write data to a file.
 
 		:param str file_path: The absolute path to target file.
-		:param str file_contents: The data to place in file.
+		:param bytes file_contents: The data to place in file.
 		"""
 		if not (file_path and os.path.isfile(file_path) and os.access(file_path, os.W_OK)):
 			logger.warning('cannot write to local file, or file not found')
 			raise IOError("Cannot write to local file, or file not found")
-		file_ = open(file_path, 'w')
-		file_.write(file_contents)
-		file_.close()
-		logger.info('saved edited to file {}'.format(file_path))
+		with open(file_path, 'wb') as file_h:
+			file_h.write(file_contents)
+		logger.info("wrote {} bytes to {}".format(len(file_contents), file_path))
 
 	@sftp_utilities.handle_permission_denied
 	def delete(self, treeiter):
@@ -858,7 +857,7 @@ class RemoteDirectory(DirectoryBase):
 		"""
 		Reads the contents of a file and returns as bytes
 
-		:param str file_path: The path to the file to open and read. 
+		:param str file_path: The path to the file to open and read.
 		:return: The contents of the file
 		:rtype: bytes
 		"""
@@ -867,17 +866,18 @@ class RemoteDirectory(DirectoryBase):
 				file_contents = file_.read()
 		return file_contents
 
-	def save_file(self, file_path, file_contents):
+	def write_file(self, file_path, file_contents):
 		"""
-		Saves a string to a file
+		Write data to a file.
 
 		:param str file_path: The absolute path to target file.
-		:param str file_contents: The data to place in file.
+		:param bytes file_contents: The data to place in file.
 		"""
 		with self.ftp_handle() as ftp:
-			file_ = ftp.file(file_path, 'w')
+			file_ = ftp.file(file_path, 'wb')
 			file_.write(file_contents)
 			file_.close()
+		logger.info("wrote {} bytes to {}".format(len(file_contents), file_path))
 
 	def walk(self, path):
 		"""
