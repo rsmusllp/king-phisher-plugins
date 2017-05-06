@@ -423,6 +423,7 @@
                     <property name="show_line_numbers">True</property>
                     <property name="tab_width">4</property>
                     <property name="insert_spaces_instead_of_tabs">True</property>
+                    <property name="highlight_current_line">True</property>
                   </object>
                 </child>
               </object>

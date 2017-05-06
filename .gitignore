@@ -1,2 +1,2 @@
 *.pyc
-client/*.ui~
+*.ui~

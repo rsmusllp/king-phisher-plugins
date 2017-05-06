@@ -274,7 +274,7 @@ class FileManager(object):
 			logger.warning('no file selected to edit')
 			return
 
-		self.editor = editor.SFTPEditor(file_path, directory)
+		self.editor = editor.SFTPEditor(self.application, file_path, directory)
 		self._load_editor_file()
 
 	def signal_editor_save(self, _):
