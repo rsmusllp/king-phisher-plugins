@@ -86,7 +86,7 @@ class DMARCPolicy(object):
 
 		answers = [answer for answer in answers if answer.strings[0].decode('utf-8').startswith('v=DMARC')]
 		if len(answers) == 0:
-			raise RuntimeError('failed to resolve dmarc record for domain: ' + domain)
+			raise DMARCParseError('failed to parse dmarc record for domain: ' + domain)
 		record = ''.join([part.decode('utf-8') for part in answers[0].strings])
 		return cls(record)
 
@@ -114,6 +114,7 @@ class Plugin(plugins.ClientPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.5.0'
+	version = '1.1'
 	def initialize(self):
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=self.application.main_tabs['mailer'])
 		return True
