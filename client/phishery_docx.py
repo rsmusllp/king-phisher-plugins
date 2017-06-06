@@ -7,7 +7,7 @@ import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
 
-class Plugin(plugins.ClientPlugin):
+class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Spencer McIntyre']
 	title = 'Phishery DOCX URL Injector'
 	description = """
@@ -27,33 +27,19 @@ class Plugin(plugins.ClientPlugin):
 			default='/usr/local/bin/phishery',
 			display_name='Phishery Path',
 			path_type='file-open'
-		),
-		plugins.ClientOptionPath(
-			'target_file',
-			'Path to the Word DOCX file to attach',
-			display_name='Word DOCX Path',
-			path_type='file-open'
-		),
-		plugins.ClientOptionPath(
-			'output_file',
-			'Path to save the Word DOCX file to attach',
-			display_name='Output Path',
-			path_type='file-save'
 		)
 	]
-	req_min_version = '1.7.0'
+	req_min_version = '1.8.0b0'
+	version = '1.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
-		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
-		self.signal_connect('send-finished', self.signal_send_finished, gobject=mailer_tab)
 		return True
 
-	def attach_file(self, outfile):
-		self.application.config['mailer.attachment_file'] = outfile
-
-	def build_file(self, target=None):
+	def process_attachment_file(self, input_path, output_path, target=None):
+		if os.path.splitext(input_path)[1] != '.docx':
+			return
 		url = self.application.config['mailer.webserver_url']
 		if target is not None:
 			url += '?id=' + target.uid
@@ -63,45 +49,24 @@ class Plugin(plugins.ClientPlugin):
 				'-u',
 				url,
 				'-i',
-				self.config['target_file'],
+				input_path,
 				'-o',
-				self.config['output_file']
+				output_path
 			],
 			stdin=subprocess.PIPE,
 			stdout=subprocess.PIPE
 		)
 		status = proc_h.wait()
 		if status != 0:
-			raise RuntimeError('phishery exited with non-zero status code')
-		self.logger.info('wrote docx file to: ' + self.config['output_file'] + ('' if target is None else ' with uid: ' + target.uid))
-		return True
-
-	def missing_options(self):
-		# return true if a required option is missing or otherwise invalid
-		phishery_bin = self.config['phishery_bin']
-		if not os.path.isfile(phishery_bin):
-			return True
-		if not os.access(phishery_bin, os.X_OK):
-			return True
-		target_file = self.config['target_file']
-		if not os.path.isfile(target_file):
-			return True
-		if not os.access(target_file, os.R_OK):
-			return True
-		return False
+			raise RuntimeError('phishery exited with non-zero status code: ' + str(status))
+		self.logger.info('wrote docx file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
 
 	def signal_send_precheck(self, _):
-		if self.missing_options():
-			self.text_insert('One or more of the options required to use phishery are invalid.\n')
+		phishery_bin = self.config['phishery_bin']
+		if not os.path.isfile(phishery_bin):
+			self.text_insert('The path to the phishery bin is invalid (file not found).\n')
+			return False
+		if not os.access(phishery_bin, os.X_OK | os.R_OK):
+			self.text_insert('The path to the phishery bin is invalid (invalid permissions).\n')
 			return False
 		return True
-
-	def signal_send_target(self, _, target):
-		self.build_file(target)
-		self.attach_file(self.config['output_file'])
-
-	def signal_send_finished(self, _):
-		self.application.config['mailer.attachment_file'] = None
-		if not os.access(self.config['output_file'], os.W_OK):
-			return
-		os.remove(self.config['output_file'])
