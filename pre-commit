@@ -51,27 +51,36 @@ if sys.version_info < (3, 4):
 	sys.exit(os.EX_SOFTWARE)
 
 plugins_dir = os.path.dirname(os.path.abspath(__file__))
+if plugins_dir.endswith(os.path.join('.git', 'hooks')):
+	plugins_dir = os.path.normpath(os.path.join(plugins_dir, '..', '..'))
 king_phisher_dir = os.path.normpath(os.path.join(plugins_dir, '..', 'king-phisher'))
 
 sys.path.insert(0, king_phisher_dir)
 sys.path.insert(0, plugins_dir)
 
 try:
+	import git
+except ImportError:
+	print('failed to import GitPython')
+	sys.exit(os.EX_UNAVAILABLE)
+
+try:
 	import king_phisher.catalog as catalog
 	import king_phisher.security_keys as security_keys
 	import king_phisher.serializers as serializers
 except ImportError:
-	print('failed to import king_phisher modules');
+	print('failed to import king_phisher');
 	print('path assumed to be at: ' + king_phisher_dir)
 	sys.exit(os.EX_UNAVAILABLE)
 
-def load_plugins(plugin_type, plugins_dir):
+def load_plugins(plugin_type, plugins_dir, verbose=False):
 	plugins = []
 	plugins_dir = os.path.join(plugins_dir, plugin_type)
 	for plugin in glob.glob(os.path.join(plugins_dir, '*.py')):
 		plugin = os.path.basename(plugin)
 		plugin = os.path.splitext(plugin)[0]
-		print('loading ' + plugin_type + ' plugin: ' + plugin)
+		if verbose:
+			print('loading ' + plugin_type + ' plugin: ' + plugin)
 		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
 		plugins.append(plugin_module.Plugin)
 
@@ -80,13 +89,15 @@ def load_plugins(plugin_type, plugins_dir):
 			continue
 		if not os.path.isfile(os.path.join(plugins_dir, plugin, '__init__.py')):
 			continue
-		print('loading ' + plugin_type + ' plugin: ' + plugin)
+		if verbose:
+			print('loading ' + plugin_type + ' plugin: ' + plugin)
 		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
 		plugins.append(plugin_module.Plugin)
 	return plugins
 
-def _make_plugin_collections(plugin_type, plugins_dir, plugins, signing_key, signing_key_id):
+def _make_plugin_collections(plugin_type, plugins_repo, plugins, signing_key, signing_key_id, verbose=False):
 	plugins_collection = []
+	plugins_dir = plugins_repo.working_tree_dir
 	for plugin in plugins[plugin_type]:
 		plugin_path = os.path.join(plugins_dir, plugin_type, plugin.name)
 		if os.path.isfile(plugin_path + '.py'):
@@ -95,7 +106,8 @@ def _make_plugin_collections(plugin_type, plugins_dir, plugins, signing_key, sig
 			raise RuntimeError("unknown path for {0} plugin: {1}".format(plugin_type, plugin.name))
 		plugin = plugin.metadata
 
-		print('signing files for ' + plugin_type + ' plugin: ' + plugin['name'])
+		if verbose:
+			print('signing files for ' + plugin_type + ' plugin: ' + plugin['name'])
 		plugin['files'] = list(catalog.sign_item_files(plugin_path, signing_key, signing_key_id, repo_path=plugins_dir))
 		for idx, item_file in enumerate(plugin['files']):
 			plugin['files'][idx] = {
@@ -107,17 +119,19 @@ def _make_plugin_collections(plugin_type, plugins_dir, plugins, signing_key, sig
 		plugins_collection.append(plugin)
 	return plugins_collection
 
-def make_plugin_collections(plugins_dir, plugins, signing_key, signing_key_id):
+def make_plugin_collections(plugins_repo, plugins, signing_key, signing_key_id, verbose=False):
 	collection = {
-		'plugins/client': _make_plugin_collections('client', plugins_dir, plugins, signing_key, signing_key_id),
-		'plugins/server': _make_plugin_collections('server', plugins_dir, plugins, signing_key, signing_key_id),
+		'plugins/client': _make_plugin_collections('client', plugins_repo, plugins, signing_key, signing_key_id, verbose=verbose),
+		'plugins/server': _make_plugin_collections('server', plugins_repo, plugins, signing_key, signing_key_id, verbose=verbose),
 	}
 	return collection
 
 def main():
 	parser = argparse.ArgumentParser(description='pre-commit hook', conflict_handler='resolve')
-	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: ' + __version__)
 	parser.add_argument('-k', '--key', default=os.getenv('KING_PHISHER_DEV_KEY'), help='path to a signing key')
+	parser.add_argument('-V', '--verbose', action='store_true', default=False, help='print verbose output')
+	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: ' + __version__)
+	parser.add_argument('--git-no-add', action='store_false', default=True, dest='git_add', help='don\'t stage changed files in git')
 	arguments = parser.parse_args()
 
 	if arguments.key is None:
@@ -136,15 +150,18 @@ def main():
 		signing_key = key['signing-key']
 		signing_key = security_keys.SigningKey.from_dict(signing_key, encoding=signing_key.pop('encoding', 'base64'))
 
-	print('plugins directory: ' + plugins_dir)
+	if arguments.verbose:
+		print('plugins directory: ' + plugins_dir)
+	plugins_repo = git.Repo(plugins_dir)
+
 	jinja_env = jinja2.Environment(trim_blocks=True)
 	jinja_env.filters['strftime'] = lambda dt, fmt: dt.strftime(fmt)
 	with open(os.path.join(plugins_dir, 'README.jnj'), 'r') as file_h:
 		readme_template = jinja_env.from_string(file_h.read())
 
 	plugins = {
-		'client': load_plugins('client', plugins_dir),
-		'server': load_plugins('server', plugins_dir)
+		'client': load_plugins('client', plugins_dir, verbose=arguments.verbose),
+		'server': load_plugins('server', plugins_dir, verbose=arguments.verbose)
 	}
 	readme = readme_template.render(
 		plugins=plugins,
@@ -152,19 +169,24 @@ def main():
 	)
 	with open(os.path.join(plugins_dir, 'README.md'), 'w') as file_h:
 		file_h.write(readme)
+	if arguments.git_add:
+		plugins_repo.index.add(['README.md'])
 
 	collection = {
 		'created': datetime.datetime.utcnow().isoformat() + '+00:00',
 		'created-by': signing_key_id,
 		'collections': make_plugin_collections(
-			plugins_dir,
+			plugins_repo,
 			plugins,
 			signing_key,
-			signing_key_id
+			signing_key_id,
+			verbose=arguments.verbose
 		)
 	}
 	with open(os.path.join(plugins_dir, 'catalog-collections.json'), 'w') as file_h:
 		serializers.JSON.dump(collection, file_h)
+	if arguments.git_add:
+		plugins_repo.index.add(['catalog-collections.json'])
 	return os.EX_OK
 
 if __name__ == '__main__':
