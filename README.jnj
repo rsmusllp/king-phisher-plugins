@@ -9,14 +9,14 @@ Toolkit. For more information regarding King Phisher, see the project's
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 {% for plugin in plugins.client %}
-| [{{ plugin.title }}](/client/{{ plugin.name }}.py) | {{ plugin.formatted_description | replace('\n', '<br />') }} |
+| [{{ plugin.title }}](/client/{{ plugin.name }}.py) | {{ plugin.description | replace('\n', '<br />') }} |
 {% endfor %}
 
 ## Server Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 {% for plugin in plugins.server %}
-| [{{ plugin.title }}](/server/{{ plugin.name }}.py) | {{ plugin.formatted_description }} |
+| [{{ plugin.title }}](/server/{{ plugin.name }}.py) | {{ plugin.description }} |
 {% endfor %}
 
 ## Plugin Installation

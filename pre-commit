@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+#  pre-commit
+#
+#  Copyright 2016 Spencer McIntyre <zeroSteiner@gmail.com>
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are
+#  met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following disclaimer
+#    in the documentation and/or other materials provided with the
+#    distribution.
+#  * Neither the name of the  nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+#  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import argparse
+import datetime
+import glob
+import importlib
+import os
+import sys
+import textwrap
+
+import ecdsa
+import jinja2
+
+__version__ = '1.0'
+
+if sys.version_info < (3, 4):
+	# python 3 is required to import without an __init__.py file
+	print('this requires at least python version 3.4 to run')
+	sys.exit(os.EX_SOFTWARE)
+
+plugins_dir = os.path.dirname(os.path.abspath(__file__))
+king_phisher_dir = os.path.normpath(os.path.join(plugins_dir, '..', 'king-phisher'))
+
+sys.path.insert(0, king_phisher_dir)
+sys.path.insert(0, plugins_dir)
+
+try:
+	import king_phisher.catalog as catalog
+	import king_phisher.security_keys as security_keys
+	import king_phisher.serializers as serializers
+except ImportError:
+	print('failed to import king_phisher modules');
+	print('path assumed to be at: ' + king_phisher_dir)
+	sys.exit(os.EX_UNAVAILABLE)
+
+def load_plugins(plugin_type, plugins_dir):
+	plugins = []
+	plugins_dir = os.path.join(plugins_dir, plugin_type)
+	for plugin in glob.glob(os.path.join(plugins_dir, '*.py')):
+		plugin = os.path.basename(plugin)
+		plugin = os.path.splitext(plugin)[0]
+		print('loading ' + plugin_type + ' plugin: ' + plugin)
+		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
+		plugins.append(plugin_module.Plugin)
+
+	for plugin in os.listdir(plugins_dir):
+		if not os.path.isdir(os.path.join(plugins_dir, plugin)):
+			continue
+		if not os.path.isfile(os.path.join(plugins_dir, plugin, '__init__.py')):
+			continue
+		print('loading ' + plugin_type + ' plugin: ' + plugin)
+		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
+		plugins.append(plugin_module.Plugin)
+	return plugins
+
+def _make_plugin_collections(plugin_type, plugins_dir, plugins, signing_key, signing_key_id):
+	plugins_collection = []
+	for plugin in plugins[plugin_type]:
+		plugin_path = os.path.join(plugins_dir, plugin_type, plugin.name)
+		if os.path.isfile(plugin_path + '.py'):
+			plugin_path += '.py'
+		elif not (os.path.isdir(plugin_path) and os.path.isfile(os.path.join(plugin_path, '__init__.py'))):
+			raise RuntimeError("unknown path for {0} plugin: {1}".format(plugin_type, plugin.name))
+		plugin = plugin.metadata
+
+		print('signing files for ' + plugin_type + ' plugin: ' + plugin['name'])
+		plugin['files'] = list(catalog.sign_item_files(plugin_path, signing_key, signing_key_id, repo_path=plugins_dir))
+		for idx, item_file in enumerate(plugin['files']):
+			plugin['files'][idx] = {
+				'path-destination': item_file.path_destination,
+				'path-source': item_file.path_source,
+				'signature': item_file.signature,
+				'signed-by': item_file.signed_by
+			}
+		plugins_collection.append(plugin)
+	return plugins_collection
+
+def make_plugin_collections(plugins_dir, plugins, signing_key, signing_key_id):
+	collection = {
+		'plugins/client': _make_plugin_collections('client', plugins_dir, plugins, signing_key, signing_key_id),
+		'plugins/server': _make_plugin_collections('server', plugins_dir, plugins, signing_key, signing_key_id),
+	}
+	return collection
+
+def main():
+	parser = argparse.ArgumentParser(description='pre-commit hook', conflict_handler='resolve')
+	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: ' + __version__)
+	parser.add_argument('-k', '--key', default=os.getenv('KING_PHISHER_DEV_KEY'), help='path to a signing key')
+	arguments = parser.parse_args()
+
+	if arguments.key is None:
+		print('must specify a dev key path')
+		return os.EX_USAGE
+	if not os.path.isfile(arguments.key):
+		print('invalid path to dev key: ' + arguments.key)
+		return os.EX_USAGE
+	if not os.access(arguments.key, os.R_OK):
+		print('missing read privileges on dev key: ' + arguments.key)
+		return os.EX_NOPERM
+
+	with open(arguments.key, 'r') as file_h:
+		key = serializers.JSON.load(file_h)
+		signing_key_id = key['id']
+		signing_key = key['signing-key']
+		signing_key = security_keys.SigningKey.from_dict(signing_key, encoding=signing_key.pop('encoding', 'base64'))
+
+	print('plugins directory: ' + plugins_dir)
+	jinja_env = jinja2.Environment(trim_blocks=True)
+	jinja_env.filters['strftime'] = lambda dt, fmt: dt.strftime(fmt)
+	with open(os.path.join(plugins_dir, 'README.jnj'), 'r') as file_h:
+		readme_template = jinja_env.from_string(file_h.read())
+
+	plugins = {
+		'client': load_plugins('client', plugins_dir),
+		'server': load_plugins('server', plugins_dir)
+	}
+	readme = readme_template.render(
+		plugins=plugins,
+		timestamp=datetime.datetime.utcnow()
+	)
+	with open(os.path.join(plugins_dir, 'README.md'), 'w') as file_h:
+		file_h.write(readme)
+
+	collection = {
+		'created': datetime.datetime.utcnow().isoformat() + '+00:00',
+		'created-by': signing_key_id,
+		'collections': make_plugin_collections(
+			plugins_dir,
+			plugins,
+			signing_key,
+			signing_key_id
+		)
+	}
+	with open(os.path.join(plugins_dir, 'catalog-collections.json'), 'w') as file_h:
+		serializers.JSON.dump(collection, file_h)
+	return os.EX_OK
+
+if __name__ == '__main__':
+	sys.exit(main())
