@@ -3,14 +3,15 @@
     "plugins/client": [
       {
         "authors": [
+          "Ryan Hanson",
           "Spencer McIntyre"
         ],
-        "description": "Use Phishery to inject Word Document Template URLs into DOCX files. This can be used in conjunction with a server page that requries Basic Authentication to collect Windows credentials. Note that the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\nPhishery homepage: https://github.com/ryhanson/phishery",
+        "description": "Use Phishery to inject Word Document Template URLs into DOCX files. This can be used in conjunction with a server page that requires Basic Authentication to collect Windows credentials. Note that the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\nPhishery homepage: https://github.com/ryhanson/phishery",
         "files": [
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "AIRRr3tzCOhcw2vBnTSzRMwOK+QxF4Zs+enWqCINYsaVH04tmDfRzV8uGHBV6ujnoF05rMhq0msl7I64nx+N2fsZAd5MiBhpDl7H1SD468mvyC2ujUC8gdddI5zcmCHZdYY+NlCs4EyYOMhAxhIi6W/l4umbUV2XRETyTiZkoBdqPtQG",
+            "signature": "AR9arX1aUy/qFjYoK+dzINaolPwGIUc44gJuJ16WDACHwIxcCmFKQKhLSVaZ2e8BZ8yNMj8H4rjO3SOWXXl4pz1QAY0DSJEqAd+A03W/4m+zRQOGS5u3CeQb/bnI0NArTebExwaD9hwg4kJMjWKuKmdgux0npCvSckWWJHPb7hSphZdU",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -21,7 +22,7 @@
           "packages": []
         },
         "title": "Phishery DOCX URL Injector",
-        "version": "1.1"
+        "version": "2.0"
       },
       {
         "authors": [
@@ -32,7 +33,7 @@
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "AHDv6+3AGYfC4kZL8jQnLLDwuYg6jP/wtmJa6EkY3JNyx/fIlj5TIbSQdAf61mkKOIND1mQuWg7rKhSlHJJohGdRAQu+BIFvHxO+BuAXwU1iogHSDW/bTBR+Yu/eV2u2r09AKprubSoSpcTSjUBG7KV4q04G0vKoxVFfSggmbB3aEjwQ",
+            "signature": "APG3xezqSWB54cRNCpA+h7DLowvi6VGRmYD3dMNccKWrBedJA01ZPhPdAWSPd7lhh8RRp7fa1YHCXRfnoodg7NKLAVzvDGz0A+4bjVtgALLo9QPWgigdLsxo64afn6+ZthKblk2yN17hZdlYEtHnxQAOAEwqmfAXQLxLF0PiU5XTkkXZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -56,7 +57,7 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AMe3WDjKtsvXm9ZZ6Cyj8ghinYOiQ5AvmW6caDY2EBczumF7L+Bczp30mxiZ2W8kir3Zfjm5f7fbyg3Kg0JVjlYfAXdAxGNKAdMat1iUOHvzAXRiqKjGG52m4l00jvsoR/pM1RB8TpElwZX/Zl0dYu0funnUfbuJCX1lTIq1Q831xces",
+            "signature": "AXsk0C77SN+uwzxfEWOE9oxJBCmAqgn4EUw9AYa8DFwI652H8AK8GFINCRMtGbToNfiopQ0CoNuGJ89u44yn1sqWAZ7Wf+XHQpHI24HImTnEvfcaZRjmV/Mcq2Uu6HpkGvyBCBZS1qEnEuLVh/h/p3Kmo4WPGiUY8sH42qlAhI1DAaih",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -78,7 +79,7 @@
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "AOBZvlb50m2dyCtN1T5yzYZku4dkuVgbswo+wMGnOFTdMAKuvj0yLNx7wR++p2SDngC5Srdcz7B42pepyAV6wnHjAI08i618xhZQv1alQGq9ZwP0EQsQKtbr6r5G803gA3UriUeGT23MlnVSwLrL7dQH8ufWhV95gR84OO0SbWMuoKMr",
+            "signature": "Aa/iA7E6mjDvoyIhHy9jvLi8x5O8ohaTh0EBJbgDwDxLL+jzMr2daATp2I1bUziFDrBMg/8zSqR3jbtomi365QiCAPRP6xXAxoJbf80POD25rQGG/rAeo6LIYcuvKNNz09081U5ZBUKQciHoCv++c/0eOu27O6vUW6x3joeJdpfBlB1M",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -100,7 +101,7 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AX5trvRBhSNqtCT/pZSxT//XCl2cpZFW4ZJH5nPijU7agNwu4ICycLq8pb2UkiRFztuDaYmugLQqK/gkvQQZQAAEARyx9FJH6WFPz6j9bxJ1X0Lt8MKBHbfk54n6/dLsi9tMdAADfzvZb5ANZdu9uEWvkAkz5uaMrmCqjn1nzNzXsOJk",
+            "signature": "AU9xFgXoNRlGdRl6yK6JJCRZVV+W9YYRd9Wsg3yHbGd21EJcPHmA8m5YVDAgQgEahYmhVlAE2lBSZbA5viuidNNMAILeaUai82a9ReVZ0PMoPOUq1o+CUAfpsvtY5O3zATjpjQtpe/MdNiuq1GfSxbtwzWqVqF5IjQAJwYk7CYx7TgYL",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -122,7 +123,7 @@
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "Adu592fZ9UNd0ms74jaIMlRBL8piJ0/XgKo+RUim3X0A1Li+rG619buQse5ZqsLZCQjDEIoIoLhuQBg5v4Gy937gAFCoKZOnSUgNRxbGkkEcnR6zz9nvvZk37jLaBF8gfABxa54OXo0SsM5Lpb1i2beb9yxABsU8A0zAaNIO4GnNTsf7",
+            "signature": "AQLv5APlTXxu6IesA1uBCm18KDo3j62f6aUxNg3YNDw2rGl3WYb19eiftcCESHmWJl/mrFV5ivEOi5CoXmPprHS5ASEWSQEs2yTtz5oZIxmG9I5NY6f3IIwoSx9OxcQwx/lmQxh85pg7uLwyOvve6vSrFGHkuypvThdmzsraBWQH+o/Q",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -146,7 +147,7 @@
           {
             "path-destination": "totp_enrollment.py",
             "path-source": "client/totp_enrollment.py",
-            "signature": "AKhKMsRb1GSdx0d9J0prdMWfnYfgbJ7lkFoPKJi16c77nEhJvsDnTxMzsdF1ybfk1i4NuUYkcR6Dcw92DQIzW6kmACiCbWYl2CbKZHaO1Q/aSVMFLxg7OFWfLCbFPWPLEFbOuoUdisYCVVOyo41tyuGyOYCxnUdA6+pGSBFSHaNZO3FC",
+            "signature": "AXh+LjBMnCZBghO7Me3ReNzdL1EJNI81kNdNiazt4NhlxPD9u8Wg7ujkScOU5YlpON1eSdv0Oij7xAlcpcebCIlrAbpWT+w5+2X0KYILkw0/hpZxlmDgT920slrQoBjPSKLMAcB8ZYfytVdDrkiqAJOttXrWbtMUb5q9urfiInHHV4kq",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -171,7 +172,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "AbMbXhREboDi5lfaM0uahDfav7vdXROYCF/defsm17qo5LCUC9EmXTdEE3paZsYzlZi9snyJiydWoUDrq1jZYj7+AUYo1ofFAxvmofK3DbzCb9/pQBhbRdfwg0iUgWtvo96K0oCrK2sWKlMenMpiOARcHiFAhvb1HYDG9KJuvc3gYmUE",
+            "signature": "AdeFm2GckjRjdrgtLtZ6qicdWt64geRlLvn4uzDn2TS+bWQLdmVQwfD6jGtF7VpbRpTOWg1Q+IlZOvzKPEWgo7LxAV79f2bcpUuQsTcBIusWoce4rjNfylVjSy1oQIQ776mTFdDJ9bcukUKSYjfbBqkk1+82bFEGoXOReSD2MLvP8EOz",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -193,7 +194,7 @@
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "AM1cUXycCVxeWF0wbUEAX5LPujFEf2BpgBxJSQoFF7+BWuQKDsKmqeJRSGxcxcZD9mda44VZgFcGfogVhJ3+d/E0AK38skIapk2BgidUV0PUVPp1yNUmw0oOSO1W96g7ZuU6rjFCFfgjNL5LW9m/23hJOaNh/PvqiYOKJBlOPoweCfee",
+            "signature": "AbWzUCRxwBzLJhUDQg/z0GoCsFxk8PitvypnWdHYrTlxmmbrC8FpIuyKrb2ovSMY4cAViAD8RTxkjAlT6WTV0kO4AeW1LWjy7pm76u7ztThroDpfa2qn6mUT5tRsv6VLscJ37BQcIeuM5eutkdhjQ7N10I87SxGGMnurzTpXyiR9YFOZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -215,7 +216,7 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "Af3IPG/0DmbDHCrQs3UT7ZP35wPG1e7ve62k9Qsc3IOKYvHNgj4w/25996peCnApURndlQckel1AnUPaZnR6/fM6AdaYgJbu+C1fKmMlsjNQarzsY8dPmVr/UQiwH0OgTe8iQEMF3+RRfbbgYyfs5HSwGbftfuCuWRykuTsV7MRFngUJ",
+            "signature": "ACSt+qc682hH+pzgDsh35vFTVuiAFiFGkKmboyOBLWiZ1atnSL0SBMqhtCJrr42VTJt6d4jtOYX9/ywwmK9kjkodAAJhHlEMplFSaPux7e1WcllItEUmvdES5TDQoS1a2Mawh29QrfPfWnIHWqRl6g/hbSGI3/w30NDbXKrm/npdrav9",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -239,7 +240,7 @@
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "AU1kx+UZ0tJiNLdNs9yIjorM3XisluH8+oGrvo7XL4PmTlpkf5nkxPZpFA68RpKax/isCwlSJkoHgV0maTeOcPOkAQrgh5LW10yNIZAK9uLqC+zDSFx9ffrL7UYOn+0SIPVrcBTkJNiLBmUWk9Vt+3N2rYW+XXGrHR9ZiMPwjFKzIa4Q",
+            "signature": "ACTCduHkiLlMFCZy+6FbGkRAEflNFjRw+px/uJJUXYvXC29p702fUKG7Gk7gUufa2nRbkmKEpkhesyneIPBzLwWBAfYT/zZiA4FZKL6hotKH593kQMb6iwO73fzZY+1kZ9DyZ7X7oLadZOb9SB+OplZ1/MUEEo+ss4q1njHD6A3Ki/QJ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -262,7 +263,7 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "Adza7hYhctOt3PC8MYnNcAkbkThFlkViAof5wwELTtkkAE8JTm2FpxFMBVs1/0/0X+vNW5b+ZFa1E/YLo60nA0+ZAX7F9y4wsAXd9Qo6YpFdRwfs3iFVLOVjc8BhHpjeWwetidVfBngutyCs8d2FDBVtQPShV7XzcNVGH4CKLhLoUTYV",
+            "signature": "AB1I7rWSsWZLcbBYoCzD7/J48+K6bD3+LZDftzR04eAGs96ToYvwqVMFekDn+C4yQRlw+HpVKa1ilVk2HfnNPXujAV8ipvjKxBaRqnrSDpnb5FiwRIRx/MpC86hYZiC0n0un+Pl8FXGJlKvHCUTnsNWM2RyWDFreDsveywjb+sfEbSgT",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -286,43 +287,43 @@
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AAd3U16kdreTNwdJfyKnIRzevam2yrrR0ltOECr5WhCs8NtyhqkKLpT9i9/BSdk0nC8hR7cGySKP/ZxggImZS1qIAY0EH7YsHEYSI4ItUlEWDw/G6kkFzPtOBpOnYZMw7pFmwadL0Dw9vds8Ex4sNgVFqaR/YfTfCTA6p7E+CbvWD8+n",
+            "signature": "ASRXWwNEMQZ3/Vo8J58SToMkw9sPH+EHF2LSDujj3bhG5np/rvz6HvnN0+jLcXJljUZidanZLr8SL8rKBjT23VRXAWXpcIdzpoiNLTY8b4mw/BgckhaWE0id861c3Xq7wxxLxquLZLc34AHen8e2Yb/Gb5NxRGOY8EJnVNfv15KQoLWr",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.ui",
             "path-source": "client/sftp_client/client.ui",
-            "signature": "AU/+O/Kl2nrjJnsXb6RsCG1KzubyFRj89QrUu6ubJR90B2AZWrwrbMR9S4P+aDwW+zISzCyjXXhERNvoZmRY0xkmAbxcydml1InBYp4SgBi5YM+Ia10PSOw5KMvS7nWk0rOIccQugtxz0BDQQj+jaC0HMeDd9dTv19wAKHJQD+68rwA5",
+            "signature": "AI5s1zGYS53p/3Xp9LBqkndc9knYfroKmDsAPP8dNWcz3/FzDIL/DUt+st2f+Lpr4m05PWrrzAN8pqO1yoTDiiGKAUQYAq/9y3np6wEGYAU4D8UBfRMcXQfo0KiqzT/RfZ8pY9Rb9UmcoEaTkWx7SQFm+hHBA5Efb67ARzTwOmAUqJnI",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "AYAGme1rYUyUQohtemS+1VV8V+xtmAsRd1P8bsFfavc373Q18++tT9umX/dJMTspKz671ma2uDBbLE95O9vBqkdTAS8uG0kc4WQcx95dhZEkljGvx+x7c4mwCbSkSR3ZlsBh8YfAdycAvGEQDp5dNCKlqZnqBqcxYBCbWjmHttCoOsSM",
+            "signature": "AFmkIA/RZVu6tx0OQh3BreEif/5cNX6m+FSgAtlN1hZVlqU3kiXULOiQ3zwxjV2+AkUpwKUxAnEHjNZt+zoQnu1SADDI3yQAOVD9nziS8TqCg8SYPh1Cz/LZhUYBuQwvacLrFLYEMs+N4T1jZ/K0ZR1mMRz3TXiolztutBMPGiMa6cBW",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "AQ5HUK/N4A9j/fi9C9DDk06QfpqxXa8vE3WOhkGFMe1W+GYJnMMFn+iMFPFDBbKILECnvxM+xAWMPge/l2C2AhboAOCjlv24VgrFtn80EEBWkRIZqk59LhOabWfHRYZgZwum1V+mYNZ21wRP2GgGofgFCieoeK8zgn0TvJ9G4+1gcQ0P",
+            "signature": "Aartv5L60Kuwq9Q7ZNoWthaLMSEMf9DWJdvYCh7EU6ci6n4n7Br8Fd3hjkLraFCFcn+zCLHSxt8YF2OPXquIpTWOAf2XjsVcZkZ5Ga5Fc+jSWkoaxeV54rvE3GbrIbj9EemcMUyflsAI5882jeyIbvHSm0a8RLXhl+3ttqFgfi/402/m",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "AZqrmA2Gk5NyB33tTGcE+En2SElNNFzeULKzbJS7c8LKaJ6R9y4dORJMb7kMyPzV42bYNxwwr2xeUbDGL/gjhSXDATfzEPJjPWV83ts5KqxITD8kwkM/nczf5Es0J9evs9O2GipxJqoP9Zi6HIm8Jm0+/POsUe7wXe1tGd1WpIEjY9Dp",
+            "signature": "AQ0PlsdjyoI6wu3qSopnnTdx9Jwelr6iW8mg/wYHKPymGx8yB7cxrQyRtHK3zlp5eUS+apgqvqX7MHc7DNvYfH0tAIQasr1T2IbjTGK3l5Mh/HvEitgY23gL9nzbxdNB/5gsYPRiUYlN7nVDesplTfKgkiTclP6yP534+VIsI6rHlere",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "ABxbiNYvFuei/qZdLYSA4sBJAGcwbSn6+uDHHgeBd7TrpyUPJY8fYMcQvbPH7e6OQ0frVhDZR6IgK7kzby8GaICaABXtG2MtpEJjohlXk6sZV6xUnsPfzhGMGG1W6RZesDjC9hxXPA0hQjMEsNwsNsGzW/6eHlmZ6QsfTl3hO+S/Zt4p",
+            "signature": "AMu7XDnHoozlF3Ua+J8x0Gqyp63riedojL8B/PLcRNrJ9A61IuxB/aLOjqDvf4r3zK39qW49yN4i8IzKnci3A9A1AXTJeZkYqHq6L2af0X5UTX5tFrTx1ODwywqwwzDNDjFUY9rbM3utdJxU5TKqMfqXW73qwx7flzqcvm6HJMFRaqpz",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "AQyQ8Y6poVwyVBUUyuEWtf8v3SSCApWJ7dKnWo3waYHB1+AaASNnWaqyHnm6OIGPYiQ4NLVllSMShU9+LyKWKEROAbvgNwqyqcFnFdpbA68NtXVOrj1XKhbV0PGq+ehRP5CHnTgJuVsDSWakwFvJ1mkSTwCLSevil00caTAv/Kqo1CxN",
+            "signature": "ACU7JWQ3GtHdngOjLwulgTIZSnG8+nxTsMJvQdNapplfHIg+2pcaLyvg4xrqeKWLvO9DiyQVQ2/SBMpWue6Uq+bsAUkMhZCHeEHHhP2Y85vi9jKo8nm7iyLMpSO0IKSFRk0uRQ1+CSyuIJrg5nFhikuE7/Z4hLzir4D5jDz/EiiVIwIV",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -346,7 +347,7 @@
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "AOWaNKkeHmpDDsmwPEKudrsG2E0g90vGlMfSixaMxxXcweych85r8ZCrgdvqUgQj9xNWovibpwjjE7yLGCvwYHYLAI2mGCSJQFrcoGlW5diPQbzYIhWsvjo7TrzHJWBxuIx6ICZ2b2BZr7eekPgM0QtVFcMlFIS1Axw8rqL9EWHoY0sU",
+            "signature": "AKLZZQmlsE75BwkoClI6D0RAy7ETHtu8KUAPPdIhb+K9Mcq/j1Alq5q96ZfSRZ8Tle2UZO8QVFAL4zt6Pmn9pN39ACgStt59BO0Oa8GEI2RllhJtXLOYsCWQbEKgS4YKCVsw5g9jfutIjcW6JuXelepd0oU4qOo7ZHleXPEFhbwpBrEU",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -370,7 +371,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "AF9GKgQ8j4PQvykNHBQoa9AUGUirAW+Y0jDmDQuJuUpjzkRRP8Rx6StY4pd3gOYkoLOg9QDkPauF3GRuG4hCNDsaAPVm0xusx4pqMwFYw0LCve+b4UvSBiWs4zssHmOO8tBtwqR9j7kIs4YrLMMJNXjZcVbmHvn8x+tzzYcEM1fONMDS",
+            "signature": "AIDDPuZsf0KE+zwJUoFIwdURuF/qITPtmyTpcg+AaIAA5Q81wqzxq3WeR/Zy0QFkwLmWmAVEU5Ig4SfUrNTEgSf0AY0o6+ilXzxRrc4jRbKwUUiBgZibui49V07Dcrvnc1UzQc1CyQrT2wD3zE5CTWKWKAVeE6oVCS0L1xJSWihSaIR+",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -392,7 +393,7 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "AXP0M9pvQUzwqJlCYSnuTFuxLo7/Ne4mpgNBI38fYK9hF+xK193uBlI9A/na1dOqVltXHPWIxw5Nop9wHno37ADTAOpiPAJ29bRjSURVmHjQiFbT07aB/l9GGHTjTPbcMWEpu5FkFzBkPi4IH2Fe0eRcCdVHqvHSP7yKfzkyQ9HGSFZX",
+            "signature": "AGXOU14uJoFBabMoIOqCyyJfZt5rj9TTBGPljmv1730lEQQUi+YQB87kOvRWYHcLZWjGaYtyYsQ3wWZlCeCPj/50AdbIWpFHdggZn/VVG84KexYV/DM3ftI3alDlKHqSi0cDEi9tS80cY1rXt7fC5lyT1YZT0B90ucqVghXv8sRBRgcZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -416,7 +417,7 @@
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "APVQdOkRrSLT18SDlx8by1dzf7u7d97W/0VfQPEcTfAD+zeLOrmx0IwhXFWRfXhEZ5kSsN4wS+l7Na+bFVyJNM0YABKdPtvaLrKxhPTV9luXxmtFp9cn2RRHmvTGZOR6qW60rkSWDaf0XqMp4YBdIYkNsZpmNrqfbKQUoFP1Xe5/53Zp",
+            "signature": "AVM9zgbOA6s7Uhv9x6ezzGTlxYEkhPqntprtr7H53uPZwoEHmTz8UNYpefXmQd5qXmHLFhSB2vk83iFmOH4pAoE8AAuZAHhRRwY5rUKW/4pW+1Ok+WfQBZ9P0TA5OkGq78xJIDa7gaUU2q90p7Sip28eYowgm1vH1TvBOxURjbeHpWkI",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -431,6 +432,6 @@
       }
     ]
   },
-  "created": "2017-08-28T19:16:01.543311+00:00",
+  "created": "2017-08-29T15:48:22.717000+00:00",
   "created-by": "github.com/zeroSteiner"
 }
