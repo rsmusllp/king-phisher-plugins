@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2017-08-29 15:48:22 -->
+<!-- generated at: 2017-08-30 20:22:42 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -8,7 +8,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 ## Client Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
-| [Phishery DOCX URL Injector](/client/phishery_docx.py) | Use Phishery to inject Word Document Template URLs into DOCX files. This can be used in conjunction with a server page that requires Basic Authentication to collect Windows credentials. Note that the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.<br /><br />Phishery homepage: https://github.com/ryhanson/phishery |
+| [Phishery DOCX URL Injector](/client/phishery_docx.py) | Use Phishery to inject Word Document Template URLs into DOCX files. This can be used in conjunction with a server page that requires Basic Authentication to collect Windows credentials. Note that for HTTPS URLs, the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.<br /><br />Phishery homepage: https://github.com/ryhanson/phishery |
 | [Spell Check](/client/spell_check.py) | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
 | [Clockwork SMS](/client/clockwork_sms.py) | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [Upload KPM](/client/kpm_export_on_send.py) | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |

