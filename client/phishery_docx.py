@@ -98,7 +98,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	def signal_send_precheck(self, _):
 		input_path = self.application.config['mailer.attachment_file']
 		if not path_is_doc_file(input_path):
-			return
+			return False
 		target_url = self._get_target_url(None)
 		if target_url is None:
 			self.text_insert('The phishery target URL is invalid.\n')

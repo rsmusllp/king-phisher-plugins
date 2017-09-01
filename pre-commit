@@ -69,7 +69,7 @@ try:
 	import king_phisher.security_keys as security_keys
 	import king_phisher.serializers as serializers
 except ImportError:
-	print('failed to import king_phisher');
+	print('failed to import king_phisher')
 	print('path assumed to be at: ' + king_phisher_dir)
 	sys.exit(os.EX_UNAVAILABLE)
 
