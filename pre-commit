@@ -181,8 +181,10 @@ def main():
 			signing_key,
 			signing_key_id,
 			verbose=arguments.verbose
-		)
+		),
+		'signed-by': signing_key_id
 	}
+	collection = signing_key.sign_dict(collection)
 	with open(os.path.join(plugins_dir, 'catalog-collections.json'), 'w') as file_h:
 		serializers.JSON.dump(collection, file_h)
 	if arguments.git_add:
