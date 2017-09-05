@@ -93,6 +93,7 @@ def load_plugins(plugin_type, plugins_dir, verbose=False):
 			print('loading ' + plugin_type + ' plugin: ' + plugin)
 		plugin_module = importlib.import_module(plugin_type + '.' + plugin)
 		plugins.append(plugin_module.Plugin)
+	plugins = sorted(plugins, key=lambda plugin: plugin.name)
 	return plugins
 
 def _make_plugin_collections(plugin_type, plugins_repo, plugins, signing_key, signing_key_id, verbose=False):
@@ -108,7 +109,8 @@ def _make_plugin_collections(plugin_type, plugins_repo, plugins, signing_key, si
 
 		if verbose:
 			print('signing files for ' + plugin_type + ' plugin: ' + plugin['name'])
-		plugin['files'] = list(catalog.sign_item_files(plugin_path, signing_key, signing_key_id, repo_path=plugins_dir))
+		item_files = catalog.sign_item_files(plugin_path, signing_key, signing_key_id, repo_path=plugins_dir)
+		plugin['files'] = list(sorted(item_files, key=lambda item_file: item_file.path_source))
 		for idx, item_file in enumerate(plugin['files']):
 			plugin['files'][idx] = {
 				'path-destination': item_file.path_destination,
