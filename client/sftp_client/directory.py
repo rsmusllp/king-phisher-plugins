@@ -711,7 +711,7 @@ class RemoteDirectory(DirectoryBase):
 		self.default_directory = application.config['server_config']['server.web_root']
 		try:
 			self.change_cwd(self.default_directory)
-		except (IOError, OSError):
+		except (IOError, OSError, FileNotFoundError, TypeError):
 			logger.info("failed to set remote directory to the web root: " + application.config['server_config']['server.web_root'])
 			self.default_directory = self.root_directory
 			self.change_cwd(self.default_directory)
