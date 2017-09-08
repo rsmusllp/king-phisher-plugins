@@ -10,7 +10,7 @@
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "ASQuo/N2s5Er77l+8o+TojImCcXQrEN/ZT63DQieyJ75va0gy7uMRSPNizY4fEwyCBQzhLRd0rRbVUJc3KnxzfzBAUVwIrgPGAkVOF0eaGA7fnJuW+i50K9VP7fh/6XXG86r7ntgDb/yvYUj5X/QhLCuSNUEYKmuPB/OUDHTWFU4LNEw",
+            "signature": "AC/37qftXBXGyTj7uyh4GWzhEvFgqJHCCUUowni43J6B3QsfyfDUGJgR1LCc0wuBWq4DEq2bWn+hajw283OSJ6x+AKCdc+GQ+zkpCY7SkZndIdq2AaGnvCQLzfFb6RUcVVE1pZYQmlXSfl9Eivgx5nVgzqxZHbOgVB6b0SjX2ialvBkc",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -32,7 +32,7 @@
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "AOM3DoJP8fUxB9vVhzoNwmvMIp3UDRqnWU7xNniLcQdOkZDNi9CnH6R9bgdfudG7pI7ffLXgt7rdqfP6LGE1R8+YABO/XUMCewMzK155BbmqBgQ87PloKgGtwXTb3lwFHPHCU1u2pibpp2ZzGso4+Bz9JTCYFZYzEyeKEFs6bgljXlLR",
+            "signature": "AbH9MnTRsjsdheREHGKGSxsvQxt2G3Y3Z9qcE9/qRhc5G7bn8eJ+fltA+D8rfWPUtP6zoQSA5gK+plREsugYNfTkASCs+fTAribZKNyW7HTid7rFnXI7NQcTagxpl+cdTlTnSlACOIoxlKDIUeWOfZgG2OdhyRuZKVtCSf4I9tGtnA2a",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -54,7 +54,7 @@
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "AOAGUMeMY3D1gipJnGYf5oB8jB765z+nfQaGcf9YInI89C37Nh4JDlJ9QWBCpgVIzu2r9Pq3GVfzQExRHndqiU4fAS21oMvO2R2RG1L4W2rQRWDlgwVh13lqqny+i6eJRZ/kBSUSZvsUjOywFDO4J2kqcy7X83Z1CwbwHDB2q0fddXMy",
+            "signature": "AVaOBxbM+R9SJUj1pGNkAi04lrqVtRsWqCypiZgywf3JvcuRV+bXqHW9x5dF5tRO1mg56WAFLBSfyNBZC5o5wBAUAH9dNX8Ia9xbPtIl+EtcJQXMGIWBfVeQRN+d0xBdsgqOeCoNeGEzQCjuCtCPXrOS58WQ4tCmxlt2Ebmq5nsRABek",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -78,7 +78,7 @@
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "ASK2XhTYKOmaA4cKIpPH9M7q+WiUsoMClZsuThibcB9H4FmWKGZ6QDI2YajxMYB8OKbkJPiRdn3xqZbR1XJT3ZX7AHZI+meMlXpoBhkOAHuoNm8v/25RFO51RYeXVQfwwVMjyt9XWUzVCPTmHh0wKoc/LzHIckUw31dofKINtk35ybhd",
+            "signature": "AIck/gzex0QhvkxL5BbrC3F1MXwOUMZ1dAKRRvqP26C6fCARBEm7ZX7EhPWADgo9OZHaXE+sj5vDu/QWl53sHtFSAMesrr8i26xRu1bV80vJ/LLVr6LK4uQH03+thgBSF/gRZIvWHUkqvq476cYN6iA5saVD78IiVoJqBgztuBKAQFmr",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -100,7 +100,7 @@
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "AdTxdnkbFhm1aOhsjrk6eFlstMCHCTfC737cV7my5LkTWRaTU93yviPNV3jBkFHsYezCkgDOPLkdftI/aNXhfyfsAQZV7i/cMqSyRDOjtlAmv8gPOZoWguCsKkA0iPG7OfMwqdMEzOrv4A1RCdsiiHP1ibjeWvm6yRDa7SDgAzloE6Rh",
+            "signature": "AIVq91ButUuPHaXOc5XJ6p7VBbrlgX+n2cdM0a5yCdI3E89cyp4jR3FrxX+kVYDPVss2c24mkbqsUHHlGiZ7UYPfAfkZsPDUSDuvm//Aj65S+UW8snmGF5kAaWg1mrc5B7BXXg5pYZOTE3Yb7ZyL+zDQBHbBzpQ7qghiurh1W9ixftOu",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -125,7 +125,7 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AOM2/VbvK/Ds3w9Go99hmnIEU4uW7EifQvRU8P6cGy8WxAtLvYDZfXzuHmOGMhrlf9nhjEHiiHKZ6iLoNP/a1tEHARxSZ8YDlfrafVhWYo+rxeJEGC8TzT5pNX7fk+kuJtcacvO8kt+NCrrROYE8L5Ai6DTaHa9eTWpGzWSKONPTO49S",
+            "signature": "ABilpzxJh8bYV6w6+0QEktiMNkaLh5pVowb5qW83I/X9iBBaqiX65AkVdvqnb0B4PW10dbtJlIN8QreOuuNkWDy5AC7xCQyMUchcPQDcYxAXI+JUXE0qhPdL0Z+WTtabxH2YpJvnIORDamNoWrCALRozTGNEOmgnjzgntfxc95w1pV5x",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -147,7 +147,7 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AEdsKKEFRSZ1OIQjQtpZj7ctlfhc6KQ2+R11Emn0H+fLSvnEedRvfOXnyL9Rvr+ZoueSTO6SImjnRfEYh0hJwofsAZH1AD4GDoToORRWWbggL7CReO3JFdNZjL3PqkIVUG+ltUkQD7a4kbBWn96C1dbNts1GdgH7DbPhBfTBypUcHz+1",
+            "signature": "AN/WGt2hBsy4lbM66POiImmqLmnxbL4SQAcJlk00pvbeOcZ5q3h3x4meqcSefD4OUppqUl/3EGc9orEXcv6CvsK4AcZuKwgsh4gJZGiN5xgHgPuTpL3wyvO/4yZ0Y8155ICnH8eYtMv7CVD3jISMWBQK6hDjsVI8MrmGhESixy6iL/K/",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -171,7 +171,7 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AcXrh1nmIIFsTqX0BzLr2UgqtjnHQRAqdEYfyldpXH9wzfNccf9M05waWKBMWIRvth15lzA0ZVJwzwk65NgWYhyuAbhSqfs4n9//9+LvbyblK2sdypmij4qYBdhq4fi17lXGqmHt3dtavshYmRPk2eW1LM3m2GB+g/YFPz72qJjOmkZg",
+            "signature": "Ac6bcrKlBVMMFcE7W3Sv07lxF3dI85w9rWcL1ZCDZVwdgbj74BWk4dY0wvLrmE43aYR49EUn97v3Wq+dbYhec6MEAJzK6uSBvXg8cek1+IIbj3GFN3z3iIw7YFFzKOia9UHeDDBgE7SICAt2fAVfplrcesUzwjDElGG6/xi8iWWozCPL",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -193,7 +193,7 @@
           {
             "path-destination": "totp_enrollment.py",
             "path-source": "client/totp_enrollment.py",
-            "signature": "AQO2YIlhXFdFGcfuUQwQTF0kJWwVn3607Hl5RWy4UU3+FvzXx+3d+974cnbhRJrH60MnjRM6im+idGNm32NQiPo8AQeKChy1CbhvZBWnBqLKZ8N1nQ/HfsnAJZESVk/UpbWBavxbf81qjVEGs5Fyf9UonOXg9CK6MFnQXrzLf0GQsl6R",
+            "signature": "ALa4cP5aGjq1HaYQmzSDT8q1Ly8sGHK2s8kcgI7o7dmn9Uaha4/mmtx5lW4Q2ds2fsIlLyOtZZh7Gt8sxpB681U7AIA8Xm5PLNy60wMN19n3no6D+dUzhGXBtaedOrGQjuTykkCIZIol6gCD3NH6DhTh0HEPPKibFRzs6VSO+l6pr18g",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -202,8 +202,8 @@
         "requirements": {
           "minimum-version": "1.7.0b2",
           "packages": [
-            "pillow",
-            "qrcode"
+            "qrcode",
+            "pillow"
           ]
         },
         "title": "TOTP Self Enrollment",
@@ -218,7 +218,7 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AQbcCElmxDL1EMBjuFSueDD8CHbitLO43F46Jr/WkZyrchbI3LeAnWnOx8h+J3xQ4BmCR3h1aa5HYzShaCzYd+zBAZoh6KkQpHrSfqHgxlTGPE8O125h1BJBa+QrtlUWOMH+62/Q26CumtsA9WQWqf9RjX9xkk7QyARvt6rFktYQH4L2",
+            "signature": "AWHmpe5j0KfVFX1hK5ZGstBh5cNt5nd1mbZ67rfXo9JuJatSt49HlTq0wfRY9nZOA+bZbkZ4UjVmnPOTWEURfm+BAMSEjsOjIzOIuz/3f6jLuaNEF0b41GP3iPsnZluNZJxZi4irer6CAjx/9802dFrP3SqkXVLskecIvIZjN9qnR5dp",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -240,7 +240,7 @@
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "AC4pDrhEFSeftYjdD7ePWZbAkpMB+SZt/WIf7Ua0TdDAZ+QMhnaUdoUD8IqwpjRkp9SXIeUjwXJ6wgHXwXIu/UCrAXeGK+FSJCkLqJpkBn0K8m/N1EOdRE/SuPAkPY9N0p65x60q8v9uhMqVGmjIlKQdrJpMlzgGmMFfqq4S64mvhHcH",
+            "signature": "ALgAGBBnfxWRMKXvJSvxY2g6wxp9ZR28dCSS/GNVAkRTroZNzK9MvvFlCjlJqE/ARvIkJfOotTbQajJzyoOYJKjUADcsGw4QrEh4htru4qtLZbrVlQjTlfyv4ZgI227YY66+c0WAtfKAgygvp8FdKiIuNpt9Murp8/JMCCEvwnFCNBYa",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -262,7 +262,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "AbdWeukf8T2QQbirq5CJ1dRrnidD2hUK21nkfxc2P8Fkk7KbEr5j5l+tKNCA66XpTOXIP1MnjhTKSTrLOUOujOAeAKf2GENnu/SipY4jhjwRaQ+5YGI0JYwL3a0fMsUe4QxixmulL7gcVkiUrIaRgDxGq/EXIoHJGRi9/W52Du6cQimt",
+            "signature": "AYqWF1CDvffN6+yaxLvDwMaIipvdufRQ8a8eyUteCz28oxK86jkhzljye6d/eLbER+d0nrW/cPpYfN/Rc3FPG9KEAUumaci58kTUaJ+dl5LmyrHFGI0uIdInRpuw6/7phUbJiqLWU5cDFjZT9Ps9V66MKWuCtHUZm9WuqyPmKTXZ+Lsz",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -286,49 +286,49 @@
           {
             "path-destination": "sftp_client/client.ui",
             "path-source": "client/sftp_client/client.ui",
-            "signature": "AfQL5ZggKbCBaflDTToWW9CkPAtWtnVLywuRjnCGppABFb2LRaXod0pbgPwba49WD/Dskg8kZFiBzDx87bid+tElAMl1mioRJ1qJCkGrrUqvSTKuRvBs3RMWYPlemCMpl/tiR2zm9gI2LyuvDa6Vs4M5h+f92jIqK3kqvfQ5Fwf/8EqJ",
+            "signature": "Ab5aIA24TnJ7FKM+hqSZcrZbwBYAeLgqTRWAMK1Jza/s7DOdgfOceYi7T2QUQA/iLHuDWidkYydFRoOngTxzsiF1ABsNkZj23SQDj/aoZvVU0Voc88+4Q/1y8zDVU5V0VcDkbGNf7xl9qFyffiOEMsFuYvQ+ISBr+grfjQKdhuUzTvMO",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "ANhPdarnCKCHzjnyW0wUJjDyNbPiWiIKe328rShOkCF0fB+5hiIq/FMkPfvo5De28AWHGKqtxb+zSYMirHKBwbZWAFqFl/EpLW77pnQVHUvU2TYdHSbgoVp+MmWF7MwvJT7Xvyl4zBdrSdEKc8svffL8KDIdAI3xKR9JMMLa4gJ9dLGr",
+            "signature": "ABWKREwEnZF/f+0MH29PD+8Lo2acghPxSdMU1UtAlwRY54yreRHQ1e14Igp4Y/IUXqDd6sfj95qODi8/flpRdjBEAR1tXxxzDabfHJ4OPKRIHBbVKlVkjSJarT59+d/vOi4+nRK+REzV4003oyQXkWzSL4msTQIT2quiSCHERw7cH2ai",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/client.ui~",
             "path-source": "client/sftp_client/client.ui~",
-            "signature": "AWX1nyIsHfYt4W7U/9tfhQojHoa+aWtFEV1NyXimlHh+W4l+MVzimidrmVpl2IwjgnvtfxB0LqYkovNl6b1YW4x/AfCaV7Q0Lf9UTK7SfEeDetX4+q+QNNJRxaV7YAbIGt0AkSubopnRbHRNpAJ7RSeSNvvnLcUcUhSIREXffq728Lfa",
+            "signature": "AJTyKPaeslQUlrcdc++FTT8bNwv30P275C2hfgyh8D3MWCSGr2X+6tQf4RpNMPJdbLS/LG3womdBWVOETW40QNEEAWulv43ObncvuUFruyJ6QAj7fAgpwE2zrqiGy+jVqRCCxX/IFF3bmPHCg+3osfRQJTYDHD4VPfqPvBczcY6AwwhC",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "AA2jHcJsWHU4vMAkugEdoeLJ7G6qcIDat/N9M1chlrjFVQ79q7+UBMNM79mwwteOfyPg8sB7vNijlLrNEh3nmTHeAdCgjtXzkCOgjWFZ+5v0Y9QBXD1lDT6jjpA+Wa5ffMWGxk2V9OzB594rwB3nwalVRyLga0LdWjX+MOyn3FLNNzIB",
+            "signature": "AdFF3kVJ6ga+m72ouiOgLV/hnWTnG2rem2RT/a5WytmSdGZbZWJeH9RBnJWufkHjGD5iSc16WAEB2qe6WcgFBHhKARXaW5XyyacO15RIxLrz5LUf6fwoqOMlfuIF0kaEv7kVLsvY7Vphb7Fa58uKkULMOT344HWvgFFOfo/+qPfzBDLg",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "AT457rTaPmmFO2hapfgtBJVXfJv4uKlOwWKeX8HHyFpMkBnNYa2JQD4q5/PF06EhLXkhzKp6eI9Ofa+MVF6+i9inAAjvHtsxXZvcu3K/x0JpJ40PhJHHVIjhJpS+gCq9zGWVunKGnus6uQrQtWQsmz+XTZdWSY7sPIdV1Vzn5VqDk4eo",
+            "signature": "APwBPOfni1pl6nOcVPYHr9jJtpZkilfvYkjyZCurGZgqoUw38BzA3F42lrTqH5kcGOzYEQeu1LgP5hA73agJPgVSAZnMoZ0ezSDiq2JPL7f6gamkdswG+DGosim9Dj7EEmEYJz3kTAMco4IsbHD/kA/fUZVi6xeHALOdOaAW+HsXpL7U",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "ACB6DafU+9/EhHPLCtcgg5G6l2ZRxX+ym7Ht4GdQ31s/fHsbJJGhm56O2N9N4iI7X/jaJSZDO31AGvoOCvCE2MqJAY6LMPh/Khk6YriecyQD4sGNQXaXENd7WFf7pMaHBALp7xMrFYd0+wJviMJbumJCffsbWB1H6F4B8Xk+SwzshFSL",
+            "signature": "AFW8OU0W7JcvT599WEuMOfD/JbNFbi8ixZUohx4nXpSHc9H36du70gnuxZuCgY13EOL0uYoIDZYy8blogkVIRIVpABo9hzvOSZu4AIe7KTJsxuzGmCXoS9FMyZ56hRn1mxiwdQkAXCIxpiMa9tPkRTgtDWCojrtvt+k/mXvbe6rqCBcm",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AVE4xu7mzVLS6E3I2Vm5ruUnwfX/IFrN0GickoyGspvNA9viVGxseiDbCxWoUHCDQ3a2cvRqxaXMoYfN0rVRbnxtAA5pFI+dER1yvIxibljC23JapRSAOlWkSKxq6iWbwLVt+fyvrNtls2X52afAEyhZ5jBm3XLtA+wrjcPlpxAVed9q",
+            "signature": "AGxzjLPfudK3E7qpA3B/bjhUrWMHSzDkCIgGM5yVATwtffoh2xFrp9ZeQs6XRixl6b4z6K0HBiD7x5jboTIoFYUsAElV3ubpBznSR2VRrrz1GIHJwHAR/JGRzLxRtNetTgj3iEn18pYgNtpkiDKxlR+WN9wQBT22RoiCgYItFKRo572K",
             "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "AU9RII007dDjoa/IiTLVw3LbkJp+tfZmqSZuyTr3kpXDy1GPvKBoCVKj7V/tVfW6XQ8MFyzY04LP23dZ7epcxgZpAMq6WpbtI+R78ep9BvRI40ocg27E4ETvFqvDfQ3RoeBuXhMTmSMQwKRKR+UAoG9GMKB0EbvZ4HQ+ze9vyJp+2WbS",
+            "signature": "AcO9iOQVg07K5meXXCTPNXC7hhDMmQyzi4AGaaGz3QNqfyNzN+cvrY1qQCjNtdjF3jTxcMwr5TmnFVqx2Hwp4WE7AZvtlmfhYTwT7sGrpm7K4clIk5aDE1ah2CBnQx3t2nsd/VCdnoxSb9p6KJC1cAVnnkQgQ4M411kYZi3pgvHU9Qok",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -352,7 +352,7 @@
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "ABmIS7S3aqncqMOb2EYjy2odlnZOmGYap+9puRIzjyH0WBglVePQPGhhuxA55EDW9n9YFuaTTtIOTmNtItNFYU+rAUCbyM2vv97BvXvnPgOzQ/HyTnfPy0UpVgsS80EKmgg/ffPUZFDBoheyJgIMZwfOyFTFqVQ3TegGjmqFxGTm948W",
+            "signature": "Aag2VB9E/FjEOfHNEuTXwrxZQKEEHudeK60a1VDLu15nCH29EdeZ6DTkSBIj+IEr76BgaM16BwYt6JNZkKtQZ11KABwZNr7Ta0RdJY3lWHkSDmLtvU20c4p6PqRLspa4nI1ymRY0IkqJuXDY+bA9Q3VDk93ettTMSaYQ6SJ6ar81hNIM",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -376,7 +376,7 @@
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "AUhgwufxeEmNFJxO2VLXhBKjvusTzEk4NWTNgQQZxqov5txvWnAwtRT54Qnie88dl8hI6y0WzVAmMNErXQ00epH/AAv7o+2J0DKyxUma2OLygiwkP5yUqNuTPGKpyiJqMEgFenKvszZGCz6QgzkLW9Fhf4aQ1/tnYJHRbfyYzY3K8m6S",
+            "signature": "AZst5cLogoaMFKPpun/I7oR9h67pFMAFHynX1ds9t0BG6MIMaFgi9aDgR/hmYw2zvOlul3DBSrU8xXcHptx3JIcRATv/30LDSQnCKbw4daxkt+cLpVwtWYPDXFiOIWe3k2JA9RLapZGCjLRe+viqAcmE9DoeWYzhBiUNMW/Km/HQTq8o",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -398,7 +398,7 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "AcljhDflUBoERwn7DnT+jhLYjVZhgSZExBkvTd5xXMyxI2PFyeWoTRwCRoj3EMT7BiRVjsMxoYJ7q/ShG0F2sW2sAIj14pYqIGTUiY4JRlCKNfepatCw+GuvMmbKm+x17soXeA5iomASnLAurZZjmqHp+JRyIBsyozY1wIo+jxf1mJJ8",
+            "signature": "AWR1JA95hrN/M1IlYqjJl/2QHNGylT7HW73SBTcmS0MoIMQARFLFV2baxlW8BD6eH7p8XBKYsqDzLgXWpylaSl7bALws28LXJi9crWkP8D2fWdkvIOQn6nf+cp6MVWH6pGm6ve0C+plbORtvI9mJH9Nic/vP/7xTy/mqwEaeWP4ODg2w",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -422,7 +422,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "Ae+IAxx/MCcsdpVyvHhlKG0rPB5lUhbf1Iaj1rAGfXFP1wLzGhTlvYEoxdos+F2VnN34hgT1nLVpj0alSq3RnPD9AKsRd5ue8CabtKm0h9UlFjOW8gHJLSfs9mt0VXbi/iGfD38yNMrplr/pUuTmIemN+Q7DFCxmO5aQ2UQTx3c5zBaj",
+            "signature": "APeaVP1OS1dZfmXziXm+RWRhrkuJkxge23bB7Tu5l1upkXt7RPuFfn21Wvs5CC0Mn4jW7qphXV6n1vOnc6XF9Ms4AOVi4uDbtmv81oTI2g+BRQvNTA6uB3qIuQ4dH9IJOhiyNFIYQ9gtACHhPLyig305aZQItJw3VOMB+Q0/rGlRA9XX",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -437,8 +437,8 @@
       }
     ]
   },
-  "created": "2017-09-05T19:55:11.594902+00:00",
+  "created": "2017-09-08T18:43:26.028310+00:00",
   "created-by": "github.com/wolfthefallen",
-  "signature": "AZVjgKJ+0GgHe9V/SmAR3uyjXdx3m4YeopkIPphI7ahS2v/UOB6nM0ZvqEUTmlNIPXOMSP+yN29eK1Y+1aO+1yxdAZTy+yz0MwyrYyqxap03GPaxqmjydYOqNjdOFGgUk/f/Xn1uetNlf4Z5z9p+1bNlfdC2iQfPTklWmt6qPe3DH139",
+  "signature": "AXWI1AUWfP65YXuM3zr249j1TmIqJxlQgZXC1r5SgmMYdet4UfxW5EwA0PjaQuX77UuOD9gWoH0qJc6FMoSJB6uzADRK3LyjliQsTeaHOjUEJhbcfOUWi6OkHRn5M2xTWYPLQMyjfTWqwEshj/mqoV1K1/Au+ikAHRjB955S3N/Fm4K6",
   "signed-by": "github.com/wolfthefallen"
 }

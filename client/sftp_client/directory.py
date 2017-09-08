@@ -215,6 +215,7 @@ class DirectoryBase(object):
 			new_dir = self.get_abspath(new_dir)
 		if new_dir == self.cwd:
 			return
+		logger.debug("{} is trying to change current working directory to {}".format(self.location, new_dir))
 		try:
 			self._chdir(new_dir)
 		except OSError:
@@ -231,12 +232,17 @@ class DirectoryBase(object):
 			self.load_dirs(new_dir)
 		except OSError:
 			logger.warning("user does not have permissions to read {}".format(new_dir))
-			self.load_dirs(self.cwd)
-			gui_utilities.show_dialog_error(
-				'Plugin Error',
-				self.application.get_active_window(),
-				"You do not have permissions to access {}.".format(new_dir)
-			)
+			if self.cwd:
+				self.load_dirs(self.cwd)
+				gui_utilities.show_dialog_error(
+					'Plugin Error',
+					self.application.get_active_window(),
+					"You do not have permissions to access {}.".format(new_dir)
+				)
+			else:
+				logger.warning(self.location + " has no current working directory, using the root directory")
+				self.default_directory = self.root_directory
+				self.change_cwd(self.default_directory)
 			return
 
 		self.cwd = new_dir
@@ -711,8 +717,8 @@ class RemoteDirectory(DirectoryBase):
 		self.default_directory = application.config['server_config']['server.web_root']
 		try:
 			self.change_cwd(self.default_directory)
-		except (IOError, OSError, FileNotFoundError, TypeError):
-			logger.info("failed to set remote directory to the web root: " + application.config['server_config']['server.web_root'])
+		except (IOError, OSError):
+			logger.info("failed to set remote directory to the web root: " + application.config['server_config']['server.web_root'], exc_info=True)
 			self.default_directory = self.root_directory
 			self.change_cwd(self.default_directory)
 
