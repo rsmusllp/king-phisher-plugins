@@ -39,6 +39,7 @@ class Plugin(plugins.ClientPlugin):
 		'qrcode': has_qrcode,
 		'pillow': has_pillow
 	}
+	version = '1.0.1'
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
@@ -114,9 +115,10 @@ class Plugin(plugins.ClientPlugin):
 			if not reset:
 				return
 		new_otp = pyotp.TOTP(pyotp.random_base32())
-		profisoning_uri = new_otp.provisioning_uri(rpc.username + '@' + rpc.host) + '&issuer=King%20Phisher'
+		provisioning_uri = rpc.username + '@' + self.application.config['server'].split(':', 1)[0]
+		provisioning_uri = new_otp.provisioning_uri(provisioning_uri) + '&issuer=King%20Phisher'
 		bytes_io = io.BytesIO()
-		qrcode_ = qrcode.make(profisoning_uri).get_image()
+		qrcode_ = qrcode.make(provisioning_uri).get_image()
 		qrcode_.save(bytes_io, 'PNG')
 		pixbuf_loader = GdkPixbuf.PixbufLoader.new()
 		pixbuf_loader.write(bytes_io.getvalue())
