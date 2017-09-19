@@ -1,13 +1,8 @@
-import datetime
 import os
-import paramiko
 import posixpath
 import shutil
 import tempfile
-import time
 
-import king_phisher.client.export as export
-import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
 
@@ -44,7 +39,7 @@ class Plugin(plugins.ClientPlugin):
 		)
 	]
 	req_min_version = '1.6.0b3'
-	version = '1.1'
+	version = '1.2'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
