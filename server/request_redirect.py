@@ -30,15 +30,17 @@ class Plugin(plugins.ServerPlugin):
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.9.0b4'
 	def initialize(self):
+		rules = self.config.get('rules', [])
+		for rule in rules:
+			rule['source'] = ipaddress.ip_network(rule['source'])
 		signals.request_handle.connect(self.on_request_handle)
+		self.logger.info("initialized with {0:,} redirect rules".format(len(rules)))
 		return True
 
 	def on_request_handle(self, handler):
 		client_ip = ipaddress.ip_address(handler.client_address[0])
-		rules = self.config.get('rules', [])
-		for rule in rules:
-			source = ipaddress.ip_network(rule['source'])
-			if client_ip not in source:
+		for rule in self.config.get('rules', []):
+			if client_ip not in rule['source']:
 				continue
 			target = rule.get('target')
 			if not target:
