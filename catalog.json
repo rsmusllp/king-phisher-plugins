@@ -1,6 +1,7 @@
 {
   "created": "2017-09-01T15:26:26.125886+00:00",
   "created-by": "github.com/zeroSteiner",
+  "id": "securestate/king-phisher-plugins",
   "maintainers": [
     {
       "id": "github.com/wolfthefallen"
@@ -21,6 +22,7 @@
         }
       ],
       "homepage": "https://github.com/securestate/king-phisher-plugins/tree/master",
+      "id": "master",
       "title": "Offical King Phisher Plugins",
       "url-base": "https://raw.githubusercontent.com/securestate/king-phisher-plugins/master"
     },
@@ -35,6 +37,7 @@
         }
       ],
       "homepage": "https://github.com/securestate/king-phisher-plugins/tree/dev",
+      "id": "dev",
       "title": "Offical King Phisher Plugins (Development)",
       "url-base": "https://raw.githubusercontent.com/securestate/king-phisher-plugins/dev"
     }
