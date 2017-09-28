@@ -34,6 +34,7 @@
 
 import argparse
 import datetime
+import getpass
 import glob
 import importlib
 import os
@@ -141,16 +142,21 @@ def main():
 		return os.EX_USAGE
 	if not os.path.isfile(arguments.key):
 		print('invalid path to dev key: ' + arguments.key)
-		return os.EX_USAGE
+		return os.EX_NOINPUT
 	if not os.access(arguments.key, os.R_OK):
 		print('missing read privileges on dev key: ' + arguments.key)
 		return os.EX_NOPERM
 
-	with open(arguments.key, 'r') as file_h:
-		key = serializers.JSON.load(file_h)
-		signing_key_id = key['id']
-		signing_key = key['signing-key']
-		signing_key = security_keys.SigningKey.from_dict(signing_key, encoding=signing_key.pop('encoding', 'base64'))
+	try:
+		signing_key_id, signing_key = security_keys.SigningKey.from_file(
+			arguments.key,
+			password=(getpass.getpass('password: ') if arguments.key.endswith('.enc') else None)
+		)
+	except KeyboardInterrupt:
+		return os.EX_TEMPFAIL
+	except ValueError:
+		print('failed to load the signing key')
+		return os.EX_TEMPFAIL
 
 	if arguments.verbose:
 		print('plugins directory: ' + plugins_dir)
