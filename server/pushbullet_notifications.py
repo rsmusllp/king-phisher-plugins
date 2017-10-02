@@ -12,6 +12,12 @@ except ImportError:
 else:
 	has_pushbullet = True
 
+EXAMPLE_CONFIG = """\
+	api_keys: <api-key>
+	identifier: King Phisher
+	mask: <bool>
+"""
+
 class Plugin(plugins.ServerPlugin):
 	authors = ['Brandan Geise']
 	title = 'Pushbullet Notifications'
