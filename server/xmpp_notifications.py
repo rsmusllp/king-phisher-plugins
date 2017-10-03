@@ -17,6 +17,14 @@ else:
 	has_sleekxmpp = True
 	_sleekxmpp_ClientXMPP = sleekxmpp.ClientXMPP
 
+EXAMPLE_CONFIG = """\
+  jid: king-phisher@<domain>
+  password: <password>
+  room: notifications@public.<domain>
+  server: <ip>:<port>
+  verify_cert: false
+"""
+
 class NotificationBot(_sleekxmpp_ClientXMPP):
 	def __init__(self, jid, password, room, verify_cert):
 		super(NotificationBot, self).__init__(jid, password)

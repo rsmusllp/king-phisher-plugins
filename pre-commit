@@ -67,12 +67,15 @@ except ImportError:
 
 try:
 	import king_phisher.catalog as catalog
+	import king_phisher.find as find
 	import king_phisher.security_keys as security_keys
 	import king_phisher.serializers as serializers
 except ImportError:
 	print('failed to import king_phisher')
 	print('path assumed to be at: ' + king_phisher_dir)
 	sys.exit(os.EX_UNAVAILABLE)
+
+find.init_data_path()
 
 def load_plugins(plugin_type, plugins_dir, verbose=False):
 	plugins = []
