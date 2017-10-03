@@ -13,9 +13,9 @@ else:
 	has_pushbullet = True
 
 EXAMPLE_CONFIG = """\
-	api_keys: <api-key>
-	identifier: King Phisher
-	mask: <bool>
+  api_keys: <api-key>
+  identifier: King Phisher
+  mask: false
 """
 
 class Plugin(plugins.ServerPlugin):

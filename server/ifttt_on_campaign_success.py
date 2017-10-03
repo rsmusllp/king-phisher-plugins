@@ -7,10 +7,9 @@ import king_phisher.server.signals as signals
 import requests
 
 EXAMPLE_CONFIG = """\
-    api_key: <api_key>
-    event_name: party-time
-    success_percentage: 10
-    request_redirect: !include configs/plugins/request_redirect.yml
+  api_key: <api_key>
+  event_name: party-time
+  success_percentage: 10
 """
 
 class Plugin(plugins.ServerPlugin):

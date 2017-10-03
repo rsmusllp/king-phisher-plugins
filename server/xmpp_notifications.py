@@ -89,7 +89,6 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 			self.logger.warning('received an invalid ssl certificate, ignoring it per the configuration')
 		return
 
-
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'XMPP Notifications'

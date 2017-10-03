@@ -3,8 +3,8 @@ import king_phisher.server.signals as signals
 
 EXAMPLE_CONFIG = """\
 # This section should offer some insight into what this plugin expects for inputs
-	example_var_1: test_1
-	example_var_2: test_2
+  example_var_1: test_1
+  example_var_2: test_2
 """
 
 class Plugin(plugins.ServerPlugin):
