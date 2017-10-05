@@ -64,9 +64,9 @@ class SFTPEditor(object):
 		self.view_completion.set_property('show-icons', False)
 
 		if not self.view_completion.get_providers():
-			self.view_completion.add_provider(completion_providers.HTMLComletionProvider())
-			self.view_completion.add_provider(completion_providers.JinjaPageComletionProvider())
-			logger.info('successfully loaded HTML and Jinja comletion providers')
+			self.view_completion.add_provider(completion_providers.HTMLCompletionProvider())
+			self.view_completion.add_provider(completion_providers.JinjaPageCompletionProvider())
+			logger.info('successfully loaded HTML and Jinja completion providers')
 
 	def signal_buff_changed(self, _):
 		if self.save_button.is_sensitive():
