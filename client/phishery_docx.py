@@ -4,10 +4,7 @@ import random
 import zipfile
 
 import king_phisher.archive as archive
-import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
-
-import jinja2.exceptions
 
 PARSER_EPILOG = """\
 If no output file is specified, the input file will be modified in place.
@@ -58,8 +55,8 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			display_name='Target URL'
 		)
 	]
-	req_min_version = '1.9.0b3'
-	version = '2.0'
+	req_min_version = '1.9.0b5'
+	version = '2.0.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
@@ -69,20 +66,10 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	def _get_target_url(self, target):
 		target_url = self.config['target_url'].strip()
 		if target_url:
-			try:
-				target_url = mailer.render_message_template(target_url, self.application.config, target=target)
-			except jinja2.exceptions.TemplateSyntaxError as error:
-				self.logger.error("jinja2 syntax error ({0}) in target url: {1}".format(error.message, target_url))
-				self.text_insert("Jinja2 syntax error ({0}) in target url: {1}\n".format(error.message, target_url))
-				return None
-			except ValueError as error:
-				self.logger.error("value error ({0}) in target url: {1}".format(error, target_url))
-				self.text_insert("Value error ({0}) in target url: {1}\n".format(error, target_url))
-				return None
-		else:
-			target_url = self.application.config['mailer.webserver_url']
-			if target is not None:
-				target_url += '?id=' + target.uid
+			return self.render_template_string(target_url, target=target, description='target url')
+		target_url = self.application.config['mailer.webserver_url']
+		if target is not None:
+			target_url += '?id=' + target.uid
 		return target_url
 
 	def process_attachment_file(self, input_path, output_path, target=None):
@@ -98,6 +85,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	def signal_send_precheck(self, _):
 		input_path = self.application.config['mailer.attachment_file']
 		if not path_is_doc_file(input_path):
+			self.text_insert('The attachment is not compatible with the phishery plugin.\n')
 			return False
 		target_url = self._get_target_url(None)
 		if target_url is None:
