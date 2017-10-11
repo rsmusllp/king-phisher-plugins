@@ -28,6 +28,11 @@ class Plugin(plugins.ServerPlugin):
 		plugin_opts.OptionString(
 			name='event_name',
 			description='Maker channel Event name'
+		),
+		plugin_opts.OptionInteger(
+			name='success_percentage',
+			default=10,
+			description='The percentage of visits to messages sent to require before triggering'
 		)
 	]
 	def initialize(self):
@@ -58,7 +63,11 @@ class Plugin(plugins.ServerPlugin):
 			# the campaign needs at least 5 unique targets
 			return False
 
-		success_percentage = 0.25
+		success_percentage = self.config['success_percentage']
+		success_percentage = min(success_percentage, 100)
+		success_percentage = max(success_percentage, 0)
+		success_percentage = float(success_percentage) / 100
+
 		unique_visits = session.query(models.Visit.message_id)
 		unique_visits = unique_visits.filter_by(campaign_id=cid)
 		unique_visits = float(unique_visits.distinct().count())
