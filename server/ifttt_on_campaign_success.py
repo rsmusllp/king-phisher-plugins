@@ -3,6 +3,8 @@ import collections
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.plugins as plugins
 import king_phisher.server.signals as signals
+import king_phisher.server.database.manager as db_manager
+import king_phisher.server.database.models as db_models
 
 import requests
 
@@ -20,6 +22,7 @@ class Plugin(plugins.ServerPlugin):
 	a campaign has been deemed 'successful'.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	version = '1.0.1'
 	options = [
 		plugin_opts.OptionString(
 			name='api_key',
@@ -53,10 +56,10 @@ class Plugin(plugins.ServerPlugin):
 	def check_campaign(self, session, cid):
 		campaign = db_manager.get_row_by_id(session, db_models.Campaign, cid)
 		if campaign.has_expired:
-			# the campaign can not be exipred
+			# the campaign can not be expired
 			return False
 
-		unique_targets = session.query(models.Message.target_email)
+		unique_targets = session.query(db_models.Message.target_email)
 		unique_targets = unique_targets.filter_by(campaign_id=cid)
 		unique_targets = float(unique_targets.distinct().count())
 		if unique_targets < 5:
@@ -68,7 +71,7 @@ class Plugin(plugins.ServerPlugin):
 		success_percentage = max(success_percentage, 0)
 		success_percentage = float(success_percentage) / 100
 
-		unique_visits = session.query(models.Visit.message_id)
+		unique_visits = session.query(db_models.Visit.message_id)
 		unique_visits = unique_visits.filter_by(campaign_id=cid)
 		unique_visits = float(unique_visits.distinct().count())
 		if unique_visits / unique_targets < success_percentage:
