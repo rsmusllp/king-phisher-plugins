@@ -40,7 +40,7 @@ class Plugin(plugins.ServerPlugin):
 		return True
 
 	def on_kp_db_event(self, sender, targets, session):
-		campaign_ids = collection.deque()
+		campaign_ids = collections.deque()
 		for event in targets:
 			cid = event.campaign_id
 			if cid in campaign_ids:
