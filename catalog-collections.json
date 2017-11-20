@@ -10,8 +10,8 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AIixn6MZvtkzbGeI8gYFzQc4+Y8Gmxr12mjwPIDAFcd6BN+vq67Yoae4wDG24oUh0flW1gD8xvDBcw1yWG9pLwAZAPH0YBOoMe8pkCFasb5ftAt9zLx7UOOwxvI/KpEmditExGKnK7eCP3e43Hite9ixGYdd9EPLV16q05D/arfx0Krc",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AK/OlGhMdwKhxKJ6e+IypbfxpoQZ68zSTbmQtClmugqX29kEjFnV5O8IMYkd5IcAIB5TEUhfq+g/WESZ5ZlGMZPSAW8hgWfH7j/MUFVXlV/n6ZcvWwT5sKcdXR9v3xKen4eY/Ciw/mmkcN2sGdbMHlXMTVNqb51IbnqSr86Dp+DSr79R",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -35,8 +35,8 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AQz/Ulzo/ccvDaVclChnJqDr6UTQV8qIxAYJwnm28GPqiq7HjjtZutuKnyPvt0YLBlMtoj4n8aeCIyCUB1yXLT//AbUCeN4Rr6ddpSNxFbS/A/qgtXxbjAtvBDKSR0IFL5lhbCR8HM2197OfPUpNyrA14lgGW+J1Jc1sJ21DgkYoAVub",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AZC2iOaUxEsQRHURohpf8+iIPsI1cANMiGUbUrb8fpj6cOpwXjGE5fpLDHE9A+LYjWnknfRuxk/eaygbxyUhavcXAfxiwjB3vczPunY967QYFmgpcdWb5A6RAUmGuN/t0Y9eQcsKyB5NiCEiP9l1N5x4ocW0/ixOpFRIdEi1TYdmy15D",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -58,8 +58,8 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "ATK8yzr9yX+xWT7+qKOrbY9Rqs4e+lCVGC92VMYqEylUs6P5B4afbpEji4vjTMq0kDIuUIKpRbvtEyV4eg92VyGFABmoFBMrYuZ00u7tE3zPE30uDgm8ue+eDbudOz6Lly5TmnEhDbcqmp31TJVJJwyvU8m7IoTPYNnn8+VjbLyrECcO",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AUAPygYg2eisL8guSF5IV5vHaoVJV1wnlAMs9YqvdXlrlnT4Tchne26HbUMjaBgjRkPpkop8bRA7EsOrzj0gWVoPAcMP86vl4QmYXC+b9Y+9uMNZswe+/IsD6O0tcxLk+hTOBXMg0J4K9MJ3/GDrhBiohXyiYOOsLYClk1gb0nZ8WVIL",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -81,8 +81,8 @@
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "AVvVZoPKRH42nwXt1b5VPOFVdMg3te47LzqPOJwiSv998gG74YOI9GezsUy37QfyY4lk0Tw5hwsbfgdAs+OiRv1NATbCTWU+HoTOMNYrnYVlIUw3stdaiNQJgJpRvWiZD/It9th/0AcV0PjuxQL1en3fnpPCOlsi41KsZj6TvmI6+GYd",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AOfLV9odxoJQIAdplmlP3DIKaj//SUiJAnXdZ1/Ck1eNU8AWtuWJQylaMtAEX6VwIE59zeDo4SvuVI14ftlD01ksAWpxC1Ke8xrALSPiKJM5pbFxtcIecNurYVr7xLETWq+t+hAf4YDHHSwYQDFK24tKkbQy9waSSNlEIe8Y3VuRhp2R",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -107,8 +107,8 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AVRmFTdm+sdwlE9n8uzH24owyRMQJFYpMxiYiw/u4RM8TioqLf7Z4KGP/Ugf9/e0ldqS2onOfN9ayNJHGNMDQkH8AAFgFLomh0pTpEZZovRV9Jr7tV6gLH5i8ZFCIpv3sSY3iCzTSL6t9caUqHj4shC2cbK76k55YIhXxrNFiMbmbzWZ",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "ALRb8mfmKNmjl498o6KawOqQTOEvux6KoPd0FoYk6Q4yLOt8xwSv/A0R0pjuM8cilVfNBuZgI6OE6u60BRXAET9dAQMmTiKDezOFgZKAW3PY2ryk7SVIEU6UJpw7Qrx6hIUk5evWjQsTkOj9O8rmkm6mdNWhJBfY3BfVYXQJ4aGbMAzu",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -130,8 +130,8 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "AYlhvvg+Ggwkpxd3kwPPztsISJWzcN0rvzroZdeCEqYb5H/mMvqtvFWUkG5hKNzi6GzLm5qbvJIRV8+D17My7bunAKxXwlaDzgbrBXp6RGPbvFvrHy6QbWsuf92TrdxElcwYANChzcb76F1hrreKHwU9Kz+TTZcv9AyuPJmwMvqFVzBh",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AcVl2m7MIjwBHN70e/8G6ihud4Muj6uZOvL3KYO1CluIvvUlQZxLocPCtuSpYDZ85oPpo4YzKebS5mEK8RHPktp9AXoWBXORy+ul8H6hu/sYtnuoMihpRrf/h0h/37j2Sfh+WB5/WGw0ntNKjSzP2l8NID1KOUswBByME4wvxAT7XEqb",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -153,8 +153,8 @@
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "ARgZ+dhBBztVZRZ0eYaXbjjUmP29v9W8EsEtzZkaxMU+yYkd4xsbnJ7Ju58WUtpNDuaQHIg3QypV5LR4Ds/uTbB4AfN1s83kxHfK9ZbwMZXZlG2c4PqUeydSX1iMU6Jk59Dc45m5N1Nd9+MyzH0bAKYx8Tc8E0NEkgDvsJYS7K7yWeRP",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "ARfu0q9YwU0T+5vXl0N6hSIFaqd8dA0/iKMQgkUU3+zK04hoH5EKGTx0WbUf45WMRjKCWPWk0Y1VUNTpV32U36C7ADEDzgxh9HZVxdhjuaPt39NgszAHodWNNSlAgpKsn3cDCRlBtkcsKjR/AQXcvJl1cujSi3u8m5yEgs853xx3XGni",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -176,8 +176,8 @@
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "AVf0kiHEu75yrlrwd6fUXcV0OKLPSh7m9aEi7EkC0ej2xMGztZavc6pyG+rpY262l4xVbkEOdB/VOc7aJHxQhavKAR38tlkV7lIJ1mmtdks3K+HczVdvtX5BBmnn/kwcGCUtt6DBhlp+WAv22nVNVQgD4B6xTV4g+Zu1GGfaxl2mU2lj",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AX2s7UfUulgkaqg82CCEsFiXflEp06TEfskPxfr0kn1G7DD1rjPhBoKG1qwen6darXfBPBzqVkMRB0aEjOpv7ePgAFED2KMKAMPAqoOKFds3blgil91naet3qxuLW3OB98GLeHO7qNs8tGCW6BFFVCntRLhMH+6Q1uPU4Z0zxHlpSxpY",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -199,8 +199,8 @@
           {
             "path-destination": "mime_headers.py",
             "path-source": "client/mime_headers.py",
-            "signature": "AHUshPPQzqWo+ZspZcGqXPBOgB9F4vsPsqL2RDW1AlGg97O8yZSSl+8lagYX3xRSElgdyvXrSpM7Yh6aY1GEHDcLAJQD2vNlVRUHZyVFNY0p5Z328snf07BafoEkXt5GqqygIdcId9+15GSaZeP3fh5vSVMzvHVsiVBun9HM6XqqdAYL",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AbQHgdCGMQnKwEuBxG7yCQPKvAg85QgbEG0l5c8uHxeZUY0JVGqhQCgocEYAhZzV+QRbVtqkHhlrzwLDDKG1aaqqALiuw8T52ko5U4PndSi+/2Nx9qGkhHJn0wc5kMfr5b1fgFr5nl4lBjTQfDeyk/uKjF2+5AhyRk+5P4pmqPPj6n7G",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -222,8 +222,8 @@
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "ASqeyrqrh7dYZpvegutOX/5Bkqmo6mNt0zkivIURx3a1vpPLnpM2lP4Ta7QLYU5nbMfgcP4x5+ddj5izhe85fMgsAH6OIRWzjf1vJJG5y9aUwHoeQbqfFDfTJvIcuXC9ifTT/TjghJhEC63TL2T979lNfgF0eJsfUanMF+BrYLEEqEk+",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AQtC6gwbhjLzJEDK926wpLoVL4s4OOzyHi7Hl/ZBITvuFQ70dNhKibaJcQKHdJTS1rAR/6czPilmZKV9KYKsxQl1AbvhG8QgO5bUDa3prsl5duj0KL7dEUOXhU/4Kd40tq5pp1l+lTlMB99qD+M1xmP/gnlDENo0hlVnzF/4UWoszuZL",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -245,12 +245,12 @@
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "AaT4VL35jlHV4w/li4uoaXtijW+7BJDtKbjyD6iq6wW3JXEXEWgerhwHS+IMZ6+LzyzUdhlkHq+C8/kuPyT3fRsqAV5pfCTInUH8c9eSbU4sCXXzRveD0mpTBIuWWtJMhTiYVC/Hb7FC9AnN6jB9CmvXbR78Es+v/ro6W3uDJrfsBw/f",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AXqLVOt4rKfYV/pNYILz0PcYKWmAbdcdmwQrkXLlqNVU9EMfKZX598SWw6ijx/SiE6FDTfnPQb4heTg82l2A8+TzAOTlVeUw8mxgZ1/SKC7D63T6r9fhksWmli0Z1SooS4FKcgxVVU8KMzfa2407tvKL5qTBHi8zpGiyK26jrCUNCbJ4",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
+        "is_compatible": false,
         "name": "pdf_generator",
         "requirements": {
           "minimum-version": "1.8.0b0",
@@ -271,8 +271,8 @@
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "ASbtqRYJ0QU2SWdyVmp8t5Vre94Sjwv6bN+cGwuKUNry01yDnoZP3RtzaTsNIEC9TQmmookLziXxzOqYauy8jZJ6ADEzUY3LSs6N8j4Lzt7YLBNbS4k18rbFqG2ouegOrlWkqNFvS7oyqTV+Tz7L1rR8+xaksbD6rqxn2dF2/zCMLIXV",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AbwK2JjUjGnBrMlX9GSV2kYjk32U2haMVMXX7JtjnyI1xxyVrhSs1m30UhcgrQfn2NChgSYBPH9n60CK1MgadU2ZAVBFm5oF/fa8LIlzNI4p/vzVIvSVnPFnjglOSBY6xWlQm8eUUNiRb7HUKeRXefbd1nXxgrqFUDBbgCzsLATnNYzl",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -296,50 +296,44 @@
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AG1PdAe6ISOfbYWt2WBn1JQy768OjJD2AoLiWLrgIs616UnZvXZMsFasO8WXUxqV4AcUviUJmkVQk+NNXmIBiBLOAJgnCYtorv8fJnITysShYuUu3yJhVDVWKj97SxDVC8iLqTVAtJHnI7bulh7lS2nhNuG1D1v7vQuxm/PvDbH3Q3rD",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AFIGnSsRjL5ixqWeMfFGFjYIGRZt9JNp+8hx2YUOrUDzvuhvTJ/QeOGI3rG5rnlQDNdE7va6qvafhpz8276wlf3xALsLZhYlgvSp/QvnK4eDuQMJmalSlMC9hC3R0sMOkuqYaFHCkq7RlPE9Z7p2aqeEItfUzdqlRkvCWHEUZNF/c3Ah",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "APiy2wHOFR6hUiuxWOv5OfgmxW0L7Hfbz3v0dAoWj6Aw+/7Qb3lk/Lf2lLdrmfuFN79MnX5obASXMk7TARl78ZiLADLqtH7myLR+uZ0zTDXQsoudiBI9N3ELeL/i0yIFDqKcBED6CIj7FSmEGq0ao6XhtZq+C6ALOXQNRPZviv2SGQ/s",
-            "signed-by": "github.com/wolfthefallen"
-          },
-          {
-            "path-destination": "sftp_client/client.ui",
-            "path-source": "client/sftp_client/client.ui",
-            "signature": "AJ8sKOIu8KknF3W/XRoanh2q+K98gAbd07CKFJ1p4z8BLWTi0ooHkBdb3NDQ3wqBJrWjM8cXt4HRL8uohtA10P1jATnUUSTZPFT5hDYTRFdEF4zV2X27n3W1MwBZalA/PMzjY5pK8fONn2aeZreCz2WATSiASD5Z1nqssCcOGzqcleN3",
-            "signed-by": "github.com/wolfthefallen"
-          },
-          {
-            "path-destination": "sftp_client/client.ui~",
-            "path-source": "client/sftp_client/client.ui~",
-            "signature": "AOx3mzVX3Lw/GegM4vqQSqFWCkxLJAcOju0zGf4nPj+uTVRJvSjS0Mpqhf5K4ayMnRzIQB6VN7ktiSivN5b6vaC9ALyjftNIA03PBsddBWGE3eXoaEDIjhUn4Z37kPVu/k9MUwCSBViFO7XvzIk6J4ZpnnLyhGvQmjTxKUOXRHrso5xX",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "ADHbJ6pAkBtWiHwEnuO+lXoJJyaaz6W7or/lNGnh7ETlge+5EeKvZ9tkwofIJF/gJCILazxooOHMhQMYSa5HyBoEAN0PY7PjOeLZXq0aY6TpVbFRiz9AHqdJIqaR2I7AVOw+h4eQy017uY8gQWEt7xfprlIKshga2dAJBP0129fVeyXT",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "ADsarQk5rLHvOk6xiZ3fulwS6wzy7rgTeu15KWOENhdmaoTOjE8okGpZu5fs50AUooAdcvjAQj53s4XVmV1s+f1gAFlxjtZZB6SFTNRYPflyEPjxJZD/33gtSRkWxAD2Q8dgiTqBIqmOKuLY+f1KqFU6A9FlGQjoDuEb/z5zqg9TPzlt",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "Ae/vWSAwvfa0C+brnx6vv6Z0Bc5TXZWadr4TrJ7lmDbVtIbaTbk9HS0/sFwHy/VeWxQEDQdcGxHmjoxxFnX4M3mIAKIJC0mpFk2+oSAUfLQ53WdeInwHXCfCPxrv3ut3bnD4xGnn5wbmWAAqJtkEZr0YFKmhq11r1Nz/cOa2RpmaoCts",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "ARcIaFwlAVMs21pUKRAYuTSaIvbLnbd0nWP+j4JU61IQp9dH+BC+Vjsz+a9IViqBNFDexWq2GAGzQOkuKEmrojCJAAJMELhGQ8NeUlHfZCO1vRrkdR7rVoakKWiZmSE6nIg5QGfO770gz66OjP9hhxdgwvLFvP9M9mI2FX6wjh8rxlB6",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AQVcS8r94rLRRCkLeVurgt1rZOJ1caWjHOscKy3I2UT5YDjRqzilHSelEGWvFHxoBVnG2S0D5RmULHvpXl48uOxyAZKC2mFzr0ASlTB7qN9buBSXW35YGmoBgoPzifCJ9GIH4VaF6fToBlUzTq0m7aCtZrGRh+MlYaRA7lEUEZpv1s7b",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "sftp_client/sftp_client.ui",
+            "path-source": "client/sftp_client/sftp_client.ui",
+            "signature": "AQP6TYzXbU25HkNBWy6iLILU+cJSWE1QjeucMxk9gSgd2NGbOE29YHn7LtEf1iokRN0JLEb/a5+ETp5VsfvWXEO5ACCIawi1JJXHT2+YmJEgtSAxIzUoXZvR9ZOSAMz+p+Q7pp0tWanv5OKsMNhuRGkJI/AQg/eApwGgZO43RSc5Omy7",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "AO01FUbMCSO8OfBqLNbk8j218q0zBc2pPKbwZaMKCncR1Z3oDMCHk/IiQW9eymVdi91ZFrAv8nB/ZX7IM4l9w0tSADYUvaquY7epX10bgCmu8SNQbxB5JW2OEHzEe8ubspUlZkT2QFtu3Kuoxvn7cI7Wgk67yANpE9Nlp31AdY81T+lr",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AfUx2nNtT6XgbKwKVxliCC5HA1eYd+AbGUt8hLx1jXLvsFbVpQCz9Lk+M2WBrPNyNNZXAa1CnTkD6m+wvbCCiFU+APyKuhXbRge+LJReHWfzEAwp8BgcJrZURGxN4xEgu60tIsWIn7bMpIf8mtLBtEiuUgwxrRQohQ4mmTBE2RcIWjei",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "ASnz6URTKQJsdEGYQovwZmQ6h46x/bb992ATC0U3cEEihlIW8iJ3K0wa9vD9MBQkHs05wSSf/s4WKFuo98Jb5aLxAfe9HUVfUjFJ+NN1yOIcgBfrhw86o3+wO+nfHZi1abiGpUHCWaNgWpVpmmdVTWQknmVHqcL8eauJAQ95YT+YGJKW",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AODARrBL6HXPoTI/tGFDNyX4VYcf4WVoFMoAa+TXSQmr850Rzj3cPuiu60soeLURh5+XnPf1FrwUDygx3sqlQ1kUALlYQSD/qBNyFnVhSn0wVDKOwJ08PsDHAJ+3CPe5IRVos8WFSbixctsbt8zr+pgonVYtG2xszXHrGF5A7Wanu37R",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher",
@@ -361,8 +355,8 @@
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "ASF7rlnMHbSy0VUkSEpe9jSOikpGQxEOJOTygmxi6jyIAiJjTzaOjaIUJsr7ZPxnue4zV/6mEt+TS+igbSu+NiBDAS4HIrnjHqBGHzlA4LVY2AWgmA19qK4Q8vnU82n5VVisPPJKQ/Zb3AEF2LDerqNjTiXXseWMshxor+17PTcXu2q1",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "ATGhWjnug5uxrhQtb92q2VCEode8wrgh2issiO3DhtGAMe+at9F/ZSO6uByHKl1/dpnyZ8H9N1A8Y5eTiAd/bwnwANPXWREvz29hqKNlObQuclSJbOj1ErX/v0ZfFTiFNesBMLzqOLOeQS/IFZtrZeOZSfqI25V7enzd/NnNS05qr9f9",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -384,10 +378,16 @@
         "description": "This plugin allows users to manage the two factor authentication settings on their account. This includes setting a new and removing an existing TOTP secret. The two factor authentication used by King Phisher is compatible with free mobile applications such as Google Authenticator.",
         "files": [
           {
-            "path-destination": "totp_enrollment.py",
-            "path-source": "client/totp_enrollment.py",
-            "signature": "ALpjMSqOryxHBvo5FjJ9/PyLcG1i4aAx4/igsaebOTYWWitZ+eqP+e7ASPRVsLIlBI694RT9KPBHcnjKTUCZnp1RAHuue1a1J0pS7N9Prvv2p1P8uuuP3cOAiDT51zQ1QukkGWgQbg0G5OB9elt1ixNYl8XKj9E+F6huqstZF2FwHR/o",
-            "signed-by": "github.com/wolfthefallen"
+            "path-destination": "totp_enrollment/__init__.py",
+            "path-source": "client/totp_enrollment/__init__.py",
+            "signature": "ANQEPjW0o2JVG0cXV3hVscZePDdW83dWbRVuBs2OO1NniYQiKKCHOSqa3owmpR9GXz5DubejmJukV7CKdJjdEHm7AbkNOqEb4bKIAxqPf3OSPMsb7DHFpTrlO1JUDvkMj9XxuQAdZoD/yuvsw1njm1h8N/95xAE+c8wRPQu6FJcFActt",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "totp_enrollment/totp_enrollment.ui",
+            "path-source": "client/totp_enrollment/totp_enrollment.ui",
+            "signature": "ANCFLx4648XsaaqNk8Zt7n45+oZWUBWY85U0cmkRo8eJTwA9zOsT/1MDvb+GqOx0VfMMz//tEG7k9SK21G9SVQfaAUxNinItnV/DMiy5Ip+kdaQakga0iH6vafWsSyNmYyrUXjFFd8vID1cU6s+IfOFfwSP3sFwcwul5CIXKpdm8cA5y",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -412,8 +412,8 @@
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "ANuEb/nVZ6cV0s6LERppLLDVS7bd3Ws55vWd2xbU54phMmAo4MEqxkcUyNJUr24sFggepciX38DjW7yqWBnL7magAWWEiNBxALUHIazkJSipk/yA20hcbFwphUTRsuT0dyDMN7by91IPWZ2hi964CCieruxsSBFWV44AaBD9KsKFieH5",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AV8MummS0b1818++nqAelLGOQByFn05R38nFKL+ZxxXMDNCLAuCitkGUw5peu8GGf5lT/nzu87aSStg8DH6seFw+AJl64xI9KiHMqYixiRcPIjA/TOz+Hkk1jrYKL95mFt5txNIM778GLroYpH36N2usr/CTaS1NhvcpDWL0HH8b/OMI",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -437,8 +437,8 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "AEp/FK79TkueNDs1dCupEG10LWGlwSG3eVnqrppbp8I+f805GuA2H2CPDwmwCdcfk5eDjiVjTMAqBK8T4uDv0FB5ADDwwzCzezGVkyyS/rkPLwoW+eMwrCUfxkCwEP42/wraXUZ6bXNbYhmKQsC+zIz9eZga5BhuQuV8CxZziEMX3D2w",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AZen8yxUS8I8mUHEVeqzKB4XiP/zz4lzroPtM682xOpTPkOi8+C27yijjnTSRxklpAgyzgqk7Ng3qFOFYNJSFp7eADQciEZPdF3TglDEJpgLPX9pigQzhCwMZgCO4SazrA5i9QBlOUNfussvANPkDExIlt79EjchA2shu2pkh10uhq7m",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -460,8 +460,8 @@
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "ATvkz7hBG570VVLvB6l/3NYN+dxVq1TuVOkfSz0rYRUdEdtu4yD2aTNvX6OY30e1liVKjzJnQDN+BYmIz/R9ggpwAW5VbHqIcTBItt3St6umTFJ4hDLpAfTMpLT8OkiNYOCd8Uw+r52NfK3t2x7HlxOFbWga8yexjQw0crEarN/jsoqA",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AA/Y1jF9zLui1Uj+FoZxNInfbiNIDQc+xyfj5Xi75CLAkaLO1NT///gA6YGxVuiIj5iaODK0GFTG+44b1l289l+qAZ2y6L+m+tmeXdDSlL3fXEOG2NtkKvIT7YtIzV5js/A7uh/QHADeyHGE5IfSeKrofMZZECILFBNRxZjT0M275kTU",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -483,8 +483,8 @@
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "AeuV4LGcuMbcpPLuI1lAxe0OgLE6/SEUBT5bS0p0oqfRsH36uv5Hfq30sWzHv5N6IR5fHqsGwTbdAuMYZenfy5TuANN7p0LUXr2kRoxo4eLwpeuEqf9dnyB6iOws1WYrqqXP2SrSpGpxWF892mXNvDckEjEZl8yjgKOy2BIZsPfSFtnH",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "Ae7+by553oJHSmt65x3H5rzI0SS+8bSxKd21nmY3qzq/G3fizJhEdr4yZlRePSECXXTBjnU17c0XX4muCI6/vhZYAcpHqAPMzj05sB3RB5zrm94euGplXLMVkphux/jF332GezdUgt8GALOPc0qkeGNYCWdEw6Xh7PMi4rVZC1H6sEiI",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -508,8 +508,8 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "ATgqeWwe6YPs+8ThmiNT4VIlkrY5eNXkgDzloa7o0RhroRKc4GKV77r5pzQ276NZx54C3pIkohtAMJ5tmntitCUbAZUJRDp6TmEejsBCa1nTnC52ciXkHJ1oTC7PV3gRu4wXqmP/dXNWX5As0HHK6/ygmNy5mG5iuyjQE1T/l4iQKvne",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AeCdJDeBt13hAxtiNOmte6+pLO0Wb8XMT+a1gvmFkYT0KLh2FNvyev7xTxyv8rdMwyGBiDJk9NgrTPl0ykhc7iAeARick4Czd5NyDoS2qYuYoMPsQ4IP2vHt6iQ/rFWqFm38WDah0Nw/kwdNkTgDLfVm3s+1dx1r1MzTidsV/Jvg2+LK",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -531,8 +531,8 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "ASGewNkTZAVe36O2VNGlbSadFZrlqjzTaTpLUv2fIlYFc9GQLEoTOp905xrYy1wDldNxyZALYUmUNtFkihGE1lYbAXojv4Rk0FEr1dlMinm6LLq4eWqflAvNzC/kys3cfYotjnSFygbkrQGZklOboiEcTnAVlQtmewV6qX6Bi4UF1mGp",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AIFDIcWpu6qv3V/TI1ycTbZ/YeHLSED4ddfW4Wp4d9AOEvv1+qcaYekoEtAGYP+gT3wnHLN24tWFq8o0TJcoi+o7ANJOCiJMzOe8Wr+v9UF0z7BzYLNS7tmdxnSOvEfRGzEnCY06b0lD2uPiWkmGw7QF9HjdaHclCIPIOlohpmtX8wO+",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -549,8 +549,8 @@
       }
     ]
   },
-  "created": "2017-11-16T19:07:05.473072+00:00",
-  "created-by": "github.com/wolfthefallen",
-  "signature": "ADKFD1eMXOY3yeXHB+r8FsOEArK6vkBTEq94U4B9ZMtvD5ww90E9bCMZ/9Q0BaJvLxh1ydTloXFenno43lUzp2pQAfsouDZMCtshl5HFwcIZ2Sp8BbWfF0+TAXWI1f9zmWyS1jRAm3v7gOAcBa/4p+CaXnV+Ht4qphJUsa8JyO3eiKGN",
-  "signed-by": "github.com/wolfthefallen"
+  "created": "2017-11-20T20:55:26.653790+00:00",
+  "created-by": "github.com/zeroSteiner",
+  "signature": "AatSsFqu0goG6xc3P6bR3vyfXg0hu+ujbaRUZ7ZyGK9XciBygTwAu8HjV2RPXUFSYSSE9/EGk0ZGj+LQmTjiHkWPAMtCaFf0HGpGw/9fqumFbV+OY9Q9ep+m/l0I7XWtzULnzAW7tZxUaZVbNbfyFeGgPv2TwwldbHi4ZP5SvZJW1A3a",
+  "signed-by": "github.com/zeroSteiner"
 }

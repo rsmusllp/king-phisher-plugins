@@ -19,7 +19,6 @@ from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 from gi.repository import GLib
 
-#gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient')
 
 class StatusDisplay(object):

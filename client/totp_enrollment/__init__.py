@@ -22,7 +22,7 @@ except ImportError:
 else:
 	has_pillow = True
 
-gtk_builder_file = os.path.splitext(__file__)[0] + '.ui'
+gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'totp_enrollment.ui')
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']

@@ -10,7 +10,7 @@ from gi.repository import GObject
 
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.utilities')
 GTYPE_LONG = GObject.type_from_name('glong')
-gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'client.ui')
+gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sftp_client.ui')
 _gtk_objects = {}
 _builder = None
 
