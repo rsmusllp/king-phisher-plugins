@@ -33,15 +33,14 @@
 #
 
 import argparse
+import collections
 import datetime
 import getpass
 import glob
 import importlib
 import os
 import sys
-import textwrap
 
-import ecdsa
 import jinja2
 
 __version__ = '1.0'
@@ -77,6 +76,9 @@ except ImportError:
 
 find.init_data_path()
 
+PLUGIN_TYPES = ('client', 'server')
+Plugin = collections.namedtuple('Plugin', ('class_', 'name', 'removed', 'type'))
+
 def load_plugins(plugin_type, plugins_dir, verbose=False):
 	plugins = []
 	plugins_dir = os.path.join(plugins_dir, plugin_type)
@@ -100,37 +102,105 @@ def load_plugins(plugin_type, plugins_dir, verbose=False):
 	plugins = sorted(plugins, key=lambda plugin: plugin.name)
 	return plugins
 
-def _make_plugin_collections(plugin_type, plugins_repo, plugins, signing_key, signing_key_id, verbose=False):
-	plugins_collection = []
-	plugins_dir = plugins_repo.working_tree_dir
-	for plugin in plugins[plugin_type]:
-		plugin_path = os.path.join(plugins_dir, plugin_type, plugin.name)
-		if os.path.isfile(plugin_path + '.py'):
-			plugin_path += '.py'
-		elif not (os.path.isdir(plugin_path) and os.path.isfile(os.path.join(plugin_path, '__init__.py'))):
-			raise RuntimeError("unknown path for {0} plugin: {1}".format(plugin_type, plugin.name))
-		plugin = plugin.metadata
+def _make_plugin_collection(plugins_repo, plugin, signing_key, verbose=False):
+	plugin_path = os.path.join(plugins_repo.working_tree_dir, plugin.type, plugin.name)
+	if os.path.isfile(plugin_path + '.py'):
+		plugin_path += '.py'
+	elif not (os.path.isdir(plugin_path) and os.path.isfile(os.path.join(plugin_path, '__init__.py'))):
+		raise RuntimeError("unknown path for {0} plugin: {1}".format(plugin.type, plugin.name))
+	plugin_metadata = plugin.class_.metadata
 
-		if verbose:
-			print('signing files for ' + plugin_type + ' plugin: ' + plugin['name'])
-		item_files = catalog.sign_item_files(plugin_path, signing_key, signing_key_id, repo_path=plugins_dir)
-		plugin['files'] = list(sorted(item_files, key=lambda item_file: item_file.path_source))
-		for idx, item_file in enumerate(plugin['files']):
-			plugin['files'][idx] = {
-				'path-destination': item_file.path_destination,
-				'path-source': item_file.path_source,
-				'signature': item_file.signature,
-				'signed-by': item_file.signed_by
-			}
-		plugins_collection.append(plugin)
-	return plugins_collection
+	if verbose:
+		print('signing files for ' + plugin.type + ' plugin: ' + plugin.name)
+	item_files = catalog.sign_item_files(plugin_path, signing_key, repo_path=plugins_dir)
+	plugin_metadata['files'] = list(sorted(item_files, key=lambda item_file: item_file.path_source))
+	for idx, item_file in enumerate(plugin_metadata['files']):
+		plugin_metadata['files'][idx] = {
+			'path-destination': item_file.path_destination,
+			'path-source': item_file.path_source,
+			'signature': item_file.signature,
+			'signed-by': item_file.signed_by
+		}
+	return plugin_metadata
 
-def make_plugin_collections(plugins_repo, plugins, signing_key, signing_key_id, verbose=False):
-	collection = {
-		'plugins/client': _make_plugin_collections('client', plugins_repo, plugins, signing_key, signing_key_id, verbose=verbose),
-		'plugins/server': _make_plugin_collections('server', plugins_repo, plugins, signing_key, signing_key_id, verbose=verbose),
-	}
-	return collection
+def _plugin_exists(plugins_repo, plugin_type, plugin_name):
+	plugin_path = os.path.join(plugins_repo.working_tree_dir, plugin_type, plugin_name)
+	if os.path.isfile(plugin_path + '.py'):
+		return True
+	elif os.path.isdir(plugin_path) and os.path.isfile(os.path.join(plugin_path, '__init__.py')):
+		return True
+	return False
+
+def _get_all_plugins(plugins):
+	new_plugins = collections.deque()
+	for plugin_type in PLUGIN_TYPES:
+		for plugin_class in plugins.get(plugin_type, []):
+			new_plugins.append(Plugin(
+				class_=plugin_class,
+				name=plugin_class.name,
+				removed=False,
+				type=plugin_type
+			))
+	return new_plugins
+
+def _get_modified_plugins(plugins, plugins_repo):
+	path_to_name = lambda path: path.split(os.sep)[1]
+	staged_plugin_files = collections.defaultdict(set)
+	for diff in plugins_repo.index.diff('HEAD'):
+		for staged_file in (diff.a_path, diff.b_path):
+			plugin_type = staged_file.split(os.sep, 1)[0]
+			if plugin_type not in PLUGIN_TYPES:
+				continue
+			plugin_name = path_to_name(staged_file)
+			if plugin_name.endswith('.py'):
+				plugin_name = plugin_name[:-3]
+			staged_plugin_files[(plugin_type, plugin_name)].add(staged_file)
+
+	new_plugins = collections.deque()
+	for (plugin_type, plugin_name) in staged_plugin_files.keys():
+		plugin_class = next((plugin_class for plugin_class in plugins[plugin_type] if plugin_class.name == plugin_name), None)
+		new_plugins.append(Plugin(
+			class_=plugin_class,
+			name=plugin_name,
+			removed=not _plugin_exists(plugins_repo, plugin_type, plugin_name),
+			type=plugin_type
+		))
+	return new_plugins
+
+def update_plugin_collections(collection, plugins_repo, plugins, signing_key, sign_all=True, verbose=False):
+	# update the collection metadata
+	collection['created'] = datetime.datetime.utcnow().isoformat() + '+00:00'
+	collection['created-by'] = signing_key.id
+	collection['signed-by'] = signing_key.id
+
+	# get the plugins to process, either all or just the modified ones
+	if sign_all:
+		plugins = _get_all_plugins(plugins)
+		# remove all existing collections
+		collection['collections'] = {}
+	else:
+		plugins = _get_modified_plugins(plugins, plugins_repo)
+		# preserve existing collections
+		collection['collections'] = collection.get('collections', {})
+
+	for plugin in plugins:
+		plugin_collection = collection['collections'].get('plugins/' + plugin.type, [])
+		# check if the plugin already exists...
+		existing = next((plugin_metadata for plugin_metadata in plugin_collection if plugin_metadata['name'] == plugin.name), None)
+		if existing:
+			# and if so, remove the entry
+			plugin_collection.remove(existing)
+		if plugin.removed:
+			continue
+		plugin_collection.append(_make_plugin_collection(plugins_repo, plugin, signing_key, verbose=verbose))
+
+	for plugin_type in set((plugin.type for plugin in plugins)):
+		collection_type = 'plugins/' + plugin_type
+		plugin_collection = collection['collections'].get(collection_type)
+		if plugin_collection is None:
+			continue
+		plugin_collection = sorted(plugin_collection, key=lambda plugin: plugin['name'])
+		collection['collections'][collection_type] = plugin_collection
 
 def main():
 	parser = argparse.ArgumentParser(description='pre-commit hook', conflict_handler='resolve')
@@ -138,6 +208,7 @@ def main():
 	parser.add_argument('-V', '--verbose', action='store_true', default=False, help='print verbose output')
 	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: ' + __version__)
 	parser.add_argument('--git-no-add', action='store_false', default=True, dest='git_add', help='don\'t stage changed files in git')
+	parser.add_argument('--sign-all', action='store_true', default=False, help='sign all files')
 	arguments = parser.parse_args()
 
 	if arguments.key is None:
@@ -151,7 +222,7 @@ def main():
 		return os.EX_NOPERM
 
 	try:
-		signing_key_id, signing_key = security_keys.SigningKey.from_file(
+		signing_key = security_keys.SigningKey.from_file(
 			arguments.key,
 			password=(getpass.getpass('password: ') if arguments.key.endswith('.enc') else None)
 		)
@@ -174,27 +245,24 @@ def main():
 		'client': load_plugins('client', plugins_dir, verbose=arguments.verbose),
 		'server': load_plugins('server', plugins_dir, verbose=arguments.verbose)
 	}
-	readme = readme_template.render(
-		plugins=plugins,
-		timestamp=datetime.datetime.utcnow()
-	)
+	readme = readme_template.render(plugins=plugins, timestamp=datetime.datetime.utcnow())
 	with open(os.path.join(plugins_dir, 'README.md'), 'w') as file_h:
 		file_h.write(readme)
 	if arguments.git_add:
 		plugins_repo.index.add(['README.md'])
 
-	collection = {
-		'created': datetime.datetime.utcnow().isoformat() + '+00:00',
-		'created-by': signing_key_id,
-		'collections': make_plugin_collections(
-			plugins_repo,
-			plugins,
-			signing_key,
-			signing_key_id,
-			verbose=arguments.verbose
-		),
-		'signed-by': signing_key_id
-	}
+	with open(os.path.join(plugins_dir, 'catalog-collections.json'), 'r') as file_h:
+		collection = serializers.JSON.load(file_h)
+
+	update_plugin_collections(
+		collection,
+		plugins_repo,
+		plugins,
+		signing_key,
+		sign_all=arguments.sign_all,
+		verbose=arguments.verbose
+	)
+
 	collection = signing_key.sign_dict(collection)
 	with open(os.path.join(plugins_dir, 'catalog-collections.json'), 'w') as file_h:
 		serializers.JSON.dump(collection, file_h)
