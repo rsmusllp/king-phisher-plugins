@@ -46,7 +46,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'pushbullet.py': has_pushbullet
 	}
-	version = '1.1'
+	version = '1.2'
 	def initialize(self):
 		signals.server_initialized.connect(self.on_server_initialized)
 		return True
@@ -81,8 +81,8 @@ class Plugin(plugins.ServerPlugin):
 		return target_email, campaign_name
 
 	def mask_string(self, word):
-		if utilities.is_valid_email_address(email_address):
-			email_user, email_domain = split.word('@')
+		if utilities.is_valid_email_address(word):
+			email_user, email_domain = word.split('@')
 			safe_string = "{0}@{1}{2}{3}".format(email_user, email_domain[:1], ('*' * (len(email_domain) - 2)), email_domain[-1:])
 		else:
 			safe_string = "{0}{1}{2}".format(word[:1], ('*' * (len(word) - 2)), word[-1:])
