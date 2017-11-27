@@ -193,6 +193,7 @@ def update_plugin_collections(collection, plugins_repo, plugins, signing_key, si
 		if plugin.removed:
 			continue
 		plugin_collection.append(_make_plugin_collection(plugins_repo, plugin, signing_key, verbose=verbose))
+		collection['collections']['plugins/' + plugin.type] = plugin_collection
 
 	for plugin_type in set((plugin.type for plugin in plugins)):
 		collection_type = 'plugins/' + plugin_type
