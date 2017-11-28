@@ -1,6 +1,16 @@
 import king_phisher.client.plugins as plugins
 import king_phisher.client.gui_utilities as gui_utilities
 
+try:
+	# imports that may not be available need to be an exception handler so
+	# the plugin module will still load
+	import advancedhttpserver
+except ImportError:
+	# set a variable to whether this package is available or not for later use
+	has_ahs = False
+else:
+	has_ahs = True
+
 # this is the main plugin class, it is necessary to inherit from plugins.ClientPlugin
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']  # the plugins author
@@ -36,8 +46,13 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Connection Port'
 		)
 	]
-	req_min_version = '1.4.0'  # (optional) specify the required minimum version of king phisher
-	version = '1.0'            # (optional) specify this plugin's version
+	req_min_py_version = '3.3.0'         # (optional) specify the required minimum version of python
+	req_min_version = '1.4.0'            # (optional) specify the required minimum version of king phisher
+	req_packages = {                     # (optional) specify a dictionary of required package names
+		'advancedhttpserver': has_ahs    # set from within the exception handler when importing
+	}
+	req_platforms = ('Linux', 'Windows') # (optional) specify the supported platforms
+	version = '1.0'                      # (optional) specify this plugin's version
 	# this is the primary plugin entry point which is executed when the plugin is enabled
 	def initialize(self):
 		print('Hello World!')

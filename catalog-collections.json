@@ -10,7 +10,7 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AbiK2QBE7JEiwmS9N69GbQ3djBww2wnKnjANEdUN+8MOx1zwGDFlEKhvo7b9P13+FGCJYJi3CBhU6HL5HLGNTCaAAWgD6BQXFS+qPcXNLnQSCw7yAKGgvvQsHHdaULlaKVaCzipEUghMtv191mO1vQlmJhMD2LRLT9qUyRdQzUcUH/XU",
+            "signature": "AVf90jUZmnfGe/moq17Zl0C+OjnWtKuu20O5XhZhCnusukygR2ya4Hy3xuwHEe78RBtQ/ZijUJOKrD15WxETyPkIAVdoWc3RxPGPgtYoZtEWVHU+QlkTJfw/g1EkohA/HjBuDyijwmp4fhRkWNY4Vk7F3JKghbT7m+MykzZAOmc8cmzn",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -18,10 +18,12 @@
         "is_compatible": true,
         "name": "blink1",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.6.0b0",
           "packages": [
             "blink1"
-          ]
+          ],
+          "platforms": []
         },
         "title": "Blink(1) Notifications",
         "version": "1.0"
@@ -35,7 +37,7 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AZB3xrBVqyUg2lFb3G472h2QMBQ0wwLpBYq4ZEwCQBbeRqDSm+hlIZhyM9l0EQw0q9N2N5cU4k7SpW+Hxc9GtKjLAWyhY0eh2r7EterVUxGFP0FFsNo8N370pyA2o2GmjDzPgI9mt1q/5CxaCtSVsi8t2UPrYtA4JmiWr+O8Z5uPKZdE",
+            "signature": "ADvTQwQwrggxP4pdZm4yRgyXjQKoX1OY4L0N4E4Dd78Q3ffy8RNUf5S62S3oRBPAP16/nn7v1rEkDUvkwUbet5m+AEk69wlbm/ZURHyB0+OG8ZOV7n7Gyk8mepE8VP6NbC3R4FMPPrRQaVdOYXuSNOfTPS+MrH/l0IcnsCaTfaMoCO3I",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -43,8 +45,10 @@
         "is_compatible": true,
         "name": "clockwork_sms",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.4.0b0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Clockwork SMS",
         "version": "1.0"
@@ -58,7 +62,7 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AVhHnpqcwidAJXz/vAc1JFW4NLMM3LcnLcTJOgzyfJdDc/XcwufSG56PDQOnf7WFZr0UwnEs/PX3UxZ1CZnqw2TsAUUuPcAxUG8E8LPrUlm5lGaM4vFEwK/gS8EL6k9Y04m0GB2FTN6rTMI39v8uBxnA4/Q/ec4ZvJzyPP4zIeMQRw2U",
+            "signature": "AWQqntGzjWDMEMqr2yHeY2Cj+aF6lZdO2xvBW4Bki5rre+sm2c9+aXR+Coub/8Nl/NHLZqAdW6XxDzeeml/8cljPAST96a/v4yuwKbXEZOe+zctnSbEpLMnbIAEL9+MAStplOE2ZDIktB147YTnP+oNdnsbXPEXMspbK9xNzFX8Nq2LH",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -66,8 +70,10 @@
         "is_compatible": true,
         "name": "dmarc",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.5.0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "DMARC Check",
         "version": "1.1"
@@ -81,7 +87,7 @@
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "ABETXqrjpNjikCG42S2Ly9qs6h7kzipg/dCXAgZ0gWwnt909OqKQDpFVx5ebwhFPw1R4RCp8hMcQAtBDM0qA2kOLAdVsVYn/TYFQSElJpkRLnNvXmHun3K9HJ6dqX98wzf1+6fV09MdZjtp65MSSWACVaHyagWgs1iqzsphHNneBHJA+",
+            "signature": "AZOuPb3dQWkZEuGT/xGjg6ETFskHScBQ0yaQCz1hGV+qJCV1GbVgR2npA/BzC+1c3qs4dOiUWh/eBKrCZ4akVN93AUeM0Y7nxtLnALQk1V/wwf9zYwqqdzqATgkFug+cg863BcaoirPZnM+BqXd5M+2Wk7NuEezb28y98UUGkmxKAD+M",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -89,10 +95,12 @@
         "is_compatible": false,
         "name": "domain_check",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
           "packages": [
             "pywhois"
-          ]
+          ],
+          "platforms": []
         },
         "title": "Domain Validator",
         "version": "1.0"
@@ -107,7 +115,7 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AGTYq9edy8d7H2DG9sp56uR7JGvr/qsFH5M4W2OE2W0oDxhhoRF/nNl7YdqDPacjlMrArVJN5+Ulyv63HPS3ZFjwACieknO88pB+PtPQ95ObbK8hsMUwqu3j4B7cLH3tRF8c652NPf7AYm+e9+LuMX9sOLbveBUnHxNZttZZHT0GpMHz",
+            "signature": "AIaUQy9K0MP4vF+lGymBZwu3xy1nAq87sq6n8vXfQSrF6E29Sp50JhpwxIvvdKM7KH/JLMAUrNidAbli2BYB3FMlAfsSPwcoAdbnYq9c9cFnvs83TI3cCeipilA7xI4NbkNGPq3zhYoCYssk+1rtCixJGYWFEALn6R+i2rEfXKSEZvSE",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -115,8 +123,10 @@
         "is_compatible": true,
         "name": "file_logging",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.6.0b1",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "File Logging",
         "version": "2.0"
@@ -130,7 +140,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "AcWqQ8YlBuITnx5QqL9gp0/vPfOSc/BgS9dsuycOqgP9N3or5WLyc80lGc72peIUi3QLtgmowWgosb24NEtgDlqrARZJL54gpiLHtRQ0PdOGGX5PanDudSe56EPq7atmX6BP29/KDBW+53NWS23PG3YmmDH5cbb0uLXdtUV56BABtvGo",
+            "signature": "AFE/FKknYU1d7GzeGpRq+mQrLkvpFbfS4wdVhO0Zp2t6MwIUZqve553zS991yv5KYhQZ39f/9v5EAqkFkf5aRfwUAA0yzr1YFkXnYTsSOnQeqUTWTI66ov8D6+Nc2q36q1NsNpl6Lc2JH7k5ePkN5ZqPDCu8xUTYQyKjBetc2p8AN0GI",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -138,8 +148,15 @@
         "is_compatible": true,
         "name": "hello_world",
         "requirements": {
+          "minimum-python-version": "3.3.0",
           "minimum-version": "1.4.0",
-          "packages": []
+          "packages": [
+            "advancedhttpserver"
+          ],
+          "platforms": [
+            "Linux",
+            "Windows"
+          ]
         },
         "title": "Hello World!",
         "version": "1.0"
@@ -153,7 +170,7 @@
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "ALFRWu7ReZdElUT2BVlXOVwm9xqMu6haX0ATMqmwfhvP57oLqJNflJlkZ3266lMYrT90Qb5tiVJEVEOAHajm1ZExAeve+DKhmlyHgajNZpSpb/VjizoHS5RRnCOHVd/Ii4QOUNr1vqhR1zpNJM+2ni7JPEz6+gxHCX0Nrk1CNpI938Xp",
+            "signature": "AMbp+lu88B7inQxUOHa/FiZpmCxFaTwZ1FPiL69sd/SF236Y9gjVonA+qw8Z/27HEZvbczhCFahDGvIQVyGTucLLAZjEls4DuvusydOhwU3l9Qrb42B47+HfUtgJfeqwvmVZr+GlIO6DCidL/1Lq22L+vqxiFuZU2sTsH8f8HzDAo9h5",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -161,8 +178,10 @@
         "is_compatible": true,
         "name": "kpm_export_on_exit",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Save KPM On Exit",
         "version": "1.0"
@@ -176,7 +195,7 @@
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "APpw5NwbtJl1XtGLJF8R/hI+2CE5s25rxAcDD8V5XY2kQ+kQKacOLcqZe5roCy9NGZuTGgobrsOlT6IrXz5ScMPSAd7CRGi5QUwkUqIB5suihNiEx5i+1wjb1XGu2XilXtIpyJt3STk1lQYYgnoitd/ccYcKTPm0KpX2JGjqbtRHJ+C5",
+            "signature": "AeLkoGkLRq21vSTObHZa2IiS3XEIFXEmVrCTgv/fCSaSNlETaOapP0HdXTxCZIva5oBhy8IADTAyIVskT17PYTVvAdIPEZ/eTx9+HzvkVsyO/88Im/waf1bKR6sW02wDbXVmJ/C/pSdunBHRr+w3pmF/ZleVD4oI7NjOMbagsB9ctGv0",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -184,8 +203,10 @@
         "is_compatible": true,
         "name": "kpm_export_on_send",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.6.0b3",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Upload KPM",
         "version": "1.2"
@@ -199,7 +220,7 @@
           {
             "path-destination": "mime_headers.py",
             "path-source": "client/mime_headers.py",
-            "signature": "AIQCeeocZOdza5EwYSDKkp0untnHdtVV4zF8EuVcAuuqlimdM0Ss5Q9xVddvB5JkPf6NuN1WwsJEnjq2qhLcHTwVADZcd+s5NH67atNxXmc+dryFrjhFrI6QFmqv9ZhWdtjE0PwDGwN6U1qAFldURGiPwugXprg1eN6HZCnV58LnTuI8",
+            "signature": "ADJfUQl5d+zfjrk1Ll4eoHjXT8wXUsfo6AsKrv6jDYhwrScUR6+HJnjDveVBSAWTtvO3/D/k3BNV9scWShRkKJCWAUOjRq3CLpnbif315S2ohB20kyKm2XyavSK6B8/Z9CmctCbHGkbaaUM0wiV2nvz6w8kMLTi3Sep9/1y+jcHaTbsQ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -207,8 +228,10 @@
         "is_compatible": true,
         "name": "mime_headers",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.9.0b5",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Custom Message MIME Headers",
         "version": "1.0"
@@ -222,7 +245,7 @@
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "ALyrMktIWhg75GE+T9u/X1qvTDJmxZywdr/niw4YbWKspPA3A8gUsd8mXj+/hntcenKgajsxk5Ng+DpWE73gHS86ALyoo/YYhqz9KVqt5fTE1EjlOv+9ywOyQA03t8rpcySP5wxNBAk8h+JOMl33VepndpCp5RCzls5ieL3sE+u5pGoa",
+            "signature": "AJPZBRNu2ENX6G5//UzQk5Xm45/Fz12IwdoOhW3feQVfZoESzdZIfkfl8mO+wQ0Sk3fms47mD2179PqGlIofsPKWAQwKxG9EMSTsJpvz7Y9C6zpAen7xeT6jK9coVw1Rhnnr0g46iZISNM7zOezV06SkBRdGHq2AuceSeNlBnVtdlwNt",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -230,8 +253,10 @@
         "is_compatible": true,
         "name": "office_metadata_remover",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.9.0b3",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Office 2007+ Document Metadata Remover",
         "version": "1.0"
@@ -245,7 +270,7 @@
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "ARRLv0SpLOWjVcZvC+tHB1tmdawgrG70yemXeScV35Po9SM+gYGQwYUYRfM0qO52gTIEAn6gVBBAQV0TCznGIlX4ABSf0BCljFMtOwMNJy3Hz7x6ZepWZ3smGHcV1ffzyC+RW84+Bxdh7Y+ZPytxiBtAgLWqel6/ndxpKdYMCZ16ZnGZ",
+            "signature": "AGVqtltgyQkK74UjDJxDnCI7WjFOMplHY7kG+BIN555GFyKr/xkSqd2OS1VWyRHM3ZQI7WZpRd/cEbAnQ5EnxjunAJgVxavc5c+gmpSG7bIo4bUql98lcVF6Lh9BA5woeRHxP7nOlW69KU3mSn/y9Ag4o3cjHHJmbFkZGbMWNpTGSVDe",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -253,10 +278,12 @@
         "is_compatible": false,
         "name": "pdf_generator",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.8.0b0",
           "packages": [
             "reportlab"
-          ]
+          ],
+          "platforms": []
         },
         "title": "Generate PDF",
         "version": "1.1"
@@ -271,7 +298,7 @@
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "AFP2yUq+lStLAM+KVmNy+hfvd9s4x4eGNJusF6YyLS8sWMxLDvOT2pImzC59rTvdLuDKdZDk0o3k6l9w4KEpdyIsAHJQNieWfMPkALP0l2LuvC42aCuaG8T8CsxVSSomQOmdXYiOfevQhsay9ZvDTh/8BWpFsXUpNfcylz+vH3nIHeYp",
+            "signature": "AdZ4hDWsy2mJdXqNROf9AnAcT0FcTfwJEgB2K56PW9pEAp0t93tDo1LTobt4tzbxI3VjnSK5cnxNoSZVaIgKR2YZAWPzGhetDRT/PRxZoF101hGCTuLsnglwuoFuNM/ZZBMIdRkaPlLfmG3KkHl9q5W5d2M+O1XiZ9yvjErHhRBElRa0",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -279,8 +306,10 @@
         "is_compatible": true,
         "name": "phishery_docx",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.9.0b5",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Phishery DOCX URL Injector",
         "version": "2.0.1"
@@ -296,43 +325,43 @@
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AJoSvy0rtwlHegRIOiohkssKSu/8UdFy+1WgJr6Ik6JP6r3ag5TTQEsekyp+rRmgY1aym+u3AXuBG8MEGaLICiYcAM9uO/owzmlyJbULaldBSnHagliVxHUsuKCdzomivhO+ylBxc//nG9bY2cIJ1dldSu9L79wY0IvhCdLTbRYZ4+Xd",
+            "signature": "APk0i8hb28zs+ifDqp9jylK9gNWia3K1QfIVKiJOgVImzqsmB/qAZjaIryrCrC6FZLm6LsGqTSomJxN+GDTS2gz8AJoJlmEOLe1acFHtLxxMTX/EnZfp4o0THIfqwK5WkYIllA154sBG6SXwL8lKgTcmVcQcEJWCtiuk9grs7+57dBgJ",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "ARCrSIfAqttkR8/+neIZb2n08eBXDzSqOrjbHn9V0qgrRbQpYdmsigSKtfDPd48aW+1cEdAEdyKjrXNeai7xziJdARP1uCWdebmynoAS+Wd63IJ2+BsJ2ckbkV3FLFjaRI78WTowzYhuAHKZFQ0GofYO8nYnA9pm/d3LT9pYus//Lzez",
+            "signature": "AXgu5C0e139cN4zQeZkaUOBGwqZ6HCjwWNQF8aChciaWO9I0dm9Iy4a6/8zbVxa0Ub8XSvG6OMQSwgBCuORL5WGdANFmWFNyZ+n0IUOH+N8tl6fqMht4pfPBeIDtw/t9tqBat8vsoi9B3NyDCHY9sboex5BF7BhTdDGAsLyOAawUbKmY",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "ARxgKkzdEMyNZ1Erhvk88JAmDuXNLRtrrzJeSrHn08iRTQx8aSpJ5s3ASyQSOmFOY4gJbr/Mgmxhq1N7myFYZfM+AeIZ1bAMD4ot2IoeWt799ZEV9FK6FOLGcUT6T2AWfwrom8XOn+v5+g1wYFM5n6oI63k+lUpdvkkzCFijbE3Ex7y7",
+            "signature": "AKyvD5MJb+1ad3oU0KN9vetEoS20N91xrluJCdhld21EvSejBdNQmxvZxgRdRBkHyuWwUPDLa3JsUFQS8VVMsKKaAMKjK3DTJ6aj3OeqLgzGsfH9VNGmTht3haf4bg3ZK68Tn1t4zVbV462O4w2uKqg8Oeek6eSi6c1lJXmrwkXwZckM",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "AZrHIrT8WmPvZEjR6puBYe/XE3qYgyFu6nZkHjlmf1mc4VPTUAeeJrxui1yjWamDt1qYpIS9KSwNchOtjExAZzB3AUGhZj40h+1qKteFAU3k/i2IrnIDr6NcPvH/fCPt94X9x4iRNJ7kI6CUyZjoKIFtx2xBa3vASltkMaT6/hwa6RUa",
+            "signature": "APqZdnC8CY6q6yedVog3pQYn4/5y9lcoGubEMum9qFHcrieSSl3mDpDzm8vLN1iu8eMAnnwAoMWzeVtQVNeqxhlwAe1HhM7/qVkpCmv8wcxLIb15N6HC/1DbIU3E4hQF2MUbBeh1EQPYXAp7R/TCDFeweie+WDg8/Vfmc/nB1tCB2fpL",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_client.ui",
             "path-source": "client/sftp_client/sftp_client.ui",
-            "signature": "AQ/aa8P5iiid8lNQDqkZXnxVt9XRCiHbbo8WdgFU59bfX7XjsxcQx3h7/EyG4fftgBzeYkAn9Np4ZhHynJyBmzxIAOuWxJx0Pjxy0jM3COLSKk037bBn0BSJG+6b4gRE4LkSXgCvxJEWgcuKtLJwxlTp9yzcgDli1LDaqRabV0+MowaR",
+            "signature": "AW9EQYba1HqM0E3j5KOlhZ6T+oazx87M0Ej2aFvgYoxl5qfhzoSCkJKteJjPMvT6oFJZZkVzHecDJs/gy/XAZKYtAPH+clin3lGL9ZVEALbzaAJ1cHw0EOZeqzPAsyZXJPxa6urKU68DZCy4fAQFMa0egcIWIS6C+YdqkZI1hAOjthEo",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "Ack9p9iqL7RB6fbgh5ujRZdws6oJnXGwhgvhbej3Nc78+wjtph/L0iaeoWDp6V7rBIPcY9/wzldlSTbrArfsOI9hAWmwLJpu954NGVWpbKRIzt6Eus+M7sjNeJj9kGJSAsFu6oJcAVsxYWJfWCMU4umqKHViWfFK8P31x3leQeJ5rwlV",
+            "signature": "ACfummvx2E7ZDSden2LuH02Np7iM+huUeuq/y/HmqtRUPCsY1Gg2Cxk/Tz37LCGnK/M02GjwelCUBtGN59X61hg7AaSiKR7jjoqeoI9HzMw4fk3ch21mlMgG+YAAoVQp+WbN4TvmvzgwzUyT7RAGFkZ3PWUsIqoH5TTYBTwQxHCUTtXN",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "ADiLe0qd969G5fXYWapZ9YRmhOcb0XZw1pVQa6ZlgbRj6YExGP4/AvrIHfK7cWwjFIitBDfudDQgPOCQAfUsFQZHAOnT1xVyh2146N5bUW2gB2Bk5HVa76MECul8BYsunlcLy0TsVuhhe6ceIzpQdQkIkjivGJECaucMtO2cEsMtA3Q9",
+            "signature": "AH2UvM+Zt4vQ+IEStCMZGU/6CCABtbw/LGJzx9PVwUFHp2CaOFkatC++iP5nh7ZalbWTYP9QSAZnoaMCiAz8CbNpAXezvrc2PtINs61kQsl9cHR5gpFynH1ecWs9WRQibiKoyOpfc8YL3o8ZaV2SxwjXCE4BMSz1qTXVSiivCaysNFNP",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -340,8 +369,10 @@
         "is_compatible": true,
         "name": "sftp_client",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.9.0b4",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "SFTP Client",
         "version": "1.3.2"
@@ -355,18 +386,20 @@
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "AVrjouUxMhDVWn7oTNInvOJZfV5g0bpbHg3974FyG7UBTjoXkfim/B71260Y/KjzFdzliUsKFo07KPijk16Pe5MMACst1Hr81z5jN0yUOVkZpQz40x7WxDzCvY7nmNPQMRZwUeP/XjgCq6/d0eOa+AI9KIUOveSgPj0hh1thPeQlp5UC",
+            "signature": "ADt9roY8YpdgtZQcMrCjscXtZE8Hc3w4dzKpkUx6obJACqbfwikbcmFPg4hYTiwslc3Mirw1QBcnXUyvv0OCSCegAK0tn6f0qwoBMOz2VVT0JE71Q2/3hRcF4oOczLso9TEKuMDb+q+gY0j/vPLJcGuFo8Hq6BCQ68FkFMT9TgtwldmE",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": false,
+        "is_compatible": true,
         "name": "spell_check",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
           "packages": [
             "gi.repository.GtkSpell"
-          ]
+          ],
+          "platforms": []
         },
         "title": "Spell Check",
         "version": "1.1"
@@ -380,13 +413,13 @@
           {
             "path-destination": "totp_enrollment/__init__.py",
             "path-source": "client/totp_enrollment/__init__.py",
-            "signature": "AXnvXZudl3p0ym2PtLfd7BMEtST5E7t6HHZGRw+pxxUfahwGaQisJvSxzn9Po/3i6mgUgm5pPsXz63FiP9535acDAKKO5VaH/idI7w0B2C4rmIotEasL+HvICTLIZZcGLKGm9AVM086gkevtz5TUM47U8kQSSZDmoLfZqQoF0nl8h0TS",
+            "signature": "ASvZXCNbw8dFh2EzQB56Q2dT04s52Jid7CM9BHS72B6bm/n4BG+x7zf+dIHJvGUkCOMFyl1Z8J7nBLY3k/+fLyIdAZNbHXPfEZS/yVQwTo6KYSWef9t2vp5o/nO8+o1YjF+EOG92jCt82C3pAfQ+ZxXNPvRnGiYGt5KJ0F26WR0IWHIy",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/totp_enrollment.ui",
             "path-source": "client/totp_enrollment/totp_enrollment.ui",
-            "signature": "AapIwzz15sdXPz9OFEs6yaZF8R3+yexgpj6/85jRAUcqYT4SEYgbFiS5bSOnziInWX6xCwI2P+9emaXqDJvAboYOAA+Fs7hKZP9pNS1aGGNzUs44jR9MhefNFtUw5IompkoRe/Boc6J8jOe1hFOguvqGHdqIUESUV2kldFafWPgrjfqT",
+            "signature": "AJWjBVTCbc9cgQe949x93zqBPllDammSQVUsklAG3knaxyfho3FusqX7DLU0FsnhIMc/2jWvgVqWSfnBYNJ4XabhAJB9+s/rWQwVE2gCH5GbAG7EpwjYcNwf96o61195xUrqQUtM9Gk/wrT7ZwadC2GUTib24aEi9nZuiZqK4pNcxa1W",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -394,11 +427,13 @@
         "is_compatible": true,
         "name": "totp_enrollment",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.7.0b2",
           "packages": [
             "qrcode",
             "pillow"
-          ]
+          ],
+          "platforms": []
         },
         "title": "TOTP Self Enrollment",
         "version": "1.0.1"
@@ -412,7 +447,7 @@
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "AUCkOSxl4yWxkc/8mM6CfuCCgzoUmbu+Z19ClTeWLlo4IHyjLaYD+b31q/7keGA5BhTqhzH0NiKktkbfd+VWwrFuAORVkzpdnPkSQKdimqh08pxsVYOKdfgnCEPtopN2QgRKq49sIBBcM9O7no2XYZ2IyONIWQOcy9PQzvKqo5Tw8RF0",
+            "signature": "AcLVQydwksv/Zm9FS7cZC2q5w+ecFSvcfXPguieG+TIszluagXjzl7UGimTwF5NzUbN/zfT8POyPjbH5uCor8eL7Af2p9jH45jfasv7NcAEton63RRbC3FI53kym7U9BT9BJQywI6e0aUk0ZLuYpDlF6rcC7ggRHBywwhVbdYmPbbAMl",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -420,8 +455,10 @@
         "is_compatible": true,
         "name": "uri_spoof_generator",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "URI Spoof Generator",
         "version": "1.1"
@@ -437,7 +474,7 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "AaP0NkgRYq8OR8bZjxQTOU4Y6Nws8O29lyRMhKp6p8czFvLxEHzxFVfhHzEMg0cbxrMkXx18EyPT0M+DgC4iWtgMANzds8hJ4V+oXTAz237JMa7aQut5Q8pN9lA5AD5F8BX5Ywge45eRSoY439so4UCwCWDfzR65sxx7/yhnEOMrMyPZ",
+            "signature": "AVt4vVtnMhxLcll1ii2uXwf/hqPl0PPKunG5XtTFXA7IK+767UDEhP37ltmsoKzJ0Hiaf3l63Wiyhdbt3zQiFOBLAcA6g9gNbC4fxFFESIttyvI4kj5i5209JQySVS09gn36ux6RGP93hzzDqDm97FWJLDvp0AqMe6jcpWRnPW3BcNMt",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -445,8 +482,10 @@
         "is_compatible": true,
         "name": "hello_world",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Hello World!",
         "version": "1.0"
@@ -460,7 +499,7 @@
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "AYxYu71z1YG2wPJEx3I/EuPGC+1JjjRKnSc3IDrtQpI7uanVE2t2PvmojDF9f4+FJgzLLBkEXnay3JQf/5DEVwJ9AFIo/uZlk9ARH/3Rc8Kbna0ttA2eGuSmTPCWhr1ygrOiFOVDex+xEp2OoSTd9HW/LGvI+qzdP2C6XmXlk0/2Spxo",
+            "signature": "AU+iJVUwOeS021b2xKJiQiAbXgI7xv2iUP9Moyd2kbxpP7yIHvwHwPjcSzQkYujvHhv6zfl9AKwO9XfrEjeXmHZKAI5bwufsW/D6qwi0bQcGV4lB2abYGWbNP+ghSdnvx+HZ5owz2DzpRro9ywCd7KnG0Jb75FRRTWFWMRraT5IDmJBP",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -468,8 +507,10 @@
         "is_compatible": true,
         "name": "ifttt_on_campaign_success",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "IFTTT Campaign Success Notification",
         "version": "1.0.1"
@@ -483,7 +524,7 @@
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "AZdeFAUDyLp7fcto8ih6JUZax4zdw6vdU3Mob2QgIfXs6xFsv7d2+/lYTakIOHRrHehr8qtgB/KYgItvoVoIy04rAP/9ODhL0PSto5COujeY60kHkmzyS3qLjwUKTvPAdLIdqyjwaMg6roiS0IL17IJaaszvXWpHilMkY4K64yz8V8YM",
+            "signature": "AeRsLtiCWvFZKjTj9nWlx8sWeU5oEm/wxBnUcI+4dtRD6/3sOnPM2Pvzt/T6sVIpZRtHWMuZ1SzW0rrBp6luFo9hAfq42omSlmomM/cD5PunJHA8OP+NxRcqLnS6u7ubol+iIZPnAH/BMfVVo1VRfKIwVaY+lpnOJsE2Tc86Aquk4QDm",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -491,10 +532,12 @@
         "is_compatible": false,
         "name": "pushbullet_notifications",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.4.0b0",
           "packages": [
             "pushbullet.py"
-          ]
+          ],
+          "platforms": []
         },
         "title": "Pushbullet Notifications",
         "version": "1.2"
@@ -508,7 +551,7 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "APyCA+kt8Uqr+53FF7UJhiRKyY7cbxOz9zEYmCEKMuQFgnB1kr06aN0cpMRQ9NbHo/RcbVD1gW9D+b+VHOlxHjVTADmw+NBdyii02E0JCicO2mNCkROtHeXeHcDcr6CmobVv99NZLIyY6Q1xM1l6fatUSfXi73OS0SbTW53V0/w7pQd1",
+            "signature": "AGPZKY6C6XblNRd+TKk8VCToHo+nAyLi3Gkn3OrYMFFTZKgIScsa7huwAYRtgJp+i3EjuVKYi3WrV8W06rSzT3xOAekewIhVpdrV7eoNs4bDBr7PHkrcXWKfFod5rDlMZtbgyeH4V39r5GpW8uwjY5NZZM02YsDSKpPwj+WnJEvDo4lk",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -516,8 +559,10 @@
         "is_compatible": true,
         "name": "request_redirect",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.9.0b4",
-          "packages": []
+          "packages": [],
+          "platforms": []
         },
         "title": "Request Redirect",
         "version": "1.0"
@@ -531,7 +576,7 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "AamfjxcSKaqHrs4qxaJkwTMivXu5+F4c7kd5U32JSBJQfwPsi5kYBg9uTYls2+opf6ITYPpVEwuA9+DnZ6FsuVzkALWiuPaweTVJKWGMR9g3VYk2RlirQes8LM8I7w61/BaM3KT6TNzhCBwhau6n7mhyxow20If+nl4V3YZnWv3hsngO",
+            "signature": "ALgmIhVyh7fl2HVJ4TWYbwEbemrLTZmKbMb+DL4afPJ7FZhqnaYucGTo9U4C4aeV2a6Ljo5UO+o1CR2W04OhLHMWAA3sVRtLq5HoZBvXbVlSRILmdoNKpDQ5Ct149k3mY9XnySjSVveMnxjg3mKn/uXfSQvMyPeC6EecSfC2OSOWhYn9",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -539,18 +584,20 @@
         "is_compatible": false,
         "name": "xmpp_notifications",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.4.0b0",
           "packages": [
             "sleekxmpp"
-          ]
+          ],
+          "platforms": []
         },
         "title": "XMPP Notifications",
         "version": "1.0"
       }
     ]
   },
-  "created": "2017-11-27T20:01:29.564048+00:00",
+  "created": "2017-11-28T14:20:52.931438+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AXC41VRHzfgkiwMPunz55MoKCwcpPopXov4HhK1SOaVkXB5hwvBQyEnDcLe3tka/qKSs6bu11Xvh+H/u1MbPZt3yAO0BoMp5CmnoXinWNsWQuk3n3xIrxjf0R8vMv4nzuci/+0kLJYZvmTuMa92RsB6i+7UoCTp1BYGzGS6ImKGg0kZ1",
+  "signature": "ATu+datLX48JeStTKc1VZVLQupGyh8PrsYDPbBY2WKncJP2Zen75PNV799hq28D533DUQNlELQiz3YUJ4kA6yA6jAQ4fmwHJ4SUSnWLqlBnX2Jph9/ytVkAFHhZNfo9N4StaoypV/kVbVY/BvN6TZNJbDd2r7RkTA+QDkP2NAKHMZLEV",
   "signed-by": "github.com/zeroSteiner"
 }
