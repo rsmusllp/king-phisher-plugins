@@ -12,7 +12,7 @@ except ImportError:
 else:
 	has_blink1 = True
 
-COLORS = ('blue', 'cyan', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 'yellow')
+COLORS = ('blue', 'cyan', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 'white', 'yellow')
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
@@ -48,6 +48,8 @@ class Plugin(plugins.ClientPlugin):
 	req_packages = {
 		'blink1': has_blink1
 	}
+	req_platforms = ('Linux',)
+	version = '1.1'
 	def initialize(self):
 		self._color = None
 		try:

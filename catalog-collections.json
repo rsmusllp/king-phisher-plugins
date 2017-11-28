@@ -10,7 +10,7 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AVf90jUZmnfGe/moq17Zl0C+OjnWtKuu20O5XhZhCnusukygR2ya4Hy3xuwHEe78RBtQ/ZijUJOKrD15WxETyPkIAVdoWc3RxPGPgtYoZtEWVHU+QlkTJfw/g1EkohA/HjBuDyijwmp4fhRkWNY4Vk7F3JKghbT7m+MykzZAOmc8cmzn",
+            "signature": "AUUo5u8g+UZfHRKVtWfdnOuzeAE6qz4HAmDiDQMqwyWNhmCiMnpvsnmWUjhLonfiYqZ7BKt2MvCrsRfolLFambTuAMG5A+4eHdJpm+aRk0EaeWaqykBOD+08AkfzjCAxiyr337qkXA5Ej0MxSWcibCV4DXIOdwsOtvrROF4RAxDwFNhA",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -23,10 +23,12 @@
           "packages": [
             "blink1"
           ],
-          "platforms": []
+          "platforms": [
+            "Linux"
+          ]
         },
         "title": "Blink(1) Notifications",
-        "version": "1.0"
+        "version": "1.1"
       },
       {
         "authors": [
@@ -596,8 +598,8 @@
       }
     ]
   },
-  "created": "2017-11-28T14:20:52.931438+00:00",
+  "created": "2017-11-28T14:22:02.876187+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ATu+datLX48JeStTKc1VZVLQupGyh8PrsYDPbBY2WKncJP2Zen75PNV799hq28D533DUQNlELQiz3YUJ4kA6yA6jAQ4fmwHJ4SUSnWLqlBnX2Jph9/ytVkAFHhZNfo9N4StaoypV/kVbVY/BvN6TZNJbDd2r7RkTA+QDkP2NAKHMZLEV",
+  "signature": "AMgBcmzlqinp3NVPlafDnV+NbHYb1Pmi4nDz6gEf7tnvyY8L88yHoiFN446/F0QbIF+vCOETcePgG0+gnKF3IywPAd6yBXZk0xZFOd0T2UhMhlVUGXtnr+Uw1dwdmj87IxADZzpFoOIivkKwuU62DFKqCjwxBm5iyC5w0u2BkkVvSNJV",
   "signed-by": "github.com/zeroSteiner"
 }
