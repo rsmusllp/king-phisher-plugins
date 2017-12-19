@@ -67,7 +67,6 @@ class Plugin(plugins.ServerPlugin):
 				message = "New credentials received from {0} for campaign '{1}'".format(target_email, campaign_name)
 			else:
 				return
-
 			self.send_notification(message)
 
 	def check_mask(self, message):
@@ -77,7 +76,6 @@ class Plugin(plugins.ServerPlugin):
 		else:
 			target_email = message.target_email
 			campaign_name = message.campaign.name
-
 		return target_email, campaign_name
 
 	def mask_string(self, word):
@@ -86,7 +84,6 @@ class Plugin(plugins.ServerPlugin):
 			safe_string = "{0}@{1}{2}{3}".format(email_user, email_domain[:1], ('*' * (len(email_domain) - 2)), email_domain[-1:])
 		else:
 			safe_string = "{0}{1}{2}".format(word[:1], ('*' * (len(word) - 2)), word[-1:])
-
 		return safe_string
 
 	def send_notification(self, message):
@@ -103,4 +100,7 @@ class Plugin(plugins.ServerPlugin):
 				except pushbullet.errors.InvalidKeyError:
 					self.logger.error("failed to get pushbullet device: {0}".format(device))
 
-			pb.push_note(self.config['identifier'], message, device=device)
+			try:
+				pb.push_note(self.config['identifier'], message, device=device)
+			except pushbullet.errors.PushError as error:
+				self.logger.error('failed to send the pushbullet note')
