@@ -471,6 +471,58 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "description": "Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client.",
+        "files": [
+          {
+            "path-destination": "alerts_sms_clockwork.py",
+            "path-source": "server/alerts_sms_clockwork.py",
+            "signature": "ARyfa92ncXjv77w0h/HCiyeI2i5WSZC4wtsd09N6CZuAzc9PNOS/Qk6XczUe/C54YJuLsZkonCUjzCJkuGPTUsb7AVwgmTrRHostcK/1K4PDaZv6tYw6yrvSgPt6E5lyZt6B8SWv9/WkWJLk34k1xnXXdiM87wuYkyqKtXfuLAo+Z/Z+",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "is_compatible": true,
+        "name": "alerts_sms_clockwork",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b0",
+          "packages": [
+            "clockwork"
+          ],
+          "platforms": []
+        },
+        "title": "Campaign Alerts: via Clockwork SMS",
+        "version": "1.0"
+      },
+      {
+        "authors": [
+          "Spencer McIntyre"
+        ],
+        "description": "Send campaign alerts as SMS messages through cell carrier's email gateways. This requires that users supply both their cell phone number and specify a supported carrier through the King Phisher client.",
+        "files": [
+          {
+            "path-destination": "alerts_sms_via_email.py",
+            "path-source": "server/alerts_sms_via_email.py",
+            "signature": "ASA/jr1NyMsLs1pUWU8PD7g6ufUILz1b0ROePU1kg3HIdPAj83gkuKxKcJA1byTwGi41xeaqcDz6vcAN2ErpvGGAAZHaH2lIMq+Hqz7HIxHbWALUwxde4cSW/QI+6xqQ3Sr+GRh6nET5CJ3dz7tlgaTtBKu55UcB4LSgglus/+1xNdet",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "is_compatible": true,
+        "name": "alerts_sms_via_email",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b0",
+          "packages": [],
+          "platforms": []
+        },
+        "title": "Campaign Alerts: via Carrier SMS Email Gateways",
+        "version": "1.0"
+      },
+      {
+        "authors": [
+          "Spencer McIntyre"
+        ],
         "description": "A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning.",
         "files": [
           {
@@ -598,8 +650,8 @@
       }
     ]
   },
-  "created": "2017-11-28T14:22:02.876187+00:00",
+  "created": "2017-12-19T18:10:49.823086+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AMgBcmzlqinp3NVPlafDnV+NbHYb1Pmi4nDz6gEf7tnvyY8L88yHoiFN446/F0QbIF+vCOETcePgG0+gnKF3IywPAd6yBXZk0xZFOd0T2UhMhlVUGXtnr+Uw1dwdmj87IxADZzpFoOIivkKwuU62DFKqCjwxBm5iyC5w0u2BkkVvSNJV",
+  "signature": "ACW338qkVvNIXfJ1C2OZSnOk5PD8Fc7UA0O20iy2VxMa6nZCWhjq4+kqNy6HLaSwXCjAtd1n1pVTs+40okbd491dAcugkzMOeNnRDLA4h+M5RK4KaWBTJm72/MPeJHB1JkyN04wuPZE6vELTFN+KDGRDUcFOJ26thdUazxAjAU6P2YD1",
   "signed-by": "github.com/zeroSteiner"
 }
