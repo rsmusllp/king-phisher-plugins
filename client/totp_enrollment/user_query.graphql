@@ -1,0 +1,9 @@
+query getUser($name: String!) {
+  db {
+    user(name: $name) {
+      id
+      name
+      otpSecret
+    }
+  }
+}
