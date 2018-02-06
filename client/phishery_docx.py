@@ -124,7 +124,6 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		self.logger.info('wrote the patched file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
 
 	def signal_send_precheck(self, _):
-		rpc = self.application.rpc
 		input_path = self.application.config['mailer.attachment_file']
 		if not path_is_doc_file(input_path):
 			self.text_insert('The attachment is not compatible with the phishery plugin.\n')
@@ -136,33 +135,13 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 
 		if not self.config['add_landing_pages']:
 			return True
-		options = {'campaign': self.application.config['campaign_id']}
-		results = rpc.graphql("""\
-			query getCampaignExport($campaign: String!) {
-				db {
-					campaign(id: $campaign) {
-						landingPages {
-							edges {
-								node {
-									id
-									campaignId
-									hostname
-									page
-								}
-							}
-						}
-					}
-				}
-			}""", options)
 		document_urls = target_url.split()
-		landing_pages = [(node['node']['hostname'], node['node']['page']) for node in results['db']['campaign']['landingPages']['edges']]
 		for document_url in document_urls:
 			parsed_url = urllib.parse.urlparse(document_url)
 			hostname = parsed_url.netloc
 			landing_page = parsed_url.path
-			landing_page.lstrip()
-			if (hostname, landing_page) not in landing_pages:
-				self.application.rpc('campaign/landing_page/new', self.application.config['campaign_id'], hostname, landing_page)
+			landing_page.lstrip('/')
+			self.application.rpc('campaign/landing_page/new', self.application.config['campaign_id'], hostname, landing_page)
 		return True
 
 def main():
