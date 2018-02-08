@@ -34,6 +34,31 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "description": "Store campaign message configurations for their respective campaigns. This allows users to switch between campaigns while keeping each of the message configurations and restoring them when the user returns to the original campaign. New campaigns can either be created with customizable default settings or from the existing configuration (see the \"Transfer Settings\" option).",
+        "files": [
+          {
+            "path-destination": "campaign_message_configuration.py",
+            "path-source": "client/campaign_message_configuration.py",
+            "signature": "ANrKev0UPwlmQaa/++6XJkDwtIxLezBm8kvL7U6QbOb2nVQ8JgWKIj6WeG7/6ghuDqZLufJyxDEgx2jkLQw3OuXWADtta0Z9ae2zcKElEf5ZZK6wfE8Vj5qkr/jZI8Z8M0o2ED4JHIiPNeKkhiTPXYEe3cJTOEOnp/HjOsUA0+Ub9OP2",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "is_compatible": true,
+        "name": "campaign_message_configuration",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b1",
+          "packages": [],
+          "platforms": []
+        },
+        "title": "Campaign Message Configuration Manager",
+        "version": "1.0"
+      },
+      {
+        "authors": [
+          "Spencer McIntyre"
+        ],
         "description": "Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service.",
         "files": [
           {
@@ -656,8 +681,8 @@
       }
     ]
   },
-  "created": "2018-01-25T16:21:03.073438+00:00",
+  "created": "2018-02-08T21:41:40.940098+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "Aa69i+wkGFhLx1fumde/JdTmwK1YkppwHiF5jj8WHYS0l7ytgrhNX8QpyeHKM+m4TWEaTY/TZYSZmxUShLNSYckNAe3Zx+nq9PhtZKa064bH1ZgFlNBUs+8CeyAYgytHO2mi/rJ52x//pWxeGg+BgRGbhaN5v2JIolKQY26PlE2O+Pyz",
+  "signature": "ASJ2+SDtDRUVTOCiv8gEwv+9Gyk1sUYutPS0w0cwFhrxLLr4Da6ke8PZzB1qa4sFGCUJJ4kXiLa4bLR2SYE8fZcrATnAPKbUvv0PPteYLCQMIaFW/jXBL5o20j9PH0TPyhwa825NLpZWNParB3aeMCB6Ywz+XmoyUnzzDkmjhym+KIz7",
   "signed-by": "github.com/zeroSteiner"
 }
