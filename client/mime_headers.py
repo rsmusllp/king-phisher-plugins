@@ -3,10 +3,10 @@ import re
 
 import king_phisher.version as version
 import king_phisher.client.plugins as plugins
-import king_phisher.client.gui_utilities as gui_utilities
 
+_min_version = '1.9.0b5'
 StrictVersion = distutils.version.StrictVersion
-api_compatible = StrictVersion(version.distutils_version) >= StrictVersion('1.9.0b5')
+api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(_min_version)
 
 class MimeHeaderParseError(ValueError):
 	def __init__(self, message, header_line):
@@ -32,7 +32,7 @@ class Plugin(plugins.ClientPlugin):
 			**({'multiline': True} if api_compatible else {})
 		)
 	]
-	req_min_version = '1.9.0b5'
+	req_min_version = _min_version
 	version = '1.0'
 	_headers_split_regex = re.compile('^(?P<header>[\w-]+):\s*(?P<value>.+)?$')
 	def initialize(self):

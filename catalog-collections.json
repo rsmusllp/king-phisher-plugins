@@ -10,12 +10,11 @@
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AX9JYLgezmOKAp8GmczIsAKBsdObetr6pz811XIH2vMDJzPoTFrBlLlSKqYzsru8yXBSZfG7/d/6AGHGBcMgU/ofAZmMQtGlrrYNf1mNYNfexvT5+ispUqYg3WThoaEe2F+DhioQs0jXI4dGmCtDtZyOcmChhiivkvfmqzx5gssih0ds",
+            "signature": "ANp1fZa9YBvery4JgwP8142pT71oOu2ciFs6vrMP5kjwgeNTQR4euWeA/k6s4IvJ74XCt3uOctrtD5RQc2t3vxt1ARN2J9oWEcSkGjHbagsurkJzVR5PaBPI1+FhpTwVSwH9p2ikem37Rc53ZiSyWXXfSzWNib9rRvxIbTxxnOkN7SzR",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "blink1",
         "requirements": {
           "minimum-python-version": null,
@@ -39,12 +38,11 @@
           {
             "path-destination": "campaign_message_configuration.py",
             "path-source": "client/campaign_message_configuration.py",
-            "signature": "ANrKev0UPwlmQaa/++6XJkDwtIxLezBm8kvL7U6QbOb2nVQ8JgWKIj6WeG7/6ghuDqZLufJyxDEgx2jkLQw3OuXWADtta0Z9ae2zcKElEf5ZZK6wfE8Vj5qkr/jZI8Z8M0o2ED4JHIiPNeKkhiTPXYEe3cJTOEOnp/HjOsUA0+Ub9OP2",
+            "signature": "AA1GHMN8ZZS6FrHVAgW3pZIPQvKjx3yYE5qbP2kmHgXKjCKkEwPwtXdv26uL+J9SLZPI/Hp05U6cDZmOwzixc+aHAMqAjnOrD7Ehzr4tnEz4pVVurF4W9Ajkb20MklpXKg+8tXbHqjFZIBt4d3Y+nlVoLSAM0D8Bw8bjbpD6sw5mrXMJ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "campaign_message_configuration",
         "requirements": {
           "minimum-python-version": null,
@@ -64,12 +62,11 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AWItE5eWC8kO6LocBkEYdVI9Vx/e8JJcmg3f1IBHzMOaQpKOt+ETgNFYFIbLnzwsfZKVN/JiDykss2GmhFx1mrEfAFK4GpoI/zEn4WyugIdezVs1+/qDu4yG6Du0zkFpOCY4xV2m0mak7ExCaGSb1OgxoIilnJIunrqwQMkUucb6EhSq",
+            "signature": "AXHvDGUaZ3LqTqMZVMD0nlklNIayOR9TMHmHuM4+XP/ndnoI/yP8AOuK7pDzqRpOTSo0gCIhtanVGDrwnWCTFTS2AEr5TkoImdB60MNErGxBSs0CgNQOU28QxcLJOKVF1JNH2UTAq5w3bkFb6BXbsPsrpd50wkLnh3ZiBJYBFvkfeUWQ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "clockwork_sms",
         "requirements": {
           "minimum-python-version": null,
@@ -89,12 +86,11 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "ARevqE4BhzMkqu4mFrG5JfPW0zj8dxf3C6NYUlCt0SCnjlub40aiQ01dG1R3+vuhbOiBrMJa14jjjgnJw9rGpToZAQQOkr/9X5EsSAkc+2p7uuTng1hG7httYuT4PaW0kmp8v2xqUpQj9UIg4bwckGN0AM4jWUL0PlbkGlu5kbpyx/WZ",
+            "signature": "AK/gmQTVPUlnVg5/0PZobyq8Wd7zTzGT6qzjndhW3yB2hw8bQTrd381E2IQrDcLvskA+TN4pgfBrgU/IjNGYuE8nATHtZf+UZ2ayAyelVLvyZGuq9L4CdYrfX75oBFhNX1MiC8+zZo/pS9e7d+9healfWJA7Ojr4eKBItuXdMdYLNuis",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "dmarc",
         "requirements": {
           "minimum-python-version": null,
@@ -114,12 +110,11 @@
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "AI+um7RrudBIx7q1cB25mBEPGRl1N31xzfr0GhfnV66g7WJX7z7U/tNunESDQDl/jmoQcmn2Pb2odJNDbMBlamlSAKz4w/OBX3+Uv/Zx1raRVO4Xr+e06QReiuKVqx4saSly5zJ2ZCwsivlJ73wRcCKK8aYcvie5QymWXnO6PJVTQs88",
+            "signature": "ANT0hhwFPnqbkrDrLHdVVC9+aZEPZRwL0oWCqVn+V8Z4KSnSuR4EqKK4zLVNXgJL9p3M9x2zADkQMD3/o0MLWyBvAUZwXkXQgY87HSgfHWNIyoZIwN2BQzW7TY4JTxB/snyYleou5YNZSd0wKm7gRoJF4qvbr7DeLnDmbH+KwEyOUy0f",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": false,
         "name": "domain_check",
         "requirements": {
           "minimum-python-version": null,
@@ -142,12 +137,11 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AQtWpcXrv/F+9OZoxpqVW5y4blIRla7J1/CHyXBxMszCQ8g4gIB7gTOh+NMQJVCw1lRAc3ZTG20XiuM4p2+0CxMoAIiOtmqflixYootIQx280TJhUhivQnjSlkOsmPNPmYmirAlALzVaUg5P+y1ie1DrIUyOnc4dwUayftHWKy2yltIK",
+            "signature": "AApMlEv0Kd3aZE0/IEc8++Syu+Gx9JXwvg5Ek7lTI7vuElkUgmuX+GUM10lZwsnYGju+ihCkJ9eWV/KsufZsQ0TJAYD99a86TNNJW8saBtjkXm+vKBue6qnycpbDBzz59HJj3ce2Wo1OiIeFv11sD0eIuU4nOwCVmQFIq0YvuGViTFBH",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "file_logging",
         "requirements": {
           "minimum-python-version": null,
@@ -167,12 +161,11 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "AWeFlSzoHxp7tc3gHwwvmRGLXc/oXv9Q5E1E3xYF4qDCct5L+4UY0i8iKQtUwBxKyz2X2vcnIAsmAlmfDBGInwVVAEJXeTecF6GmkBNaVbH/0MQXFP8Ry2SpsPuESA/k7TDbilZLtaCnk0fqDe67hYWJ7scpFNrHqvt+UD0fimybAjvn",
+            "signature": "AE/tBWfASl98KJxG6o7hX0xJBMM+qWr0Sxc/ene7EihC1DQyCtyD4VJl/+J2kkSBB3qVPufB91RfaHMWmVuwBlvEAWNRfL1headppX5XCgafgTad14JV9RQYE5NSIlfKcvcL0tKiKzPULSsK/h0H8ry3HxNCnovVKZO/7RZrybjZUUCs",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "hello_world",
         "requirements": {
           "minimum-python-version": "3.3.0",
@@ -197,12 +190,11 @@
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "AUxd9Ilkk1HmXhmMAKqZGWzeTZ3YmCCIl8FBIiOfwVz8sg3pQAr8Kc3VaDM+jPY3Lj2mHzp4+CunxKIoAwbhvk8iAVkNkKkgGpl/Et35mNSAewaAlFg3O/6B/VVJxI8/eSiXCzNrjGS8y5eVm2nHVqdaTGL9HXSiVzghmVrjo+LmA30l",
+            "signature": "Adh0VT3d5wb9n7aT9gH8rSzhI3ZpsJ+PnfC26McQ0V22ayALmXfISklm58zJBGfDeRhpXJfsux8HCuHBYfWieQTfADCF239+8i2AdEgQD61mZP0ddrrDNiP5s3sOVpt+d6c9vNzpnVws/7BVML0wIo7fotvHvtXt/OC6ae4kNL4TWzpR",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "kpm_export_on_exit",
         "requirements": {
           "minimum-python-version": null,
@@ -222,12 +214,11 @@
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "AQGD+AaaQT80ZNw7UvJ41p7EloQUSnIyfVOBYF6JKmnEUrY1d4Ak99q0wKGttX3sm0FhT78l0Plm4OJNGAfK4450ALX39lIjClfmekkd4nhDSMxXEycznpk/dqz78KuiDG3Lq35iUniP2zo2FNbPfKQB3bz89qwYh3jAeh5M7fLqc1YX",
+            "signature": "ABzS3A/VGDpnUURwssMmGyeb9oYwqu+07VmheyABqu7TzE40IsS5521sumgXZ3EINcR7IbnYuYSuGFY7vQSe869zAFW2jklKBx1XxG6ITf2QcIJey5EADq/r8SbRAxFDJiIiWjZuusehoMfCWJEumN0PIrD5q5lC6JBvz6m5qgHjpvza",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "kpm_export_on_send",
         "requirements": {
           "minimum-python-version": null,
@@ -247,12 +238,11 @@
           {
             "path-destination": "mime_headers.py",
             "path-source": "client/mime_headers.py",
-            "signature": "AGcM+O86D3TQdnF48/zeUleM9t5YOnItYOWL5SMey82arRJ5kEcnje3vk8t7hjwSS/FcD+1Tkyxd6kmk80rs+fxOAGnuNYX+mRbxWqrVJZjYspq8yKQSpYOkvUFn0XtQCMgAmFHkcosY8lB4IE50Wt3vhg0JJHb1BUQr8vDJtR7KSknJ",
+            "signature": "AGadg4xXgNaj3yYinbHHLFTvhNJZvF+aoLxUu+Fmi59YQwZNePn0wC0lWmT+J0yVidxS4GKaIX4FTzn7XZAs1ApbATR3SqNLGD7g0CEBI7bExWBR4s+6rHT/mw3gVi524GO6k0wt4+CLlmWz1CleHIt6qX6CuC7289/ymTkqR+dHx+sI",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "mime_headers",
         "requirements": {
           "minimum-python-version": null,
@@ -272,12 +262,11 @@
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "AE+8n6CdAlomySFS/dAfGTH4zBZ9Zgza8hadsBq0mmo9SZzr+FiNxe3p7FPUZDcU2uq9RQokZeSbw59WiurM8AWiAMRArJ1lQUbgP4kKvCv2D79Gy0TNhrcRYI/BNLmqrZS67wLgJYRifRNGmbakecA8mh26P+QMiB8y+Bs+bWLEdhwM",
+            "signature": "ATBETvUwIinzzSfvoWzLeN/k5ekbXtQYKyNpLQUIpLcZWqXNkPuFe7tB7r9UpJAJUmLGXKItre7h81VW/S16JjJaAVIrqeov/fwmDMPgGxZrXQ2d4Fhc1JU3pKt/b8UF8P1z9OLF3XxUnIjeY+yLylOsb8u1XVkfQwFQikLJ1ghsUAxO",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "office_metadata_remover",
         "requirements": {
           "minimum-python-version": null,
@@ -297,12 +286,11 @@
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "ABuDrEC4f8NVOZBza0QWZpQEnzj7jZFMVf0S/CjRtV0Ejgk0SbP7hbp3mMhOITkYk2xbancbFIcStGhWYKRvaWcmALQ8QLdyQJ2FlRaToAiXHZlryUoG0LOmKRuJUc+lJPM7gbEzYkkG6JyINDisXewOr5jkcLNcxUcr1ZizscFZPZ0Z",
+            "signature": "AIfx0SOZg8+I0gA7blJisMlB3IKNeXyK0HEULL2NdbIkCNwfYqVgecz+0/C5IX5h/JVMPP7aup9uPaRIhSipxw2SARl6GH4Dx6ubRoZrygk3Rq0MRpuiwxRKu8RM4eijHExmEqBuJi3DhnleNZS/WU+eRMDttRbPpIW+77cYW7Lq8Z0c",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": false,
         "name": "pdf_generator",
         "requirements": {
           "minimum-python-version": null,
@@ -325,12 +313,11 @@
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "AKdie03FcRaSt64j6eG7dMvUeyjtEKSpGHv3IGyEUuGM45hSAMnvnlNaKxsduNeYEhbCecf2CTKj6sPcC+n62ZRBAIMFF2C0za4EAI5Qbc1XR6qKFs5OVUeCR0E0WmVgq2Wg4NTOE1G+ngOIBbiV7t3HoWnaqB9L0coYOD8asF+1aIkY",
+            "signature": "Ae7MqZpDnOWU41rA0FGBDdGNCgKIojz3NMvdHsF+AYcfsV9eD9VgMAlI0VP4cV872pydOs3MpJHzgPq9vTRBe2+rAZuyUjqZW7sktBSASJnlkPcZLgyKGgZ6zNRVGyP8nlYCHsvxcKTRJZJE2Y9vi4b4wlip3bfPifF3ESb1r2FS1lO1",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "phishery_docx",
         "requirements": {
           "minimum-python-version": null,
@@ -352,48 +339,47 @@
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AdYW3cGVThIY39ydjArqkjas0c4Ed6JY2WXcLhxZ+03e7tG2i5WjF6RGQPsu4bENRRXOzBinOE5Ckw4CG+mknRSVALZt119huoSpFi/XamtNsKHXoLR1zTC1F005SmAsjH/L718nSUVfX7ukQ/d1tqiE6lBrsRuwo8tMwCz8gFeUS+Y8",
+            "signature": "AVnwGDrkXGF/X6HJQEM7Q06HUo4+uMSAkEHCPenrY7j5jqim0y2oCwSDuzeD7sCDZgKv5ic9/lMT2ZdMbxkLwKU0AcNY2h7Z/H5DuTGsubIJ4n+DRl7t1z664gZGHA9U7BrkDs7El6zCSZ9r+NQn0hUbuGcM5+38YYRkvaOVYje6A/s/",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "AbCYY7Vdh9XulLUB5eUy4/mVo4cywg8RqVk7xbNoE5hcF4TmOktIieh+ZtRAd946z6e3mOuqmDR7RLTFfn6vSBgoAEvTqZQWbgV22J4XDPfBlwXePfxWBPDhweoCgKW0Mb2PbSwxS2l4bS8fSfzc2ubQAW2CUBARG0JaVRYhIfK3oALe",
+            "signature": "AVE/TgOLmtNkRdRbTx6z4avLiE4QfANAVTfCrlcMXrZHwp4fxZoJQTdkQOk0W1XwzKNkXdJXcSdpGup7KHgBOMdGAK5SkkoP7+s3ftRTCMUMqQZfmNZ04KCO4Qx3agLAT7SZeYeUemp99KFYHWZw9tEl/LSh5bMIxWAslwi/xr0Praq7",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "AcGynwWr1zNcevF0oi50tnVH/E4Gxk6DMNTxS9bFdOhkcYKbllnQd/SKm6YkC4AqDnxXR+L9d2TrHnSbGca24ceZAGdOPFtbPauu0IwzRxFjZhotETKjvMIhDBHmVNAQ+J8+NYU9foiDwTOaigiymhq4SQWQiLtoj60rbVyJSwRuhWfz",
+            "signature": "ABxXilJJc6NM5P6GHWfYiv4N456p4MsfVtefiGJUBCTfzTdMGyUpYn4N92WGiTJy7fDHr7BHlfxOYQeQe1IYa/FXAMyrBK8rvDnS5GyYnVV+iyS0rMIL8qJA/SyqFlGdT1zvNJC0ewXk+jChAs0XZe5C8Gm36gsr+DW3ZZuSOsXqx8hW",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "AVqIzH9GeyY+dFXZOE5oUY6QAQU6Lv4TzXQrj9aOPLNpjwnROYQzlX5E/mz1KvltoqJKAXq1nJU5nJ0G3V5eQKdyAKngv0kfXBL1A3SNzVUfCvnZKRZnnfoAPX2csMacyi2NAnQKOHJKzn/eJWKy/PNhUz9dR3iQClcq0FtDlU440Ihs",
+            "signature": "ADYIZV3jBOVEglXX1IzqiHranyAtzOlygowcxZrG9m5vVioQ9z7Q4byWfbHaU9chlOiMAuhLIC92WwPlqWpJbbKUAPQukBY9uvsDYhXreSlbmjmkl9VaW6EeOFsey8GIMLS9g4ddj03vQ+0CCsR/rYENn/78zbtKjlG8ecQ/wYQ1VnHG",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_client.ui",
             "path-source": "client/sftp_client/sftp_client.ui",
-            "signature": "AfHGm3k6syQiowgWd6jYtpBrcKNLn4hc84OtXCbbCZ74fWozjz1cP/sRas4I1wx/q2+TqsMDjnAmCDXgSr8Mg2QrAKM3dudpBiSbHGULLBKmf2o0DF+Y8Y8YF4d8+L+LWhCrneX4sUMzH1Q0EnWcuGF1gFpqaGa3e4WdoCPVqWLkq993",
+            "signature": "Ac0yPE0Oe2nEh5JT/fV3MRRX08GmqSdXV6R1HcQZZE/LXBov+ukheiKbFt13r9B1FaIXpnUzuYY8VKHhmThuiLdGAc+Yzu/2RIdeJncbbhsClWBBb+nIUVczc0VxcAUPhfxMKTxy2on1bIXT61d476K69xj+XQwS2/u0N5d7vbknr6vl",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "AH5HbmFWnm5aI1aMLN+IvzwjbIIG98lXmVHfGcGXCroDtI9bOv9phujEd9X9Wu7+zI/2+yNOm5qoCbWWIFDAhQmzAYX6aTVORbPCCk6kmLMTEbUXjFpSSM5lJcGUHKJZ+2KQ+QlycA0tOKTEHuXb08Z2mo+eF8AzGnThbTAy+mwFDN6X",
+            "signature": "AU6LFvv9UD9Kfl+23/HlLhdzkZVCRga4ztb1yFB3QLFVMjZ70U38KeUOqwUvRSGSNR37SaHZlC9LVWc+l6TftzIFATS0SBkKO1Qm3M6XnWrKSQW9g6GKL25I5FYirnvVl+hkZBpXqjWhMHD9C1ptKRQRARJW7e8affUBSTqIY9qOLTje",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "AVpfzKi/1jYYpaIq9d664swVABKKxGf7d6uqxVO7BNY9YbGb5V9mCBEyc4iFSDnWuZU7kC8tje5JX5ILRMopcQvMAfWda9iIcUKH62pUHHkAgHUPI1qdRvTichKnq3m9rHDVNIMmuM+/ZQlV9IMlG1CCXt3Yc+ToIZgIedoFoag7Vfc1",
+            "signature": "AEcBn7uvSUU6NkWrV4HgBvGrSuoh5q/seRhg+vt6A/y7bUfpM5nWw8Q2ryNEzDueA0pCnzfEDsrUBPIQc+McpaFsAHnNrltZl/O9Wuw0nSXkhx7Iza3ramfPwPjJlUBOLGiTtMFu8At0k8agoFxLymb2pN4/opmXcB3mu3JL8QX5c1EF",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher",
-        "is_compatible": true,
         "name": "sftp_client",
         "requirements": {
           "minimum-python-version": null,
@@ -413,12 +399,11 @@
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "ADYv1NKehxLqecBqR3Zk03aalvU1Ag64IPpZxzgxUPDfn5LFydyI9+I1nIMaczB3FgTAsPcR5MxROuEWIidjeKdhAFV9aztKjwbcrdvQOtRR3kq8opB7fmcj25Nm25Q7fluh7iLllSHe/p/XxP0VvRbfF6RzGiOrI8Egs2+UJtZpjW7N",
+            "signature": "AS1E0UhgQrvvAc8B6H2/AUWVXT4+7ppb4eBJk4VBgOo//OjqmWPhgmu2yv1qvfKUsiHouf7J6/75ggH6OC50tz8pAaeKjczqIqWIQORVhAp0/oSWtqTAcOO7e84104uoCVoA3MCD+mKtgtVzX+Ms9ROzltkzrOUUi/IONlGJ1K0xdHsr",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "spell_check",
         "requirements": {
           "minimum-python-version": null,
@@ -440,24 +425,23 @@
           {
             "path-destination": "totp_enrollment/__init__.py",
             "path-source": "client/totp_enrollment/__init__.py",
-            "signature": "AE8EFZZiis3cIUsYFHEiyK8mxBRtecsJI9gFDwuDVTGcfv4hEWXJWxTqfHJSmAZg7wTjQDJtiHrjTF/Jw+LufX4DAJuzF/Yfs6OhLadlISuE5T0T6m6a1gUZE4sSDJG8A4fitZjj+0A9Z8INbHWGmia1mr5o+KjGnk9XuFxFH2STSOkJ",
+            "signature": "AQ40tmbFfAgne9E1eywq4WfWYzr+hqAns4wF7mrVyck+dtcgLHulWAwz/S4Z7KfSVANqqULmZ/vXZvsJcSpqWpSiAFA1j1RrSSDkcjL3dSqFpz1HUhLCxxC2k/gAplIRFCNfq8VSj60Op4RnS3fKPCrlQkdq/zYBmRbB+y6ISNO0urAg",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/totp_enrollment.ui",
             "path-source": "client/totp_enrollment/totp_enrollment.ui",
-            "signature": "ANtc140QOBReyONDuW4rK+OxiURn7N7ifqpXJMHwhE+2TWQKnUbcOJ2mCofXJrQtavwwklpD651BiUfd38/oqbNzAYV/vPb/RVnEDmS/VmPYXFFD5r1pg0CTbWCzZb6vervvIpRkXHznRtxqMA2Wy16FeFraXjVxKOVco5CCfbWEOwzq",
+            "signature": "AFcUiTlJctvnxUI06SE+lyUW2HA38q6Gm7sKedGS5MnrtD0wxSGRruSwjeaGvaue3UeuAuz4Lu3k4W6MV/ygESXZAJRyIEY474+GUTyIbAUv8X/ss/8FQnChgcy2dQUMvcdHXOd0oq1HZxNksQayCqKP1g8GaSei/a3DLMw2TdugJOqQ",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/user_query.graphql",
             "path-source": "client/totp_enrollment/user_query.graphql",
-            "signature": "AHu4rAYG47jIVS7xFHVV0NrsVvGuJa6sBDKtRs4UkTPT4qNf1ga1jjdpYmtu5BJ/5M9WAS3I07UryZ9OJWdHGxRvAVDLKCYUsDR6GfPGvgkiwronjtBKvamdmaKOi7KPVQeFD5N3Js+iS81NW03yJ5c9jQZLKCq/uoiTsTlljZ7gFtCw",
+            "signature": "ANHq4i2m6yj28nsuu3XvIcYrKDFTqfblDcD/secNss6RodRKP/s5FvDfgH6LAhoORr7+kWWWk43k5Vnlh5XT99QGAcINWcqxw45RQH5sIU2GwKMqoJZZtltKObYwsu1gvWyCcfOgHayOTfyB3lyrviZYt8dPUqtJbe+Z5gM2q7plRiFY",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "totp_enrollment",
         "requirements": {
           "minimum-python-version": null,
@@ -480,12 +464,11 @@
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "AOIFsDFyg0O0vY7FYvaNoZrw14grVSCkue/WxqosL7Lg4OWwZ4Ix1ZN/ILSn7NvUoZ6nfTxnBGNh9+dPB43OMk22AcSYR0MIQ9R5PkMd1Gel1DPq/duKsTX247ljUJxqhy0TZblCgmISA5ZxKP+tGAL13CMLVbtqgeIMjLRG2JQ9ruwo",
+            "signature": "AFN0P+1gXQH6F64HptOnYg7fQ40HkkeKum2UCXLG+iPlqYMfGKHwy+N72FK0gyFaac3OwnihCfs3aeDvlPk1UA4sAOK3hsXRIZtI15jv2UcvFwIO53azKgq7zhUp35ksj/vK76ZLqWM//Uz8PX2eAwrZlN7OPAI13bRiMrbFT0Hc7lRs",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "uri_spoof_generator",
         "requirements": {
           "minimum-python-version": null,
@@ -507,12 +490,11 @@
           {
             "path-destination": "alerts_sms_clockwork.py",
             "path-source": "server/alerts_sms_clockwork.py",
-            "signature": "APeozEYrjRveczODTltuFjOR3BOWvlu7vfOiFqjBbFQ1Rv3Wda5AG8ATEfNQHZ5s8nwu494WkJoRTWriQjsr7mbBAVjPXCzu7+bP67emAa/BTRwLa8ncLeJry4VcBKh9es0YJ8J18KPP/EfAoG1CI7gGPieSDAhklJsRjOEmJ9cURm+e",
+            "signature": "AVD/3HCUrCz44YYSoYOVP/R57o9a6EieGTvN+YQ5jwvj3zbBrVizJYi5Q97fcglKHroIx2D83lWoyJhEdAf+w3JgALPWQuf2Y/Cc21wbxWqT00iGyihIipdM1nfxjjL3nRLSuXE+Myv8KSjKyMU1M1yyA9LL//+rAj0z5h/ssHyoY1OE",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "alerts_sms_clockwork",
         "requirements": {
           "minimum-python-version": null,
@@ -534,12 +516,11 @@
           {
             "path-destination": "alerts_sms_via_email.py",
             "path-source": "server/alerts_sms_via_email.py",
-            "signature": "ANGoI7jKmlm7vQ2DF5U6PTyqQ4yIOk21bRFcTaz9SNWf3I6D2+1AsTqnsiHPm4+PvhYITj5VK6YyXEYcxJAPh/aYAQlsgkGv9TTt8BoFaTPkIb7pnqdWbl+g5kgmHw2TA48cJIUXWH3vX5p0kEC8vgCQvHIMKcBhg5R59USMDapyj7Cv",
+            "signature": "AFvr20NzHvNzP7DW+Bm+sUBO/NJdwn3wC/u5PqPinauinHdtVpZFY+jwR0sSHKsFfycHN/qzNtCpFWhKjneunUjXAEOd1vNiQYWi+I1L34tVU1MnQCjGtGsAIrv51Yxa0GCCYgW4E+19q1OQA84SfJ5Yb8NNiX254Fp2ZBnWuVSJkue4",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "alerts_sms_via_email",
         "requirements": {
           "minimum-python-version": null,
@@ -559,12 +540,11 @@
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "AbjWCyBiWpsxYtcUw+qNcHxaK9X6NqPU7DNhmKNIzkdRPobeFiYWeut9J6BxCt3uKGPRrdwaVO6SX/FWliAGqW4oAGRyloFqOvY4GoYjY/Erjehw75Iib8CZOkZGV4WM5DneTfWjtsWyZhMiRpG22XIxR8ioBevQjoXTRssVpSGbFjwI",
+            "signature": "Ab/BAVpvkwF6EurMptTdNQrDE2Wg+vjn8WylJjLSXPvbMystC5+AoPsaKGnHeoJNNH3spj1e+koRt5WWIBLIEQbSAZIWR+21YcvMn4Ab1oJlVkJ5bJ8ZOJ5IkbePhLNR2xYebKgQr9zmmpJyXEhbFMOrr0NuAxOb4iNVaovTTZ5y99QL",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "hello_world",
         "requirements": {
           "minimum-python-version": null,
@@ -584,12 +564,11 @@
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "AOqinrG9uFVsN84QXq9lBhp0SfxhUbhw4UsyIfEMAnYfochkMmBnbpnIGQIkeIJh0MiFFqTDfr926/4X5ovFYFT4ALo4bPQGZPBlJI+YjRIX2w+R6gHRoLb9TRjvfC2PlZaM+ZIFLamAD043HGb7lMSxdvTha2xuql0q0O5u0KdgxP/p",
+            "signature": "ALWyG+GJGlhOdl2z0eoGjGI6WgvYHSNUq/aKyQMngfOQ0xUAHfbwrFMoNIkdpsm0wipmmg9sJdwdp21ryLGfm9meATaIRopzhWWaU4lKn2pz0E0As1/YbYCTb2gMSG0X52GEzNqJq4J0PTJv8NngRS1tHkmjkfnEwgWaKlsS//lTv49b",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "ifttt_on_campaign_success",
         "requirements": {
           "minimum-python-version": null,
@@ -609,12 +588,11 @@
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "AV9CyEY9UySGwWobFeGj2gWXKH9dvOBGwfHWuV6cnGarhT0fk5/AyRSDKOs3G5fCd4KDrHS5amen8qS99Yz/06q5ASnUns8t+JRufBb8VLAtYVacDzFVt2vvwNJNFOEcXBoXFlIsbfhlhFUtnZJz3laiVwKmf2lCYennKVLPi8Lkyrgk",
+            "signature": "AcOvnfmtBydhDhX3D1U6BA3/SVvi5qpj7IJmFy6dXJX9OOTmOaUsC6BXofzRv6sKBtU/3+z/0xXnVxxPU8yiYTdzAOnK85Zuh3Ms3YZeiRZ4akoF/ytICtJatKHRHuSUWfZ048eMfDGvOgjODdwVJnkvrQfTwKu2qyTkq602zPm2IQ+K",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "pushbullet_notifications",
         "requirements": {
           "minimum-python-version": null,
@@ -636,12 +614,11 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "AYbGg7/f+GLhnKosWdMCsIWYLabC44aw3EnXnfQf+7I21tO93mvAc2Uwfj0pMAM4ueOUTIs1Wky8QtiWkxxOGHhCAYhzW0vuBHr1fyuipNFob+jRqmZ4MGVVmNsXn/cRF9I/ur/yntslvJyrIecm7rb0D9NRtRBzDwP50XC9uISHC2ZG",
+            "signature": "ATYZHFvaCllbGR/cYt/dNuvf7+9o8RB/eXlpK5fZSTYwqW6Dla46FQzZ8E+kJ6DeFF9cPcPHnDgYpWM0U0sM77TwATtwxNWNp5dl0OsKUc3RbENidZ/fXMvCitpV4OqZBWbXW8axsdo0IR0lqCYV+VjAlMosp5mvpwBLFH1b0bgsGANQ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": true,
         "name": "request_redirect",
         "requirements": {
           "minimum-python-version": null,
@@ -661,12 +638,11 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "AHftqDrRK359y4OomH2cXgi8OtacI8gqLhr8+IsNUfIMnrq6jxMEGIQfJ9jSr2H4v+HbtecW8fCn6lx5zKQzsfNEAQwzWt3oKQCQDQzlPCSGUlWVRf4BLdjUCQoZVA9CB/nMNRecixIUTh+LPB5Qc10ZmLYpyP9bawOyn3Mzo3U9bZ2j",
+            "signature": "AFyuq3HiK0vqSzQ4yUZmlX+X4xH4Ap2Ak+00O0AM+ZxoKDcMt/r2Xr8qe6oXiwV7KwxArAlKuCTp19DcDjdSPVJFAV+69UXVkYyxw6vXHCsx+QpcvAYCZt0ko8VrnRD6W9kxXtX8blTlKLs3VhhpvczOe4uNCjTMZbz+bAGly1uJ2OVv",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
-        "is_compatible": false,
         "name": "xmpp_notifications",
         "requirements": {
           "minimum-python-version": null,
@@ -681,8 +657,8 @@
       }
     ]
   },
-  "created": "2018-02-08T21:41:40.940098+00:00",
+  "created": "2018-02-20T19:51:25.369309+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ASJ2+SDtDRUVTOCiv8gEwv+9Gyk1sUYutPS0w0cwFhrxLLr4Da6ke8PZzB1qa4sFGCUJJ4kXiLa4bLR2SYE8fZcrATnAPKbUvv0PPteYLCQMIaFW/jXBL5o20j9PH0TPyhwa825NLpZWNParB3aeMCB6Ywz+XmoyUnzzDkmjhym+KIz7",
+  "signature": "AYRHyZA59XyLXByQwlM+TnsEoOT14XKGd20cqe4f0k6DJWbFR3V/yhfGaVMMIw2ZP0hBRRuorpN/dtS8AOGSTCf5AHgWchwyMOpOJ2tNHLs2AvYgvv1upUZxFn+kFgbI+RRzBEN3pmJth1JWfsqktwxDvo5qHCgs37IwWOrNIm1TZN3i",
   "signed-by": "github.com/zeroSteiner"
 }
