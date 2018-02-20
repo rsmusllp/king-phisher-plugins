@@ -109,6 +109,7 @@ def _make_plugin_collection(plugins_repo, plugin, signing_key, verbose=False):
 	elif not (os.path.isdir(plugin_path) and os.path.isfile(os.path.join(plugin_path, '__init__.py'))):
 		raise RuntimeError("unknown path for {0} plugin: {1}".format(plugin.type, plugin.name))
 	plugin_metadata = plugin.class_.metadata
+	plugin_metadata.pop('is_compatible', None)
 
 	if verbose:
 		print('signing files for ' + plugin.type + ' plugin: ' + plugin.name)
