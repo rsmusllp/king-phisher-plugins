@@ -46,6 +46,7 @@ class Plugin(plugins.ClientPlugin):
 		)
 	]
 	req_min_version = '1.10.0b1'
+	version = '1.0.1'
 	def initialize(self):
 		self.signal_connect('campaign-set', self.signal_kpc_campaign_set)
 		self.storage = self.load_storage()
@@ -60,6 +61,7 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def finalize(self):
+		self.set_campaign_config(self.get_current_config(), self.application.config['campaign_id'])
 		self.save_storage()
 
 	def menu_item_clear_defaults(self, _):
@@ -133,7 +135,7 @@ class Plugin(plugins.ClientPlugin):
 		file_path = self.storage_file_path
 		self.logger.debug('writing campaign messages configuration file: ' + file_path)
 		with open(file_path, 'w') as file_h:
-			storage = serializers.JSON.dump(self.storage, file_h, pretty=True)
+			serializers.JSON.dump(self.storage, file_h, pretty=True)
 
 	def get_campaign_config(self, campaign_id=None):
 		"""

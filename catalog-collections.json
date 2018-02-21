@@ -38,7 +38,7 @@
           {
             "path-destination": "campaign_message_configuration.py",
             "path-source": "client/campaign_message_configuration.py",
-            "signature": "AA1GHMN8ZZS6FrHVAgW3pZIPQvKjx3yYE5qbP2kmHgXKjCKkEwPwtXdv26uL+J9SLZPI/Hp05U6cDZmOwzixc+aHAMqAjnOrD7Ehzr4tnEz4pVVurF4W9Ajkb20MklpXKg+8tXbHqjFZIBt4d3Y+nlVoLSAM0D8Bw8bjbpD6sw5mrXMJ",
+            "signature": "AFQCzVsTgtzDIqZx0GXhQNQ0JVvWhy+sxzRm5wSX6R8vxfVDC4PjiNe90N62KT6legoZKuI3+1BXtKHCGsMfBKy+AdkR6IAi1oOp8cFiSd3Zdv6k6gn8HkqY3awOb6obPHKXx1+0ZQVc858qRxCaEewXT0ecYRDyvaJWgfpLhFH2ljRU",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -51,7 +51,7 @@
           "platforms": []
         },
         "title": "Campaign Message Configuration Manager",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -657,8 +657,8 @@
       }
     ]
   },
-  "created": "2018-02-20T19:51:25.369309+00:00",
+  "created": "2018-02-21T17:02:25.961862+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AYRHyZA59XyLXByQwlM+TnsEoOT14XKGd20cqe4f0k6DJWbFR3V/yhfGaVMMIw2ZP0hBRRuorpN/dtS8AOGSTCf5AHgWchwyMOpOJ2tNHLs2AvYgvv1upUZxFn+kFgbI+RRzBEN3pmJth1JWfsqktwxDvo5qHCgs37IwWOrNIm1TZN3i",
+  "signature": "AD+PuvQTciY7WyC2JpED7/aukN4O+yKyg+xsTeri2+JUQtEqYWevshed1i5WvNwgD8cWbCCXFMCQGYyKntynQSgFAIDKet9GHf8OYeuswiLW9+FCUGLdOPvEc28Ihfffg0sb6093mp1EecLBljDzVbW6actUg0jEbQdtCehjefTKM+zf",
   "signed-by": "github.com/zeroSteiner"
 }
