@@ -4,7 +4,7 @@ import re
 import king_phisher.version as version
 import king_phisher.client.plugins as plugins
 
-_min_version = '1.9.0b5'
+_min_version = '1.10.0b3'
 StrictVersion = distutils.version.StrictVersion
 api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(_min_version)
 
@@ -33,11 +33,11 @@ class Plugin(plugins.ClientPlugin):
 		)
 	]
 	req_min_version = _min_version
-	version = '1.0'
+	version = '1.0.1'
 	_headers_split_regex = re.compile('^(?P<header>[\w-]+):\s*(?P<value>.+)?$')
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
-		self.signal_connect('send-message', self.signal_send_message, gobject=mailer_tab)
+		self.signal_connect('message-create', self.signal_message_create, gobject=mailer_tab)
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
 		return True
 
@@ -55,7 +55,7 @@ class Plugin(plugins.ClientPlugin):
 				raise MimeHeaderParseError('failed to parse', rendered_header_line)
 			yield match.group('header'), match.group('value')
 
-	def signal_send_message(self, mailer_tab, target, message):
+	def signal_message_create(self, mailer_tab, target, message):
 		for header, value in self.get_headers(target):
 			message[header] = value
 

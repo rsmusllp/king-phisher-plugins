@@ -62,7 +62,7 @@
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "AXHvDGUaZ3LqTqMZVMD0nlklNIayOR9TMHmHuM4+XP/ndnoI/yP8AOuK7pDzqRpOTSo0gCIhtanVGDrwnWCTFTS2AEr5TkoImdB60MNErGxBSs0CgNQOU28QxcLJOKVF1JNH2UTAq5w3bkFb6BXbsPsrpd50wkLnh3ZiBJYBFvkfeUWQ",
+            "signature": "AeLIZBMcjjoT0/UhrLtXUdryF5mAYLm+etLpPbaRhpj3zDpo9gaRU3qczNMlvs4kGMNYx27sTIUqh9Fdq2pgDLbBAHS6DYoqBj4TQTjba76CmE1pUtDkiD6EpQ0zRXywCuku2sv64IvKN8FeV1RaR2omaqaOZoqLtNK3GXO1do4B4bJ0",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -70,12 +70,12 @@
         "name": "clockwork_sms",
         "requirements": {
           "minimum-python-version": null,
-          "minimum-version": "1.4.0b0",
+          "minimum-version": "1.10.0b3",
           "packages": [],
           "platforms": []
         },
         "title": "Clockwork SMS",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -238,7 +238,7 @@
           {
             "path-destination": "mime_headers.py",
             "path-source": "client/mime_headers.py",
-            "signature": "AGadg4xXgNaj3yYinbHHLFTvhNJZvF+aoLxUu+Fmi59YQwZNePn0wC0lWmT+J0yVidxS4GKaIX4FTzn7XZAs1ApbATR3SqNLGD7g0CEBI7bExWBR4s+6rHT/mw3gVi524GO6k0wt4+CLlmWz1CleHIt6qX6CuC7289/ymTkqR+dHx+sI",
+            "signature": "AHuH7F+dfhGny0B9WWj4GVCC9EW07oaKMfUWVSFgWLt17n93tAuJUbHJSDLtfzktRuuTvmyVdtN/K1WR1J5G6EtLARS+/nP6JoEpljlX90gPTPkCQlqeMRo93hgYtzWnPF2N9umFymjUdSPHBJ58sSY4eouIJxgVnYQcx0GplyJK8oge",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -246,12 +246,12 @@
         "name": "mime_headers",
         "requirements": {
           "minimum-python-version": null,
-          "minimum-version": "1.9.0b5",
+          "minimum-version": "1.10.0b3",
           "packages": [],
           "platforms": []
         },
         "title": "Custom Message MIME Headers",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -657,8 +657,8 @@
       }
     ]
   },
-  "created": "2018-02-21T17:02:25.961862+00:00",
+  "created": "2018-03-06T15:57:15.912889+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AD+PuvQTciY7WyC2JpED7/aukN4O+yKyg+xsTeri2+JUQtEqYWevshed1i5WvNwgD8cWbCCXFMCQGYyKntynQSgFAIDKet9GHf8OYeuswiLW9+FCUGLdOPvEc28Ihfffg0sb6093mp1EecLBljDzVbW6actUg0jEbQdtCehjefTKM+zf",
+  "signature": "AEu1nkvDs4adhD8+oXl7ui5jp11vEVLzSskspDnAxKitgWm0bp5H2Vo2lM7WGSRtzCsP02PUP/PiXQ1fivQDmFQnARDPwReHecUOcln0eBr1JeSJEonWvjadz56VRpq2xQPh3y9G2GP51w/cj5jVqxu92oMiOSw7jtT72b/r+31c5TTs",
   "signed-by": "github.com/zeroSteiner"
 }
