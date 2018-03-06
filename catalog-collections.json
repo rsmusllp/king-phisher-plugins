@@ -105,12 +105,12 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
-        "description": "Checks to see if a domain can be resolved. Good for email spoofing and bypassing some spam filters.",
+        "description": "Checks to see if a domain can be resolved and then looks up the WHOIS information for it. Good for email spoofing and bypassing some spam filters.",
         "files": [
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "AHWGTOfHMMUl3e6/wu9pYgS4gLISWQyd+EDsSsfkGBrQ0bVGTeFzFPmStcd0EqUIg7/2Jch7YdxBSVNcjcjysGN2AciQf2iJC5lYCAjCiNHVaazqfjs7435DoEbFxCv0l0FcEOZ+4ys/W25rYyv+fTveLPh1FBVReue2c95kUfWWsPO8",
+            "signature": "AZhZr5RnXgucUidlHsk9pLK9Iv3SsLgtw9EQ94peoW+UuYNqBLZ6bhjipKlpW7FBs81oG6Ltdw85Jmpj/VBPJF+kAOENYRAxsH0TGp96B99L3mQ4xuYLOfCK65yXniodBPN4dNj8aMIvIgmwk/nGLjMn1NZqq/6Ofnqpr9ClDe1aZ6yh",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -657,8 +657,8 @@
       }
     ]
   },
-  "created": "2018-03-06T16:29:18.184647+00:00",
+  "created": "2018-03-07T00:09:16.063791+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AHbuon68FIoZRTOYWveaU0rOjWrCB/jhssWuSBjEFMbMFh6xPtPbdVhet5bZriFrKwveJKln2H3ExLDWCOuq6o/UAL0LfrTzFnF8cdr8L5gSDfUmRvZm3F1qnJcpEYNTG9fhehhg4gIz6Uoxo+C3DbOHY0naC+vrkyEpcg3HmRF+QAht",
+  "signature": "AWVNEK6S6NBLaKTODdwwV1SoiwSs/3xAbO0/RBrpKKJT5adJqDDteuKhI3caU7wNLJ2IAoQPbtCTYVlE7s2veeS7ABglVDE2tbwGK4omlgO12Ia0/3Lf/JHhn0yse7/o3DrDnL++7Gzqs/UDnbAwVA240HffnUPNXGgWTyyD2Cg71/4s",
   "signed-by": "github.com/zeroSteiner"
 }
