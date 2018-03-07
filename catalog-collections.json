@@ -156,6 +156,30 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "description": "Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE header and append it to the end of all text/* parts of the MIME messages that are sent.\n\nThis will cause messages to be identified as SPAM.",
+        "files": [
+          {
+            "path-destination": "gtube_header.py",
+            "path-source": "client/gtube_header.py",
+            "signature": "ALliTjVObK4CdeP1RaB5B++UaaoawR2wsVoXdScqL7kj3abLSy7cpiyCcI+lvVF1+Qa+1C1HxG4jJmGx3kZz9L7KAOcy8pDcUX4dKTADu5NrSe9ohC0zT2UPRGSV8UDgziTyHeTQUMDUMI/CTBqg5v6YEUyjhg0E0SX9F1Ce+zcLr7XH",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "gtube_header",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b3",
+          "packages": [],
+          "platforms": []
+        },
+        "title": "GTUBE Header",
+        "version": "1.0"
+      },
+      {
+        "authors": [
+          "Spencer McIntyre"
+        ],
         "description": "A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits.",
         "files": [
           {
@@ -657,8 +681,8 @@
       }
     ]
   },
-  "created": "2018-03-06T15:57:15.912889+00:00",
+  "created": "2018-03-07T00:33:17.351436+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AEu1nkvDs4adhD8+oXl7ui5jp11vEVLzSskspDnAxKitgWm0bp5H2Vo2lM7WGSRtzCsP02PUP/PiXQ1fivQDmFQnARDPwReHecUOcln0eBr1JeSJEonWvjadz56VRpq2xQPh3y9G2GP51w/cj5jVqxu92oMiOSw7jtT72b/r+31c5TTs",
+  "signature": "AF0slMgfVw4kgJBkBct49Bp3leKGnCaDBQ61qpkHMXCgsY0MU8mjoli8hhIYJ53z0SNlJGmMr+KlZ62MTVGed15BAVeiDQjM1PoOEPmTtZGdVWeb85CM/Ptf8NM7qMslK0v5SQRbrxPwjuDc6TMof822SOtxOULfob8RAN32urNAK2TE",
   "signed-by": "github.com/zeroSteiner"
 }

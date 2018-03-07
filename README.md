@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2018-03-06 15:57:15 -->
+<!-- generated at: 2018-03-07 00:33:17 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -14,7 +14,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [DMARC Check](/client/dmarc.py) | This plugin adds another safety check to the message precheck routines to verify that if DMARC exists the message will not be quarentined or rejected. If no DMARC policy is present, the policy is set to none or the percentage is set to 0, the message sending operation will proceed. |
 | [Domain Validator](/client/domain_check.py) | Checks to see if a domain can be resolved. Good for email spoofing and bypassing some spam filters. |
 | [File Logging](/client/file_logging.py) | Write the client's logs to a file in the users data directory. Additionally if an unhandled exception occurs, the details will be written to a dedicated directory. |
-| [GTUBE Header](/client/gtube_header.py) | Add the Generic Test for Unsolicited Bulk Email (GTUBE) header to messages. This will cause messages to be identified as SPAM. |
+| [GTUBE Header](/client/gtube_header.py) | Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE header and append it to the end of all text/* parts of the MIME messages that are sent.<br /><br />This will cause messages to be identified as SPAM. |
 | [Hello World!](/client/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
 | [Save KPM On Exit](/client/kpm_export_on_exit.py) | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Upload KPM](/client/kpm_export_on_send.py) | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
