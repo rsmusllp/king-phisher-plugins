@@ -3,7 +3,6 @@ import os
 
 import king_phisher.find as find
 import king_phisher.serializers as serializers
-import king_phisher.client.application as application
 import king_phisher.client.plugins as plugins
 import king_phisher.client.gui_utilities as gui_utilities
 
