@@ -105,12 +105,12 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
-        "description": "Checks to see if a domain can be resolved. Good for email spoofing and bypassing some spam filters.",
+        "description": "Checks to see if a domain can be resolved and then looks up the WHOIS information for it. Good for email spoofing and bypassing some spam filters.",
         "files": [
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "Ab/CEegmysclyN0A4YsC99HcmGMd6Cth2rqoiD0VqpnLSJaJE/OC4LMN/+GDeWdetoFiU+dnEC66H77x5CmBcmruAcsbjXwHslGM9LchgwJH5WH0kQdkLTj7ntm9mYrY9c2QCqO6YdZJgsXDT5eJFzMJBEFQ6iTNIwNlfzs67DGccIUe",
+            "signature": "AbXZcUQgLNTJKyQOXXxL5eOSw2Cwq8pAhiHv7WQf4+aYulZxxFWTUTzV1lMVubWAV3QyyaqwR/WNPaUvvIwsjikWAAcwf8lQ1UBIIC5svZuq4DrAY2DWea8p6kzMI8BiWXPUkk4b3e57sebUIkgLDSdJOkQH4fmYXqEHPMmuVQfXkElj",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -120,12 +120,12 @@
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
           "packages": [
-            "pywhois"
+            "python-whois"
           ],
           "platforms": []
         },
         "title": "Domain Validator",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -681,8 +681,8 @@
       }
     ]
   },
-  "created": "2018-03-14T12:46:55.271648+00:00",
+  "created": "2018-03-14T12:51:43.948371+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ASqnXGG79wP54rUe68Jlext3zOJc8E9mDM3o1QWFktQGr+OD3jg3MDAYtJRxawGVEv8kcdMNor0xkimQeUeSAnCoATbAdEcuNLxWuD7TCNPHlCetYxrSXwHTWKD8PswVVfZU3mnxmpMkKiSVRpE7P5dGIA/ZM+Qd3WlRNo3O5DGyLzls",
+  "signature": "AGUL1txnnKvVzwHDseEQVPiFcd2YbLD7S3ZZbLj8WU0K2smMKJWUr1Oq73FBgzKs8eW085FT20wy/F4WaDP3A+rtAbu4kwul634i/Bwn9qp1o/+vt0/AlzlRYTLjCwFlnE/zozMEFQaGerz8AawnMVyOFZtJOoSWfjEj3GBhbqejQnhQ",
   "signed-by": "github.com/zeroSteiner"
 }
