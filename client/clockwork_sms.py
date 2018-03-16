@@ -21,12 +21,13 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Clockwork SMS API Key'
 		)
 	]
-	req_min_version = '1.4.0b0'
+	req_min_version = '1.10.0b3'
+	version = '1.0.1'
 	_sms_number_regex = re.compile(r'^[0-9]{10,12}')
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=mailer_tab)
-		self.signal_connect('send-target', self.signal_send_target, gobject=mailer_tab)
+		self.signal_connect('target-create', self.signal_target_create, gobject=mailer_tab)
 		return True
 
 	def _get_balance(self):
@@ -65,7 +66,7 @@ class Plugin(plugins.ClientPlugin):
 		text_insert('Current Clockwork SMS API balance: ' + details + '\n')
 		return True
 
-	def signal_send_target(self, mailer_tab, target):
+	def signal_target_create(self, mailer_tab, target):
 		if self._sms_number_regex.match(target.email_address) is None:
 			return
 		target.email_address = target.email_address + '@' + self.config['api_key'] + '.clockworksms.com'

@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2018-02-02 20:05:57 -->
+<!-- generated at: 2018-03-16 15:57:35 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -9,10 +9,12 @@ Toolkit. For more information regarding King Phisher, see the project's
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 | [Blink(1) Notifications](/client/blink1.py) | A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted. |
+| [Campaign Message Configuration Manager](/client/campaign_message_configuration.py) | Store campaign message configurations for their respective campaigns. This allows users to switch between campaigns while keeping each of the message configurations and restoring them when the user returns to the original campaign. New campaigns can either be created with customizable default settings or from the existing configuration (see the "Transfer Settings" option). |
 | [Clockwork SMS](/client/clockwork_sms.py) | Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service. |
 | [DMARC Check](/client/dmarc.py) | This plugin adds another safety check to the message precheck routines to verify that if DMARC exists the message will not be quarentined or rejected. If no DMARC policy is present, the policy is set to none or the percentage is set to 0, the message sending operation will proceed. |
-| [Domain Validator](/client/domain_check.py) | Checks to see if a domain can be resolved. Good for email spoofing and bypassing some spam filters. |
+| [Domain Validator](/client/domain_check.py) | Checks to see if a domain can be resolved and then looks up the WHOIS information for it. Good for email spoofing and bypassing some spam filters. |
 | [File Logging](/client/file_logging.py) | Write the client's logs to a file in the users data directory. Additionally if an unhandled exception occurs, the details will be written to a dedicated directory. |
+| [GTUBE Header](/client/gtube_header.py) | Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE header and append it to the end of all text/* parts of the MIME messages that are sent.<br /><br />This will cause messages to be identified as SPAM. |
 | [Hello World!](/client/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
 | [Save KPM On Exit](/client/kpm_export_on_exit.py) | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Upload KPM](/client/kpm_export_on_send.py) | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
@@ -28,6 +30,8 @@ Toolkit. For more information regarding King Phisher, see the project's
 ## Server Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
+| [Campaign Alerts: via Clockwork SMS](/server/alerts_sms_clockwork.py) | Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client. |
+| [Campaign Alerts: via Carrier SMS Email Gateways](/server/alerts_sms_via_email.py) | Send campaign alerts as SMS messages through cell carrier's email gateways. This requires that users supply both their cell phone number and specify a supported carrier through the King Phisher client. |
 | [Hello World!](/server/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning. |
 | [IFTTT Campaign Success Notification](/server/ifttt_on_campaign_success.py) | A plugin that will publish an event to a specified IFTTT Maker channel when a campaign has been deemed 'successful'. |
 | [Pushbullet Notifications](/server/pushbullet_notifications.py) | A plugin that uses Pushbullet's API to send push notifications on new website visits and submitted credentials. |

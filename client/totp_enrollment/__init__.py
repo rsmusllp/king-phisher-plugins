@@ -1,3 +1,4 @@
+import functools
 import io
 import os
 
@@ -22,7 +23,9 @@ except ImportError:
 else:
 	has_pillow = True
 
-gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'totp_enrollment.ui')
+relpath = functools.partial(os.path.join, os.path.dirname(os.path.realpath(__file__)))
+gtk_builder_file = relpath('totp_enrollment.ui')
+user_gql_query = relpath('user_query.graphql')
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
@@ -34,12 +37,12 @@ class Plugin(plugins.ClientPlugin):
 	with free mobile applications such as Google Authenticator.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.7.0b2'
+	req_min_version = '1.10.0b1'
 	req_packages = {
 		'qrcode': has_qrcode,
 		'pillow': has_pillow
 	}
-	version = '1.0.1'
+	version = '1.1'
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
@@ -63,8 +66,7 @@ class Plugin(plugins.ClientPlugin):
 				+ 'is correct, rescan the QR code and try again.'
 			)
 			return
-		this_user.otp_secret = new_otp.secret
-		this_user.commit()
+		rpc.remote_table_row_set('users', this_user['id'], {'otp_secret': new_otp.secret})
 		gui_utilities.show_dialog_info(
 			'TOTP Enrollment',
 			self.application.get_active_window(),
@@ -76,8 +78,8 @@ class Plugin(plugins.ClientPlugin):
 
 	def enrollment_remove(self, _):
 		rpc = self.application.rpc
-		this_user = rpc.remote_table_row('users', rpc.username)
-		if this_user.otp_secret is None:
+		this_user = rpc.graphql_file(user_gql_query, {'name': rpc.username})['db']['user']
+		if this_user['otpSecret'] is None:
 			gui_utilities.show_dialog_info(
 				'Not Enrolled',
 				self.application.get_active_window(),
@@ -93,8 +95,7 @@ class Plugin(plugins.ClientPlugin):
 		)
 		if not remove:
 			return
-		this_user.otp_secret = None
-		this_user.commit()
+		rpc.remote_table_row_set('users', this_user['id'], {'otp_secret': None})
 		gui_utilities.show_dialog_info(
 			'TOTP Unenrollment',
 			self.application.get_active_window(),
@@ -105,8 +106,8 @@ class Plugin(plugins.ClientPlugin):
 
 	def enrollment_setup(self, _):
 		rpc = self.application.rpc
-		this_user = rpc.remote_table_row('users', rpc.username)
-		if this_user.otp_secret is not None:
+		this_user = rpc.graphql_file(user_gql_query, {'name': rpc.username})['db']['user']
+		if this_user['otpSecret'] is not None:
 			reset = gui_utilities.show_dialog_yes_no(
 				'Already Enrolled',
 				self.application.get_active_window(),
