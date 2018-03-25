@@ -1,7 +1,7 @@
-import socket
-
 import king_phisher.client.plugins as plugins
 import king_phisher.client.gui_utilities as gui_utilities
+
+import dns.resolver
 
 try:
 	import whois
@@ -9,6 +9,13 @@ except ImportError:
 	has_python_whois = False
 else:
 	has_python_whois = True
+
+def domain_has_mx_record(domain):
+	try:
+		dns.resolver.query(domain, 'MX')
+	except dns.exception.DNSException:
+		return False
+	return True
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
@@ -19,7 +26,7 @@ class Plugin(plugins.ClientPlugin):
 	bypassing some spam filters.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	version = '1.0.1'
+	version = '1.0.2'
 	req_packages = {
 		'python-whois': has_python_whois
 	}
@@ -33,9 +40,7 @@ class Plugin(plugins.ClientPlugin):
 		user, _, domain = email.partition('@')
 		self.logger.debug("checking email domain: {0}".format(domain))
 
-		try:
-			socket.getaddrinfo(domain, None)
-		except Exception:
+		if not domain_has_mx_record(domain):
 			response = gui_utilities.show_dialog_yes_no(
 				'Invalid Email Domain',
 				self.application.get_active_window(),
