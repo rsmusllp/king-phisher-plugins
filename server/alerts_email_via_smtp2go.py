@@ -45,7 +45,7 @@ class Plugin(plugins.ServerPlugin):
 
 	def on_campaign_alert(self, table, alert_subscription, count):
 		user = alert_subscription.user
-		if not user.email:
+		if not user.email_address:
 			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.id))
 			return False
 		# Workaround for python-smtp2go API, which forces the use of environment variables
@@ -56,15 +56,19 @@ class Plugin(plugins.ServerPlugin):
 		server_email = self.config['server_email']
 
 		message = "{0:,} {1} reached for campaign: {2}".format(count, table.replace('_', ' '), alert_subscription.campaign.name)
-		response = api.send(
-			sender=server_email,
-			recipients=user.email,
-			subject='Campaign Event: ' + alert_subscription.campaign.name,
-			text=message
-		)
+		payload = {
+			'sender' : server_email,
+			'recipients' : user.email_address,
+			'subject' : 'Campaign Event: ' + alert_subscription.campaign.name,
+			'text' : message,
+			'html' : "<html><body><h1>Campain Event: {0}</h1><p>{1}</p></body></html>".format(alert_subscription.campaign.name, message),
+			'custom_headers' : {}
+		}
+		response = api.send(**payload)
 
 		if not response.success:
-			self.logger.error("received error {0} ({1})".format(response.error_code, response.error_message))
+			if response.errors:
+				self.logger([err for err in response.errors])
 			return False
 		self.logger.debug("sent an email alert to user {0}".format(user.id))
 		return True
