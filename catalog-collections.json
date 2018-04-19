@@ -508,6 +508,33 @@
     "plugins/server": [
       {
         "authors": [
+          "Spencer McIntyre",
+          "Mike Stringer"
+        ],
+        "description": "Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
+        "files": [
+          {
+            "path-destination": "alerts_email_via_smtp2go.py",
+            "path-source": "server/alerts_email_via_smtp2go.py",
+            "signature": "AJIzKKJ1D5U9DTMW9bsHkN7bbqfQVwdjM2MYgptPyJo9xQBpIxrdiecRXWfeA3GN9HUItXpyudMKTQfGSHMkn//5AGR5GuBFqiH/s1cf+9XJ/M/f0ye6Wantse5l90css1LxKjC6X5zysiSd/9fkNulvjxd36/xn542fux5U2QKoOw/a",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "alerts_email_via_smtp2go",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b0",
+          "packages": [
+            "smtp2go"
+          ],
+          "platforms": []
+        },
+        "title": "Campaign Alerts: via SMTP2Go",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
         "description": "Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client.",
@@ -682,8 +709,8 @@
       }
     ]
   },
-  "created": "2018-03-29T18:03:11.890436+00:00",
+  "created": "2018-04-19T00:02:54.202826+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AK29zB5j02ll1PSYJL+Z17dPU1Rt7APpyDY+3QTYYpaInaOEJaJnx5Q9QfsMCcN2cfzu0NcFHofQBOHNuDbSxJw1AdJezgB7tR+ql0PwlJpIgcmRqFhYoLt4RaRdz5ZMUYr5b2OEQOlj8Nofcn/iXGIlukYpHvEm0eVeM1aB619tmL6j",
+  "signature": "AVGb06b73GsfJ9aiBWa9g4BbM2KnaqQbDsKzqjlL2J+LuigL78ocb753WROB/gSaaLSJuSG/a6r/Co7CenPyjnvUAVGeoozPVSOP+3/LuPo5nG6xjJzk6D99aYepQBLN/xfUb+Af/CQ6dOfDoehHOF8z+iRthTcJHpnf8rFWrLxDkiDG",
   "signed-by": "github.com/zeroSteiner"
 }
