@@ -58,7 +58,7 @@ class Plugin(plugins.ServerPlugin):
 		message = "{0:,} {1} reached for campaign: {2}".format(count, table.replace('_', ' '), alert_subscription.campaign.name)
 		payload = {
 			'sender' : server_email,
-			'recipients' : user.email_address,
+			'recipients' : [user.email_address],
 			'subject' : 'Campaign Event: ' + alert_subscription.campaign.name,
 			'text' : message,
 			'html' : "<html><body><h1>Campain Event: {0}</h1><p>{1}</p></body></html>".format(alert_subscription.campaign.name, message),
