@@ -666,7 +666,7 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "ACSodL3zeMu84Le9t7WEZWs9aEgQa7cA1kYkwUNbeCuNZ5M80YJ/s7GyVgWCEwFCmTqtWgfRPDqi98gea0/G6pANAGrB2Ct5ZvfWH0yESh5V540mcHD5WxqbCFh7kdJAZgwn00dttQ2eHqKF+gJEUyxz0SvbwQnb4ZjbXjgiSYUF8vI+",
+            "signature": "AJCZiAFoL+GaivsDGueBbL4LXaUAXr8DB8VuhZD2ocxSzd25kw3/dgnLe08dUOMDBLcJQfP0+bESt9OoKEauMyCKANr03EbjfT7zD6lT124xQGvO7X/AxrlQ9mjLq/WiHQirOAuXRU5SB9Jkhc4ePniq2qKcKFlZ7R1h27I3Rf6zyw4+",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -674,12 +674,12 @@
         "name": "request_redirect",
         "requirements": {
           "minimum-python-version": null,
-          "minimum-version": "1.9.0b4",
+          "minimum-version": "1.9.0",
           "packages": [],
           "platforms": []
         },
         "title": "Request Redirect",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -709,8 +709,8 @@
       }
     ]
   },
-  "created": "2018-04-19T00:02:54.202826+00:00",
+  "created": "2018-04-29T03:29:44.681631+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AVGb06b73GsfJ9aiBWa9g4BbM2KnaqQbDsKzqjlL2J+LuigL78ocb753WROB/gSaaLSJuSG/a6r/Co7CenPyjnvUAVGeoozPVSOP+3/LuPo5nG6xjJzk6D99aYepQBLN/xfUb+Af/CQ6dOfDoehHOF8z+iRthTcJHpnf8rFWrLxDkiDG",
+  "signature": "ACxOTqMs3QXhImslUuQ3geqNQA94zec74R7wMVH48pkatJbi6+0y+0dwflB12qq+iHP2vO+CvxomNjY3ls3QRaGqALlxhUWISiwEoSl/hC/ZfjZdPwS96pb3qtsjSV6dxTfrK/YQgY83lt4vrkx1Z25cj+FTbgJBGJwt6BEzpX7YUjce",
   "signed-by": "github.com/zeroSteiner"
 }
