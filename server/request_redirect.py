@@ -2,7 +2,15 @@ import ipaddress
 
 import king_phisher.errors as errors
 import king_phisher.server.plugins as plugins
+import king_phisher.server.server_rpc as server_rpc
 import king_phisher.server.signals as signals
+
+try:
+	import rule_engine
+except ImportError:
+	has_rule_engine = False
+else:
+	has_rule_engine = True
 
 EXAMPLE_CONFIG = """\
 rules:
@@ -13,6 +21,27 @@ rules:
     target: https://www.google.com
     permanent: false
 """
+
+def _context_resolver(handler, name):
+	if name == 'accept':
+		return handler.headers.get('Accept', '')
+	elif name == 'dst_addr':
+		return handler.socket.getsockname()[0]
+	elif name == 'dst_port':
+		return handler.socket.getsockname()[1]
+	elif name == 'path':
+		return handler.request_path
+	elif name == 'src_addr':
+		return handler.client_address[0]
+	elif name == 'src_port':
+		return handler.client_address[1]
+	elif name == 'user_agent':
+		return handler.headers.get('User-Agent', '')
+	elif name == 'verb':
+		return handler.command
+	elif name == 'vhost':
+		return handler.vhost
+	raise rule_engine.SymbolResolutionError(name)
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
@@ -29,21 +58,78 @@ class Plugin(plugins.ServerPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.9.0'
-	version = '1.0.1'
+	req_packages = {
+		'rule-engine': has_rule_engine
+	}
+	version = '1.1'
 	def initialize(self):
-		rules = self.config.get('rules', [])
-		for rule in rules:
-			rule['source'] = ipaddress.ip_network(rule['source'])
+		self._context = rule_engine.Context(
+			resolver=_context_resolver,
+			type_resolver=rule_engine.type_resolver_from_dict({
+				'accept': rule_engine.DataType.STRING,
+				'dst_addr': rule_engine.DataType.STRING,
+				'dst_port': rule_engine.DataType.FLOAT,
+				'path': rule_engine.DataType.STRING,
+				'src_addr': rule_engine.DataType.STRING,
+				'src_port': rule_engine.DataType.FLOAT,
+				'user_agent': rule_engine.DataType.STRING,
+				'verb': rule_engine.DataType.STRING,
+				'vhost': rule_engine.DataType.STRING,
+			})
+		)
+		for idx, rule in enumerate(self.rules, 1):
+			if 'rule' in rule:
+				rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
+			elif 'source' in rule:
+				rule['source'] = ipaddress.ip_network(rule['source'])
+			else:
+				raise RuntimeError("rule #{0} contains neither a rule or source key".format(idx))
 		signals.request_handle.connect(self.on_request_handle)
-		self.logger.info("initialized with {0:,} redirect rules".format(len(rules)))
+		self.logger.info("initialized with {0:,} redirect rules".format(len(self.rules)))
+
+		rpc_api_base = '/plugins/request_redirect/rules/'
+		server_rpc.register_rpc(rpc_api_base + 'insert')(self._rpc_request_insert)
+		server_rpc.register_rpc(rpc_api_base + 'list')(self._rpc_request_list)
+		server_rpc.register_rpc(rpc_api_base + 'remove')(self._rpc_request_remove)
 		return True
+
+	def _rpc_request_insert(self, handler, index, rule):
+		if 'rule' in rule:
+			rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
+		elif 'source' in rule:
+			rule['source'] = ipaddress.ip_network(rule['source'])
+		else:
+			raise RuntimeError("rule #{0} contains neither a rule or source key".format(index))
+		self.rules.insert(index, rule)
+
+	def _rpc_request_list(self, handler):
+		rules = []
+		for rule in self.rules:
+			rule = dict(rule)  # shallow copy
+			if 'rule' in rule:
+				rule['rule'] = rule['rule'].text
+			if 'source' in rule:
+				rule['source'] = str(rule['source'])
+			rules.append(rule)
+		return rules
+
+	def _rpc_request_remove(self, handler, index):
+		del self.rules[index]
+
+	@property
+	def rules(self):
+		if not 'rules' in self.config:
+			self.config['rules'] = []
+		return self.config['rules']
 
 	def on_request_handle(self, handler):
 		if handler.command == 'RPC' or handler.path.startswith('/_/'):
 			return
 		client_ip = ipaddress.ip_address(handler.client_address[0])
-		for rule in self.config.get('rules', []):
-			if client_ip not in rule['source']:
+		for rule in self.rules:
+			if 'rule' in rule and not rule['rule'].matches(handler):
+				continue
+			if 'source' in rule and client_ip not in rule['source']:
 				continue
 			target = rule.get('target')
 			if not target:
