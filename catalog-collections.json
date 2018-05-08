@@ -450,19 +450,19 @@
           {
             "path-destination": "totp_enrollment/__init__.py",
             "path-source": "client/totp_enrollment/__init__.py",
-            "signature": "AUrqyOetkMhsMPEeIGEaoeHzsB2JJ5AqG12HHLi3dYmffAYBbWMS3P04NSZv2YlVWyFOqycyspbWApjsy3no4+m+AeBNYz/yY4kNqgNSIXIj26V1hHpgtJT3jfXTvO0uJzJ43GHDpxgiyxc8OcUUe6G5dKRGqai6jmuaOCGTwHVUKutm",
+            "signature": "AaFWTSEvELcrC8xZmRqxg5UHprvJsEgLtv+RoN5aPQK2AUDTrFJV2qP1ocQDF7P7/pnRrqJgw7/q5ytwxamHIZ8rATUx/9CjkBrY9PBZOnTH4KJBl+A+g7g6dkaC8Na8SZNezhav/bgKRRNUXv/sNZQokUfX2SDjCWuAx7hXYdc0CQ8w",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/totp_enrollment.ui",
             "path-source": "client/totp_enrollment/totp_enrollment.ui",
-            "signature": "AMb71Jh18aAE+AP0lqvZ2sRonmFwZsakc8Vyp4EpshkW/OOuFJbxn776KWaxBZPNbb2qKGkWcv0UeHJ2yry/RJoZAb1wWfFloeREHR49CyE3kp6G6XJOsdmhqWy2/Znnq/5TnjUnKd9XTgVwf9D25Fw4gNMZhopRgrNqpiqsRUmOo+v8",
+            "signature": "ACNaQr8eJY2DW9eJ/Glm7SJAlDsTrzX5ajuXe4fON8RaVvldjUmjycqhLHiNxwLUuHh9cmAKTg/Gn+c5PSaE6+Y1AZX1dSdqf2/eqbmZ/BugyBbkJGvG8+l9/4yomLJXr7n/N8dIS+31R1NcByf/zAH9pBtsiyL/7Jbh+d9Q8Aj31gEX",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/user_query.graphql",
             "path-source": "client/totp_enrollment/user_query.graphql",
-            "signature": "ARqaxjdE3MbrT1ylB3Ml2bHmNJ2/4RFxBM920JZZq3onHobXVjXo7B915n6yNq0eKzw+RZwuh5C1eFSdMzN5CVNhAVc4NZiQ7Rue6ar2IgF/SN5MV+HX4KGUOj/fUJ4UaBVxTivNQfJCriD90+hRHL0wSeA4F0vD6KTmtRgxzl2xl2G5",
+            "signature": "AVO/Av647Grp8UyA8y/ezyINSnEBuQy+kBBovH85pNQV3mcM0OalGBTOpMO48ehd2P19XkC3WbND89U2xqeXkYOrADAYxSs58QkrwxMWtXwHoijy/l9OFQZXhTBIAK+wVEpMxkOXOlI9wgm7/Guxo6VbFDIZ2CRkV2Kn4GX/xnIgJuIZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -478,7 +478,7 @@
           "platforms": []
         },
         "title": "TOTP Self Enrollment",
-        "version": "1.1"
+        "version": "1.1.1"
       },
       {
         "authors": [
@@ -709,8 +709,8 @@
       }
     ]
   },
-  "created": "2018-04-29T03:29:44.681631+00:00",
+  "created": "2018-05-08T17:37:50.168691+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ACxOTqMs3QXhImslUuQ3geqNQA94zec74R7wMVH48pkatJbi6+0y+0dwflB12qq+iHP2vO+CvxomNjY3ls3QRaGqALlxhUWISiwEoSl/hC/ZfjZdPwS96pb3qtsjSV6dxTfrK/YQgY83lt4vrkx1Z25cj+FTbgJBGJwt6BEzpX7YUjce",
+  "signature": "ABzNLzazTjWOIEVDe1pqg4y4k1DdZb7tv1GRIz+RnuN0a1MKxnVJirxbO6bXtY9EVLCsFgEdJgDczdYGkOHEaMucASToScRNRrqN1oh/Qln7rlC7ZnR40ibGsqA5pk0lPseonY1kU44WRhwHJrdZaftZtvaIgb7ywWW0rzQB/4Cd/qck",
   "signed-by": "github.com/zeroSteiner"
 }
