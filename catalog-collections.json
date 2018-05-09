@@ -355,6 +355,42 @@
       },
       {
         "authors": [
+          "Spencer McIntyre"
+        ],
+        "description": "",
+        "files": [
+          {
+            "path-destination": "request_redirect/__init__.py",
+            "path-source": "client/request_redirect/__init__.py",
+            "signature": "AQn2iWeX3oOf4266yDglN8IwguAzd9F+OhVCMQd+XGSpJ/H9Zyi9550B9gqpjULjtKwbVTdB8rBUvCEdkm8IVLpVAAec6ik2y0V9mJG4jxHdTsEJS29jL03773mMHsbMHgWOqbuPXqg6hQEWd0EbdfnHzmIZUsOUglVO264TnQ1UfSwV",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "request_redirect/request_redirect.ui",
+            "path-source": "client/request_redirect/request_redirect.ui",
+            "signature": "AVndJCFgh5DcLcIkX3tKgOrlyJcbu1aaB9dQniykrFbBHdUzNKixwjGg1bIjYMiHM1dAlagM1gMNfxuOsQTppLxqAJ0vaU+yXugc49yPppSSRegmmpe8j37/UN15miRtzgXRUTJZp3Sw3i+tmtKec2LCRp056sjo8shqTT7HzCfPYp9C",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "request_redirect/request_redirect.ui~",
+            "path-source": "client/request_redirect/request_redirect.ui~",
+            "signature": "ACmQhLrc1txCT4bDGcRvLae1Z53yDKdr669IECawytMM6Lq5qOeHXPPRaar1GzzhOwud9HseQh4e+wiLIs/6+itUAdvKXPGiPk7OqUse3pDMiPdg8M9dvTBJUR6eaIHFBO7YZy339G8fJ/pEFzfIuwUDBHPfHu5lMzURalLjS2YGh5UT",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "request_redirect",
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0",
+          "packages": [],
+          "platforms": []
+        },
+        "title": "Request Redirect",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Josh Jacob",
           "Spencer McIntyre",
           "Erik Daguerre"
@@ -711,8 +747,8 @@
       }
     ]
   },
-  "created": "2018-05-09T00:57:44.921578+00:00",
+  "created": "2018-05-09T01:22:54.690094+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ATYKMnLlrVYE59TAU+E610pBz8jH77aDaCXa0TzFOLcTAzEPhzMh3bXwSavyUyBMIapaLB6i4H0cLQygAdt8ow0aAIDd44ZlP28+ideUjbOSLmy33gQh4LtVMCxL1PxxAe75zu0qPeDiy/gKkL1OFbBdN7ZAJ9rV9GGR860xNCIVZcCM",
+  "signature": "AGJwLUAvJN5guJzD3MLiGo7vTw6f/JNlXTIFCFGxoX87Y0b9yUMQmyYqLwdsukjSB534wS4azObAzLrSfvkGc4ZbAbov5dz3k6BMzpf+R/UVEesvaq5mu46fFlCrLwK53tfSeIIfv4mcSivVWTPikZ7f32VP8o0CbzwUO1pULalIQkyr",
   "signed-by": "github.com/zeroSteiner"
 }
