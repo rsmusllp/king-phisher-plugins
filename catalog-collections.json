@@ -5,17 +5,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted.",
         "files": [
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AehZR5uthwPxuiNzwz+5SB1Kv7sAP1k4QDzYWUGqcCR4ilE/GomF4yHaAHEMjs41gXKcSDxhihiRLViVOtMHEuN6AGIxOaCGZ0ntg9v6yo8jMxGiWDWYe/xdPO/oJ0BcfG/ThMQgcJRx+wRf6WzqHLeIrpLKbtaN5NiblXSirYX7Jl41",
+            "signature": "AUxbgGMDOj552MVSw+WkJGKSTBI0NMwR5AWIvRJGrtIoHhpx121x2iP7J+q5nTO7pd6sMeruLKOsgVVB3sJN5g7uAHAaejmdwrN4WPE2dwB2SDoy2xCp4uk+zeTs2GZt8EKh3LeyFzJUd1WqjZ9yjto9ke95kg8MdamwYSzIWA82BesQ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "blink1",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.6.0b0",
@@ -33,17 +35,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Store campaign message configurations for their respective campaigns. This allows users to switch between campaigns while keeping each of the message configurations and restoring them when the user returns to the original campaign. New campaigns can either be created with customizable default settings or from the existing configuration (see the \"Transfer Settings\" option).",
         "files": [
           {
             "path-destination": "campaign_message_configuration.py",
             "path-source": "client/campaign_message_configuration.py",
-            "signature": "AbpqeCicjlb6HK3o1SoacIKhRvl8Rf/YlxNtbs9bigDMuUccVg4HstisLFk3NAnAHe7K5JDUcDMoU04AG5/E4oEIATmUto+Q+5KGeTYTH5qNanIbV9CQE79MfbEk9xh8bffttCbhC1VChK60gG1pVtMfULd1lg4VlaCrDZ+U1sAy6YJh",
+            "signature": "ABoYeNdRlwkn7ppISLUZIb0EOqg/Lsoqd2RSkl4Uc19Mnkdtm/azB6S+eT9PqC262YjCU9DPclXDatimlp59A8HkAYd2+g/QbUWjomTLkiSJpZkTA2q27X9oLM0COS4d3lur8Myl5s9OWhyRZaDgX9XBl6NCfQTtll8xdpA5gfMU+Nwy",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "campaign_message_configuration",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b1",
@@ -57,17 +61,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Send SMS messages using the Clockwork SMS API's email gateway. While enabled, this plugin will automatically update phone numbers into email addresses for sending using the service.",
         "files": [
           {
             "path-destination": "clockwork_sms.py",
             "path-source": "client/clockwork_sms.py",
-            "signature": "Aae8PxmfhSnfdX+SCdqD+Rej//GSVqZ/gU8cSaJCHo4a26o+36t3przUSkjQpYtMtbxBJ9d3zdHLzbERc202nDEAAaJsuKHbYXrX1tlN13PtBCF1YsV9QEEumZV4Oe8x/jmUaYHcsMrsCVU3w/PmIP3JimmajspZAAtLX7ciBHb1vUBm",
+            "signature": "AYlPtIdJbWsBMHkPJYFKXQ8i10/Czb81J3CIbBtswQ36iMf3jcXW4UrhOE1/5J8J3Bx0v05E91/EeNH0CrvICvT2AA/yzSK7FadYYpXSAVC8dn82IcmHg9r0YYEnU8ViKiaSJnUdVDvqnPDm8FUCDMAy3lKTapv4VKbe+mCaeWhn9nbn",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "clockwork_sms",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b3",
@@ -81,17 +87,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "This plugin adds another safety check to the message precheck routines to verify that if DMARC exists the message will not be quarentined or rejected. If no DMARC policy is present, the policy is set to none or the percentage is set to 0, the message sending operation will proceed.",
         "files": [
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AFdsMlUGSKfN7F84/1tbzDviuCmWIj/+uNylcAKmenSoLuf1vEkxu2rZ9mClPWiBl4TdWkGOUN2ENQY0N+4yCZFPADQXmNicTj+cxAr/cWO2YEYT4FLcqq/KGGU9zQprHMkr3IJanUZlvYM70a1I65qZqtV6muCWvg6+HC6JxvVrGzej",
+            "signature": "AMW72LLJUdTfeJnnQCb12wc5nwCNGAA7+9l6gvJVe46vKvaWMA29WFr+9lXRKH2cOmHpitC78wRQk333n5IScTZSAPFtm067MxVBVy3vgPYSVXzD3L9yd5S1Tai0TNAVzKXRZHZCBCrbO/MyAOQsxRAl7W+MzHrz1CC5CSOQGD95Gm6H",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "dmarc",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.5.0",
@@ -105,17 +113,19 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
+        "classifiers": [],
         "description": "Checks to see if a domain can be resolved and then looks up the WHOIS information for it. Good for email spoofing and bypassing some spam filters.",
         "files": [
           {
             "path-destination": "domain_check.py",
             "path-source": "client/domain_check.py",
-            "signature": "APfe0oL9hS8E9X9bT7xbCKNWhcbKJA+dAdrl9i2Ok+LubYpOhwEIdS90mvi4S+ZfJsg2SA/JSFqPxDSDlRNFAyKVADpnbiLEQ97nwV7RyexuHoN5FpbkdpuwlAQBE6lxQY+nzsMtka1IAOuV39uxSCZMzEB4NVNEgJgH1Iwty+3oBk86",
+            "signature": "AMOxu3HdHZjsbCHPz+/YIzKFYHU5Irq09/0TZZTvuiV2qgC/oYhxeO5F8EK7jaUDsz0Dn1/jagUg4UjTQ8CMYunDAM1ZF9pGIQIH+JhWuYUuuvc1PhFIVC9OI9EVY7KSnOVvpY3/l0CHu6BLV8HxvTinEpDaPUyB69+HNWrz317Wfkap",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "domain_check",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -132,17 +142,19 @@
           "Zach Janice",
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Write the client's logs to a file in the users data directory. Additionally if an unhandled exception occurs, the details will be written to a dedicated directory.",
         "files": [
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AByAaZGhx3XyEQ22qUiNAukI86btzRTuDhhRbwizSs5DWxMdPCQG9X9TIV1OlOtgNGcxkolWEUjAtWOW0bYCLNSwAD8ytg66hpQlqPCy16LisAbuZr1dVnuo1PTqhmR0PbySFTvE/HWoyT/cT8YRxj9MV9eOJdY8K7w2MO8S9EIQSspP",
+            "signature": "ALH66LY3kv+NxnW36GCqkEZ15LizUGSbIpRp92pMp/S0RyjKdeY70yN7UXi/jp95lpm9RQs/Nrz9ODrnhdIzXlbXATjlwvZTisPRG2VFk0w/6m/xAp26T1bxCYZXh0pLOvhrVUHie08TwNBGay6CItrKDCN+GrQjhl+VXGg4QEAEnawP",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "file_logging",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.6.0b1",
@@ -156,17 +168,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE header and append it to the end of all text/* parts of the MIME messages that are sent.\n\nThis will cause messages to be identified as SPAM.",
         "files": [
           {
             "path-destination": "gtube_header.py",
             "path-source": "client/gtube_header.py",
-            "signature": "AElyRRcc+N1WE1cRunEPIuxnsuWvT8JLW0wLXJvVK5x0W1LVURcjIfaSbsMPkPtlkbVf93f8dzVIyvqQXL3yMNGNAeP2QNQKBLJnIg16kClHngbNd/VyCwd6OxbN+y/r1VjnZgIJt0R7tUIjJV5hlwcnyhl6Akeqcpq0GgrFsxKnV/KB",
+            "signature": "AVCG57qWDYNfNZJ/zdA1OWGLlF1tyKKqKqN73W0HA5dvrrquSwlKeEzsdRqxYD+ydRQZpdrWgrlyuu4BAk7BxsLuAS96tHnayh+In3EjMqblU8rLEL0J91lAogec5xhZpGNeB9KH3TrEY2vZAbZ96QbVbaIyZOhl/z2XcsadaphpZU8w",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "gtube_header",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b3",
@@ -180,17 +194,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits.",
         "files": [
           {
             "path-destination": "hello_world.py",
             "path-source": "client/hello_world.py",
-            "signature": "ANGoOb8af7Bi+k6om27bBKAlPNU1WAOzGIbv5Tc2HrFddFiA5FxkybhRpzKW68x3zBtQuBx2kpWpaLlmfVSdjLZxAR6VK3iNpZUYNKnWapZ4oblBDDN9idK5xEWXR4TDJaqXhKJW+5BFZZEXK1fn8999DhNJmEexMIFG9iGTFfdYaHT4",
+            "signature": "AD0InIlVIczLAZMJgsY4/b3LEvoxGB6K6XlT6Vkg9FA0UxULN017TYxvAyEoHiFM+qXpJvI8Elq0vfApMr5rM1jwAcbJ3CE2X3W8xfYScunUm3WypUyt5dnkjPfdj8V/W2cBtWCzwzlnu6o3kN0vptOlgFXcZYP2SlABJ5OktBzZ6Vyh",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "hello_world",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": "3.3.0",
           "minimum-version": "1.4.0",
@@ -209,17 +225,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Prompt to save the message data as a KPM file when King Phisher exits.",
         "files": [
           {
             "path-destination": "kpm_export_on_exit.py",
             "path-source": "client/kpm_export_on_exit.py",
-            "signature": "AQ28kqpaX/e5C/dJEwY2CPMs2ZcZ3qLEdlZmpRgcaDZ1pV9xJESruavNWV77zcNZduW4BpDbM9bxUV1uhPseNvn4AQ1J6nX+T0jXrZL6NXf3jnzG49e51pJOrcsPDg9sR0MNmYXbpxC/DpKkhTWs50Phe4ompOO8d97fiJ79IBB9vK1A",
+            "signature": "AU4jlUAi1yBrHaC5DzRzY0CPlWas7RT/QVk/tReJtXz9qVL6jUqqeoXenPNJujmZ0xINfo5YoOOipn3qSMdv9biIATYRTyunEvQxE+XaFn58Novt7zP6WsF8EaWALTA8aw7+uO47upIeV8G5HbqmJbwI+5UZBXFZLQL9RK87yd9xRHIw",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "kpm_export_on_exit",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -233,17 +251,19 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
+        "classifiers": [],
         "description": "Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the \"Local Directory\" and \"Remote Directory\" options can use the variables that are available for use in message templates.",
         "files": [
           {
             "path-destination": "kpm_export_on_send.py",
             "path-source": "client/kpm_export_on_send.py",
-            "signature": "AYkE4GmXEfKfv6ULoGF76AuRI6623HUia4OnirSMD/e5AbrrsoYFob6pk3Fwcg7/S5UienKzJZu6xEV5UugvoPIHAPeUio11XyYDCHn5m7eCfKQJu2oSb7i3w60QaiWq3bX75ApJAnjSvTDpdm0dWDXnasx5t7ybR4EsaYigDUPTAm6j",
+            "signature": "AHlVc5n7djYnDLwPW91YUlIDR1El0uc1JN0Rn2LphntSpK121uNOsQKponIm8fwa8T1lOgpM85sN4w56BiaaJWcdAFwdcHJkGuk2uDvqQZ4Mlwn2qV5w8u6GWPrrAPOu5rGypQ4Y2Jd6UzsdznB5RhBHqyhutK7qT/bU9FHDkrgNH7hP",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "kpm_export_on_send",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.6.0b3",
@@ -255,19 +275,50 @@
       },
       {
         "authors": [
+          "Spencer McIntyre",
+          "Mike Stringer"
+        ],
+        "classifiers": [],
+        "description": "Add and modify custom HTML messages from a file to reduce Spam Assassin scores. This plugin interacts with the message content to append a long series of randomly generated sentences to meet the ideal image-text ratio.",
+        "files": [
+          {
+            "path-destination": "message_padding.py",
+            "path-source": "client/message_padding.py",
+            "signature": "ABVDM7/esTDBremYnwEvJqUJkIEdXgcNzIVsuxOUtrwzXw9T3CIr4V8wLnmcqdvdhwmc09/FxPW8HQ01ZPpqNfxSAMSDtWvg5fVQUB1R8Lo/woXXrwR/gvcE39Y2WOZAXeNi41mY9uFbZdQPdOsAbCrtE2a/AHMi5ExYcKbPUlErdCJZ",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "message_padding",
+        "reference_urls": [],
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b3",
+          "packages": [
+            "markovify"
+          ],
+          "platforms": []
+        },
+        "title": "Message Padding",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Add custom MIME headers to messages that are sent. This can, for example be used to add a Sender and / or a Return-Path header to outgoing messages. Headers are rendered as template strings and can use variables that are valid in messages.",
         "files": [
           {
             "path-destination": "mime_headers.py",
             "path-source": "client/mime_headers.py",
-            "signature": "ACxbrcMO2B91o8n6JbqAJtEORF5b411berWNU+YaaCSy/Oy65z+Sd/WPBwHeC+QxYtjEV+YWpPzhZx3pliNyHhYDAGcDez73i1317wMvLKDoB7RuUiIhhKOB8GFEXVlkxx0NX3qVtG7njdtdcAABCPdtTZTFy8SPpqjZRMftBzzxaL+Y",
+            "signature": "ARcoPqrik1PoIJd86Bk0t7RoptSUAvd++MnKgUPEA6+gF6l2rrHGsAL1EegGanG9fjEU3BzxemnEkmq8K1mrNf6WAIwUi29ollnqrYsBzGbaXbw7POmUKmVuB/p48Gi4LN5MgbDmrZ9GtvzcT7lrWWGF8lW4zpTcViMxjc9YPYEzweBb",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "mime_headers",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b3",
@@ -281,17 +332,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Remove metadata from Microsoft Office 2007+ file types. These files types generally use the extension docx, pptx, xlsx etc. If the attachment file is not an Office 2007+ file, this plugin does not modify it or block the sending operation.",
         "files": [
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "AYd8qdVMWDs7i2tIvB+9ovBtOUI/kOvUgYGYnPP1yaETlOU+Bf+/ca0Gpd9+BCZyLP67ev8nMocBeZrXhlsNrNDTAKKTUQh00tPpNFoQRxB9iEr641PqIGa7ZwzS45n14bboMUmHSgz2S3az/k8kbBd6HPZwRzml4s31kMNGgoQ7Stn2",
+            "signature": "AWnAqFNbh7US4oK+fotFq25M/pg3AdTVmd7xB0sLzr82ZUdNAQ0cf3KmrxIBE3DjkLDog4DH5TqTmjAwdKOUah75AOYWQYW1w6k4TdykQ5xxG6IwL0G39qU35y32LCF2aECyRwO5jbJvBc0uSh61KnYanQSmjb90dhJ3YsHaUE1z7oPJ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "office_metadata_remover",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.9.0b3",
@@ -305,17 +358,19 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
+        "classifiers": [],
         "description": "Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin.",
         "files": [
           {
             "path-destination": "pdf_generator.py",
             "path-source": "client/pdf_generator.py",
-            "signature": "AUaNzlsKagItjO5cYLH080u8OOs72Nk2mYgeBZrbg9YkKeuvuyyM+xoa44fUgyBia5GehsT7bfKALPIXaklMrahmAEqrOwDWlaXP+sn7ar6ukjSYVhXrb5m44EDmD5vQXVYZ34CDfsxJbeRM+a3UCQLtuOOJbF7p79BMrsHSi3+Vn9CT",
+            "signature": "AJ9aGXo8J3LAbMQPFxqbUZWlOJ05xdA0KrCkVB2VS4NBzOMmBISGsLp5YdbDRj+QOI+C7Ie0a8GLi3iIDU/DpK40ANYRQhPR///26qz5ulr4tNDiso3jA6/N0fGD5CsD53hp1GwjKom09LA7jbHDnNWr9hJrGNOdzPz5RFVl+Q88vP/g",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "pdf_generator",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.8.0b0",
@@ -333,17 +388,19 @@
           "Spencer McIntyre",
           "Erik Daguerre"
         ],
+        "classifiers": [],
         "description": "Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per line from the plugin settings).\n\n* HTTP URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when documents are opened.\n\nNote that to only track opened documents, DO NOT put a URL link into the phishing email to the landing page. This will ensure that visits are only registered for instance where the document is opened.\n\n* HTTPS URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTPS landing page that requires basic authentication.\n\nNote that for HTTPS URLs, the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\n* FILE URL\n\nUtilizing the file://yourtargetserver/somepath URL format will capture SMB credentials.\n\nNote that King Phisher does not support SMB, and utilization of SMB requires that a separate capture/sniffer application such as Metasploit's auxiliary/server/capture/smb module will have to be used to capture NTLM hashes. The plugin and King Phisher will only support injecting the URL path into the document.\n\nOriginal Project:\n\nPhishery homepage: https://github.com/ryhanson/phishery",
         "files": [
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "AagoCP8UfKax0M8M889bKDicaTMCoMGwtv5ag686iEv1cLX+4htPxUwiBJwtNVF+bb6SGgHNb59AhsaypKGEHxehANFQR49SJhWollJQvdTsjX6n023uXTMUDbcpopzQrLnEWoifW8xAbhQaLGfATyzV1e0PMzyQ8dYhqSA17BC5bX8Z",
+            "signature": "AEwM8yywMqWUe3dGjRrKoapYgHE9aiFS1h99KmtJTvy/yIG4VG4iMWw2lxfeDmSWBOPJ47bwQDWE9RhFErSkMo7LALBiravASGDL5NVDFBsVmaiJzqXLqfYtYHkQjIqz5QDR0xgCSzz7SD7bAfc820mefcg9+mtkgG1c7cZuam/uGEiE",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "phishery_docx",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.9.0b5",
@@ -359,53 +416,55 @@
           "Spencer McIntyre",
           "Erik Daguerre"
         ],
+        "classifiers": [],
         "description": "Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server.\n\nThe editor allows you edit files on remote or local system. It is primarily designed for the use of editing remote web pages on the King Phisher Server.",
         "files": [
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AAEUMdZZloQGI6MpMeZ9PsToYLgXei/aYA+F68tZ12fH7xYAMvN/lBmcsB+uvooWG+Bs9Gunsy8kko7QNcoCZYSqAf1uE/34kSqoau4q1d6HTbah8tdMadWV8FcEOisP2Cv1mmzlNr5JZXxogUEWTAhNrsZm9B8MPY8VWkhPzxBPLgjV",
+            "signature": "ABF2SC9b+Iz7hnvyp9JFOY6ofrh3Ft/Cduxwc2TZPVV7lR0Y/UW+B0wYIlbfUh1cb3nKnXjkwQeFI2PTwGdq6TpkADI9MqDTleOCrnc38KXjZ/OrMmiJe21pCsZBDusLSe0CpJM7ui4zc8tvfSzozGnufh99tPFO8CwmrnnaOgrl/n20",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "AbdOHhl5+TLxNG0qYJL+Yb9iawfnqZucNgzc2nJeNoVORQKWf9rKzIfOGaHuPY3NbRstCLmav4oAjrkmIGVTVphLAKIUOYGSe5vhwA7+f6NxVQYFdORuq+9iMYafV6yFrUlAPcV7fbdF3972HsK+5lS+OcP5h6rZbIbgN4YrKfMqgL2d",
+            "signature": "APr5i3TLbk5qdwlTdRLq5Eq0uYCr+qxPAVqqHlPyTbHuXnapKKuW3iUYO69rJ4QU01l9EhazC1wR5xCugDUA/0KfAQtQbdaUsa3bqDLV5iPWABUrA+8NaFZ04R8E7gOq3b+vkvUYgCrWspZpNaGYu/9qAmkVWoaAhQdqkA618wE9cioG",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "AQdwhi9ArgMCmSuQXoymjkUMJYhV7DXoeDWRJOHrKhll+V5lUf6xeklIbyKuJzEUBFtoGdQ8w9uRzWKWadAVCl6vAbLpyCLVHbtDl29vjfYQfAcRBwo2KdTXu0A8EjJEgg+hTy+jZwTOOfJY8tMQgYNUpjrBT+F5GhnLZ1ZYluLxuR+v",
+            "signature": "AGgKLQfxgE7oMbLGA/Cj6S/K/AGlFEFqGK61IxClasrfBbiKAfuLbkugHatN/a1yoGheb1GrrYU41LwItuwXS6EDANK9GrJnXKxYbpykkviIxRWPaOBuN8CjP1lpzNvyYjk3ECkTnLqE2NCIBuL9/v6COvYbIziw4R3F9877WoGC8cjx",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "AQQLQ0fVSRhdG63aZUs8btjMZkXc9JO+TN32C/ICeqS6klq+bjqWPCCehS//rBUAtYaiXFMfxvpLJ4WVYSA/rL5sAbdBdC5uTHC8desWf+2NGvJ6OXqkJCrTJINLQJqGVTu/96MSE54igib45zyv5KlBpjrVfnDVd79Cjx79+07nN4qe",
+            "signature": "AdUmATGjaTKZxx6G3NQhki1TvptrG3KvyRb3ciGuW8vy1m8y0sbRDd/DCTSQwTNX4nDEvj37z6LZdMxaMSkupkf8ATOEckD522Hrgl4hjhKgWyAGaESpSzR32qJzba1fGp3u7Zgx7TmVySNZELcEiCEsaNmUSfiId4mvZlSr/Ku6ktDe",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_client.ui",
             "path-source": "client/sftp_client/sftp_client.ui",
-            "signature": "AUJ4s6PJrx3xKRbNioG9HIukhzKzOf+PZ+KiTLi4Ga/fyfoEgU8T/64zWjNssXu/mzIjIzppyfJWa+G63RooTme+AbrYZQQP12B1/AslFWZX++0ahQfaQRPOroqGq1xVywozBEiLsP1NbRm/zeulFTBhH13VZ3YvbD2xgs4RdNFuP7KU",
+            "signature": "AFJUQHWCPZhAujrbcmo0UdNCVnBPQnFPXo6tJQfgWTRuP3F8F4uRMD6Q0wYf6g2/V3/x0D9xcBVLxXF17sZwAli5ANXuqKdDSGQRG45UwWyriXGnxr5r490e5WQ90LYT8vdWCB2oASg8xcmOgbkohRhwJLaPIig7fjtsN0DySnMMQjDl",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "AOCtW9SCpOCk8oxhlaKz8H7r4bdiXJGrVCHFxOhzjDMRNzG4tI7uPeycvprrApD5wP3OXUvpItrGzkPXk5zXBw6gAMRicER03mSXdCMdBctL4FrR6DOMmWk7Ml2vNmnmakFPYgXGra3+bR40Ykb06erMHuk1bVcdT+ZXoHYJMTEi5fpR",
+            "signature": "AFlKX1yNrLjJPCrZYUKuaczC30rZ26T/se1KDB6uR8VB/uJ+AIiLvV9vDXm+TP+nmHzbO7MuZ4DMMeaz4Wf2yMrAAW+wUNSNEELUb7wangISd2zpDs20Z907Ab0EPU1kpqU9sngI+jx+qQsDuDFYw8I1lTQhNhKyrzEQBAuIR6a/pH5B",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "ALjkbw7MRabBIlz9WJTFaSIhooKbBuZ+LRHlGXMp0ltimiiyah8EnqYNuuwhKoaJ5ToGbbDL2wEXsJGvaxbgxAByAKZ0bv1VmBK0f/BcDZZpvjOVs1jPMXtzmXOhHsR4j2EHOsMZqZWCTvd8bbWgZlWme3F8Ar3Gl6D9+ZzclKRwbrrY",
+            "signature": "AFm76+eYAu+IFRv/lPbk31H1ks4ZKjlKprnc7YudiRD3bvqWLyOlRZ1Nws2sMvO+VuR/YGQgDUSNpqRhYP9LWpUJAeUh518WZYg5Z08C963URILKM30JdoCo1x9C/QrM9RNaNh4aTtmzcxGZ/N8duDDjbjPZzmOvDQ+AFZGFGsBUq7G3",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher",
         "name": "sftp_client",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.9.0b4",
@@ -419,17 +478,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.\n\nAfter being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view).",
         "files": [
           {
             "path-destination": "spell_check.py",
             "path-source": "client/spell_check.py",
-            "signature": "AYNH2NegBBwmwPHeJCLmnSNt263JvCgj68UJGf6Ypv/Lx3BQS7RWjLNs/XwGmdsUrkea5D/ruHTNK1vXwPZWu48oAdt252uB1AoY9y+F8t2JzXJVhWlNkWwIxVhgCUxNHg0vk6wsIHzkPQoCHJeVL5RqagvkiZhVApgMnjvOVqqPabwP",
+            "signature": "AbNMx0Tk4ZB+B5t9I6MufaZnW+3lZZuVGUHRxqGL1NIEiStluttsel4KnUuUI0fZiXedFfAgIPl9mNFAt5KAdOY1AMXOHRsJBZMODn8p1HComXSW717FbZ+G1lIFCzS+aVTmkcZMieAS8f10F+SSGyRNpffAB69inrxH9EgcdVl5RMq4",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "spell_check",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -445,29 +506,37 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "This plugin allows users to manage the two factor authentication settings on their account. This includes setting a new and removing an existing TOTP secret. The two factor authentication used by King Phisher is compatible with free mobile applications such as Google Authenticator.",
         "files": [
           {
             "path-destination": "totp_enrollment/__init__.py",
             "path-source": "client/totp_enrollment/__init__.py",
-            "signature": "AaFWTSEvELcrC8xZmRqxg5UHprvJsEgLtv+RoN5aPQK2AUDTrFJV2qP1ocQDF7P7/pnRrqJgw7/q5ytwxamHIZ8rATUx/9CjkBrY9PBZOnTH4KJBl+A+g7g6dkaC8Na8SZNezhav/bgKRRNUXv/sNZQokUfX2SDjCWuAx7hXYdc0CQ8w",
+            "signature": "AERcZM6pEnzttf9CLBJSSBmDma17YV/wSwumQjl9kMTES7d79S0QreI1NSpQoqCQhxOBADQy5AOfZR0F2PvewJvAAA7DcWZoRZFA3KIayEWg5Ho4u7pIW1oOqIvORm9Q/X5E6srq3uKA393ciITZGLRxlTxAnt7qrDrdAYK6pSfFGTNz",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/totp_enrollment.ui",
             "path-source": "client/totp_enrollment/totp_enrollment.ui",
-            "signature": "ACNaQr8eJY2DW9eJ/Glm7SJAlDsTrzX5ajuXe4fON8RaVvldjUmjycqhLHiNxwLUuHh9cmAKTg/Gn+c5PSaE6+Y1AZX1dSdqf2/eqbmZ/BugyBbkJGvG8+l9/4yomLJXr7n/N8dIS+31R1NcByf/zAH9pBtsiyL/7Jbh+d9Q8Aj31gEX",
+            "signature": "AQd5ZMlHjAUGgu4NispdjL8GUo9Vk5xte1J3DQKuJ6hpIXf9stwZDPm6k6Vyuby4Cx7jPCpnKoCETa9tBs7s/6jlAUT7i4qHGvZFOXjM1t8FnULOHsm7CXrRcSNLkCwH64GZI30MxXzexnspRzSqRIUkycv2ct0RjT9Lbx82Ch1l1FNz",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "totp_enrollment/totp_enrollment.ui~",
+            "path-source": "client/totp_enrollment/totp_enrollment.ui~",
+            "signature": "ATdf/IqSEBUDUvi1c4llp4KXTB2oTJJjWhkkNzYC5BqvD1X5N4xV9HIqRT1o7w+Szl7y1ATal2yiAef0uuDFE0PwAKjo/SAw5hvyc4jkMIGz712K77GwbsxEHbjBRBysaMNSJV7Yyfg+PQaAQYPqwdeGdzseYQ9XLpn/hEvurvBoxcJr",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/user_query.graphql",
             "path-source": "client/totp_enrollment/user_query.graphql",
-            "signature": "AVO/Av647Grp8UyA8y/ezyINSnEBuQy+kBBovH85pNQV3mcM0OalGBTOpMO48ehd2P19XkC3WbND89U2xqeXkYOrADAYxSs58QkrwxMWtXwHoijy/l9OFQZXhTBIAK+wVEpMxkOXOlI9wgm7/Guxo6VbFDIZ2CRkV2Kn4GX/xnIgJuIZ",
+            "signature": "AKeog+iTGHj9b0g3N30Zcs5FQ9DXy7LaIN0gRxc532HL9pZuQK2yhKI3uECm3Gr+KOFFMwd48RKnKTmKIjaO9NmYAQn1lKZlgJYsIpu+2r7MSbZVWooGav3mETn6C+H8PjSYDcPe80Jp6XlY3EKrP74d0dzqReWRMbFPqUfkxtiKAeEg",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "totp_enrollment",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b1",
@@ -484,17 +553,19 @@
         "authors": [
           "Jeremy Schoeneman"
         ],
+        "classifiers": [],
         "description": "Exports a redirect page which allows URI spoofing in the address bar of the target's browser",
         "files": [
           {
             "path-destination": "uri_spoof_generator.py",
             "path-source": "client/uri_spoof_generator.py",
-            "signature": "AABJag1fldFNypwJRUdrBhq228qravVPCgD4cvdlqvCqTDtGTF5tJMyT0yo2TIQXPSBP9CJNiVLrfeB4/iaO0vFbAIf9w9PaMAcv8+dAuoNRb70oGokwhNIQKcluF2Tk3t+vuHi74oORq33wQxMHPZK+AU1Ekwf9YK2SnzFMAwxzD9TZ",
+            "signature": "APetslRkPXT7ye3N1l6F5eyW0T4MYWHNST65ylbrylIfsQcXY3H2VS3QAsBAYb+/YXxXT5mYOTe4uFb473mUXNx7AQHL5CSAAfCr8dnyD86Yi/QF9b9Z+v6luTLpJac3RhULKFvQAzEF1mWY/mbGzc1NgB5wskH2LsNZmGe0lw/ongJa",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "uri_spoof_generator",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -511,17 +582,19 @@
           "Spencer McIntyre",
           "Mike Stringer"
         ],
+        "classifiers": [],
         "description": "Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
         "files": [
           {
             "path-destination": "alerts_email_via_smtp2go.py",
             "path-source": "server/alerts_email_via_smtp2go.py",
-            "signature": "AJIzKKJ1D5U9DTMW9bsHkN7bbqfQVwdjM2MYgptPyJo9xQBpIxrdiecRXWfeA3GN9HUItXpyudMKTQfGSHMkn//5AGR5GuBFqiH/s1cf+9XJ/M/f0ye6Wantse5l90css1LxKjC6X5zysiSd/9fkNulvjxd36/xn542fux5U2QKoOw/a",
+            "signature": "AfeziRhRZVW79rapZ0tLoENu2TYRwAvBGySKBrPd9986PGKXS8Gir/DL2ebxr+r2PMBhnPfccRSwBTjlx42yEp0UAAUMCHYnvlxu9QRnhAFJL8iwytITC7ffQCiygDcBxUWybG+WGkNRWfggG4PmO7LEmEclkoMC7qUw+/x6O9+fsgKc",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_email_via_smtp2go",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b0",
@@ -537,17 +610,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client.",
         "files": [
           {
             "path-destination": "alerts_sms_clockwork.py",
             "path-source": "server/alerts_sms_clockwork.py",
-            "signature": "AZ9BWgTMPaNlyM02sQ+ko+2BEwUo0ONaKswVAHhRVzEwgEGLi2B4DS8yzX3RuPLYfe1s4izj6lPUTRkPjpZ6yVe9AN8/1OKjghrCj5B0cExnkgRVHdt0Vq+dRdOA/9WLhgJFGH7eatb0Hau1ZyICbAfhmbPzs2EwOC5BV7FWVpr/Yg8a",
+            "signature": "AWioPurH+y06yNy4c+aPmh0IQJ5Cb4FEAwwZFz9SlD+o3uOxM0frj9PrvyeLB8Zzhy4s21RL9xLqxlNogTzFmf0QAX8rjMD69C0MC8ZuAs+HgKNv/Y6WBlZD34Dny4ZekbLkqchUmygFqSAdym7JkIv7zbgmqIyuQwYJE+D15XMM742V",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_sms_clockwork",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b0",
@@ -563,17 +638,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "Send campaign alerts as SMS messages through cell carrier's email gateways. This requires that users supply both their cell phone number and specify a supported carrier through the King Phisher client.",
         "files": [
           {
             "path-destination": "alerts_sms_via_email.py",
             "path-source": "server/alerts_sms_via_email.py",
-            "signature": "AKhBzY70KYuXAHGcWcTFQDZRs5CcYsS3Mz2KSyUlbySzZN39ukgS5YrGQIPI7MK4ECSCSIcjqLpDTetoDQBfPEryAL4h84kZZZYMkKH2beEoVRGq4JYNx8unk5CxK1g0bB7ciccE36PeihngpwRaE3rizIYvz9wyv1k0I0Zf544GknH3",
+            "signature": "ANn0fnXEG6jKVe+NstwpSscLjln5295KCTc38cKs/KLNX45TfNpS6LIYprQqEfe1oYZ7o+r+ogOWTYunZPFEAYTGAEY+5SheY/uXVmebIVLcTS7BoISladcGXGZQDDYLkt7zSmQBCV+uOCUnJ3S9lkdL9RIbzevDXTcZGJL6oLUf5lUL",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_sms_via_email",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.10.0b0",
@@ -587,17 +664,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning.",
         "files": [
           {
             "path-destination": "hello_world.py",
             "path-source": "server/hello_world.py",
-            "signature": "ATVpSgnNwMEsq15lFKx2LnfG/0FNGTPj5BHmTyHCG805BFlNXPGV2B9H+Xdc8dMOrzbYjkklAsXw4Ovsp0ubQUo8AW6J4DsgrC5eAz3lsdhpXJiAf9UmarI81XAfc6TI2jlzjEPCid9I047M3JMHCscSVbTrIsVN8RBx4LJ6PhwROCL4",
+            "signature": "AYdzNrXguUut/GNx4yN+rH+lye6mUQ1jvROJUpDy0/jdW+Y2tHYAxw/BtUzEDnpJ7yEjZ8nDEPsP8Vdu89Ot1zhVAYnruBzSGraZVKLtIXYi+UZMEei7KmYnOnHQoBvbLkcEOKZEMyyxULakwoAFn71TT7UXrPrYCk53zE5QHpcdL/l9",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "hello_world",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -611,17 +690,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A plugin that will publish an event to a specified IFTTT Maker channel when a campaign has been deemed 'successful'.",
         "files": [
           {
             "path-destination": "ifttt_on_campaign_success.py",
             "path-source": "server/ifttt_on_campaign_success.py",
-            "signature": "Ac+nXI3w32ZKTw2LAPemnnNEtsTrdJK1UCFnUYSWtadgDUzMG3s2ZMsyROX1MP0obShm14eSPq2s50IY22QRnxwRAH6Vi9uJrI2NU9BBus4Lq6vHl+uBx+2R9PFQG2OA1qabUyQ1QYeBGEsI+V8gSrraqK+6wVFIdB2tb8ErphfZl/WH",
+            "signature": "AS2U2R7xCrmzxiMAecFYZzPT+cswxhcgH7mbNWJ1t1CnWDzfzzyUXbz3o/07/IVDtFrFKIg2aZ7gu1rnEG4sGqj6AWm9A5fomjRMZRKmHP1tymyI4pdOY0Pz11fMpeJt7LjVCPAk5IaKj8vvwJDMPCMM/6fBs3JSU4bawCb4y5tKIqyu",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "ifttt_on_campaign_success",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.3.0b0",
@@ -635,17 +716,19 @@
         "authors": [
           "Brandan Geise"
         ],
+        "classifiers": [],
         "description": "A plugin that uses Pushbullet's API to send push notifications on new website visits and submitted credentials.",
         "files": [
           {
             "path-destination": "pushbullet_notifications.py",
             "path-source": "server/pushbullet_notifications.py",
-            "signature": "ACloF+8AGnig2UQLMJe9YVW51zEKMz9Um9Z9QUAdVsXogYJxqZGTXbw6btSfpX+jK1MM+hC5TDedzmKWpGK/1ayYAb0API6pYsmA52EEr4Snw+FzOLIu6VWgf++Iv5/7/7oBghY7Cc+XauAjjIFL49yFkgk1fVatZcb6zavp0BQjkq5h",
+            "signature": "ADsQZNfOUDtDcatV+M6Hyct0sLF3kddrSxYaVxDDbTMBY2a9DRqW/11avfAS/zMQzrzLtinFB3hGvUlzpLVKqEdIALIwdCGo5P0/0b3uBpcPpblxIHdObO/vrXG4N9AZOFeti9uA7Zmr45OlYbSLLCABtatls3bRImuyDmbVK8KbSHOG",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "pushbullet_notifications",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.4.0b0",
@@ -661,17 +744,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A plugin that allows requests to be redirected based on a matching source IP address or Range. This can be useful for redirecting known ranges of systems which maybe analyzing the server. Rules are processed in order and each one is a hash with at least a source key of an IP address or network. Additionally a target string will be used as the destination of the redirect or can be left as null for an exception. Finally, a boolean key of permanent can be used to specify whether a 301 or 302 redirect should be used.",
         "files": [
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "AJCZiAFoL+GaivsDGueBbL4LXaUAXr8DB8VuhZD2ocxSzd25kw3/dgnLe08dUOMDBLcJQfP0+bESt9OoKEauMyCKANr03EbjfT7zD6lT124xQGvO7X/AxrlQ9mjLq/WiHQirOAuXRU5SB9Jkhc4ePniq2qKcKFlZ7R1h27I3Rf6zyw4+",
+            "signature": "Ab2gNi4426dooexYXoHr1ntU4/zd653bNEBigPOzdhfisTSegPsKotlODzXe5VHfVMkJ1OdJXdUwsox0e+o00BXBAaNYdllvcQIV+pXB+UtGPvKam0zdWqr2ahYyQbefqjU5a26eYO1Qs/tQ6zfHffJvMeRDoGwdfjQwn2h2qRvYPcYv",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "request_redirect",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.9.0",
@@ -685,17 +770,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
+        "classifiers": [],
         "description": "A plugin which pushes notifications regarding the King Phisher server to a specified XMPP server.",
         "files": [
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "ASWfscl1d9O7YATs6Wq63xroCU/fJhRHbEgDxiAbGa9lyGFEymSDBuYbaiIsoRt4OkFb7GXjuprMJPg7/Wxb2USPAD0qe5a/tzeVcgLV9sb+cFh5scc4Xruk5Z4fgpTVu5rvB9fdw2fYjNNpF2gJARhImMsD54sW5xGQOkFRPm0Hknsf",
+            "signature": "AXf6u3EbEmqeiiuCTpXhdXdkYDMRXZnGxTLcALlGVLry1RSML19lJrFWFOezwVUFlg6ruViGcUnHo1b9dEDat2+cAFqDZwq0ugHV3hyEP73nQZgayXMb/7kavlHk9fBXk4TJcROa5Btgqy710V9NM2YLQwVf6/xRE7f1GbBKLV61qfBx",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "xmpp_notifications",
+        "reference_urls": [],
         "requirements": {
           "minimum-python-version": null,
           "minimum-version": "1.4.0b0",
@@ -709,8 +796,8 @@
       }
     ]
   },
-  "created": "2018-05-08T17:37:50.168691+00:00",
+  "created": "2018-05-10T16:20:19.378660+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ABzNLzazTjWOIEVDe1pqg4y4k1DdZb7tv1GRIz+RnuN0a1MKxnVJirxbO6bXtY9EVLCsFgEdJgDczdYGkOHEaMucASToScRNRrqN1oh/Qln7rlC7ZnR40ibGsqA5pk0lPseonY1kU44WRhwHJrdZaftZtvaIgb7ywWW0rzQB/4Cd/qck",
+  "signature": "AWwap37o29Q3dBgeSBfkvG5XrYyj4UyUHWofTBWHi6by0i58pq3m0v8/oMld9ueS9kOe3awppfsAG9dVQhiotbAIADRb9mNzj8Ubol4qZ3dhF4fOj/369MBe7hiS3qSJS8rBsi1P5lgWmoDOABgcY/pxSms9v3kuReoGCJSyuASd3Aif",
   "signed-by": "github.com/zeroSteiner"
 }
