@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2018-03-29 18:03:11 -->
+<!-- generated at: 2018-05-10 16:23:16 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -18,6 +18,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Hello World!](/client/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will display a message box when King Phisher exits. |
 | [Save KPM On Exit](/client/kpm_export_on_exit.py) | Prompt to save the message data as a KPM file when King Phisher exits. |
 | [Upload KPM](/client/kpm_export_on_send.py) | Saves a KPM file to the King Phisher server when sending messages. The user must have write permissions to the specified directories. Both the "Local Directory" and "Remote Directory" options can use the variables that are available for use in message templates. |
+| [Message Padding](/client/message_padding.py) | Add and modify custom HTML messages from a file to reduce Spam Assassin scores. This plugin interacts with the message content to append a long series of randomly generated sentences to meet the ideal image-text ratio. |
 | [Custom Message MIME Headers](/client/mime_headers.py) | Add custom MIME headers to messages that are sent. This can, for example be used to add a Sender and / or a Return-Path header to outgoing messages. Headers are rendered as template strings and can use variables that are valid in messages. |
 | [Office 2007+ Document Metadata Remover](/client/office_metadata_remover.py) | Remove metadata from Microsoft Office 2007+ file types. These files types generally use the extension docx, pptx, xlsx etc. If the attachment file is not an Office 2007+ file, this plugin does not modify it or block the sending operation. |
 | [Generate PDF](/client/pdf_generator.py) | Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin. |
@@ -30,6 +31,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 ## Server Plugins
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
+| [Campaign Alerts: via SMTP2Go](/server/alerts_email_via_smtp2go.py) | Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications. |
 | [Campaign Alerts: via Clockwork SMS](/server/alerts_sms_clockwork.py) | Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client. |
 | [Campaign Alerts: via Carrier SMS Email Gateways](/server/alerts_sms_via_email.py) | Send campaign alerts as SMS messages through cell carrier's email gateways. This requires that users supply both their cell phone number and specify a supported carrier through the King Phisher client. |
 | [Hello World!](/server/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning. |

@@ -28,7 +28,8 @@ class Plugin(plugins.ServerPlugin):
 	302 redirect should be used.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.9.0b4'
+	req_min_version = '1.9.0'
+	version = '1.0.1'
 	def initialize(self):
 		rules = self.config.get('rules', [])
 		for rule in rules:
@@ -38,6 +39,8 @@ class Plugin(plugins.ServerPlugin):
 		return True
 
 	def on_request_handle(self, handler):
+		if handler.command == 'RPC' or handler.path.startswith('/_/'):
+			return
 		client_ip = ipaddress.ip_address(handler.client_address[0])
 		for rule in self.config.get('rules', []):
 			if client_ip not in rule['source']:

@@ -42,7 +42,7 @@ class Plugin(plugins.ClientPlugin):
 		'qrcode': has_qrcode,
 		'pillow': has_pillow
 	}
-	version = '1.1'
+	version = '1.1.1'
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
@@ -66,7 +66,7 @@ class Plugin(plugins.ClientPlugin):
 				+ 'is correct, rescan the QR code and try again.'
 			)
 			return
-		rpc.remote_table_row_set('users', this_user['id'], {'otp_secret': new_otp.secret})
+		self.application.rpc.remote_table_row_set('users', this_user['id'], {'otp_secret': new_otp.secret})
 		gui_utilities.show_dialog_info(
 			'TOTP Enrollment',
 			self.application.get_active_window(),
