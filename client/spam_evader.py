@@ -47,7 +47,7 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre', 'Mike Stringer']
 	title = 'Spam Evader'
 	description = """
-	Add and modify custom HTML messages from a file to reduce Spam Assassin 
+	Add and modify custom HTML messages from a file to reduce Spam Assassin
 	scores. This plugin interacts with the message content to append a long
 	series of randomly generated sentences to meet the ideal image-text ratio.
 	"""
@@ -86,7 +86,7 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def signal_message_create(self, mailer_tab, target, message):
-		payload = [part for part in message.walk()]
+		payload = [part if part.get_content_type().startswith('text/html') for part in message.walk()]
 		padding = self.make_padding()
 		payload[-1].payload_string = payload[-1].payload_string.replace('</body>', padding + '</body>')
 		self.logger.debug("Message payload added:  " + payload[-1].payload_string)
@@ -114,4 +114,3 @@ class Plugin(plugins.ClientPlugin):
 
 		self.logger.debug("Message Padding: \n" + pad)
 		return pad
-
