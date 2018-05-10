@@ -65,7 +65,7 @@ class Plugin(plugins.ClientPlugin):
 			default=True
 		)
 	]
-	req_min_version = '1.10.0.b3'
+	req_min_version = '1.10.0b3'
 	version = '1.0'
 	req_packages = {
 		'python3-markovify': has_markov
