@@ -86,7 +86,7 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def signal_message_create(self, mailer_tab, target, message):
-		payload = [part if part.get_content_type().startswith('text/html') for part in message.walk()]
+		payload = [part if part.get_content_type().startswith('text/html') else '' for part in message.walk()]
 		padding = self.make_padding()
 		payload[-1].payload_string = payload[-1].payload_string.replace('</body>', padding + '</body>')
 		self.logger.debug("Message payload added:  " + payload[-1].payload_string)
