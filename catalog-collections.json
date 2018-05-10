@@ -255,6 +255,35 @@
       },
       {
         "authors": [
+          "Spencer McIntyre",
+          "Mike Stringer"
+        ],
+        "classifiers": [],
+        "description": "Add and modify custom HTML messages from a file to reduce Spam Assassin scores. This plugin interacts with the message content to append a long series of randomly generated sentences to meet the ideal image-text ratio.",
+        "files": [
+          {
+            "path-destination": "message_padding.py",
+            "path-source": "client/message_padding.py",
+            "signature": "AOFyy478THZaulrUob+sAWrFNWYdfsDEbc7kQ0xykMZXO/sBOzuF+jNvZilygs8s5BfsqgEtVO9bkOfB/oiGMwZwAE236CQZEQWNfJmjJM/1xPMdlpRFGVG89wsIfut9wH0yUYVupmaUwESU3aJ88awdAYj44Uy7wMY7rzstcj+lKuqv",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "message_padding",
+        "reference_urls": [],
+        "requirements": {
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0b3",
+          "packages": [
+            "markovify"
+          ],
+          "platforms": []
+        },
+        "title": "Message Padding",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
         "description": "Add custom MIME headers to messages that are sent. This can, for example be used to add a Sender and / or a Return-Path header to outgoing messages. Headers are rendered as template strings and can use variables that are valid in messages.",
@@ -682,8 +711,8 @@
       }
     ]
   },
-  "created": "2018-03-29T18:03:11.890436+00:00",
+  "created": "2018-05-10T16:15:43.746713+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AK29zB5j02ll1PSYJL+Z17dPU1Rt7APpyDY+3QTYYpaInaOEJaJnx5Q9QfsMCcN2cfzu0NcFHofQBOHNuDbSxJw1AdJezgB7tR+ql0PwlJpIgcmRqFhYoLt4RaRdz5ZMUYr5b2OEQOlj8Nofcn/iXGIlukYpHvEm0eVeM1aB619tmL6j",
+  "signature": "ARu8ZV6Kn4KJCn1zS2g74nUl9T8M5Pnl0aYjbJAnO8yNnLUTcTt3UyrC48AsPstVZgBQBxv94m3+x23XO+D8hh8RAU4Z6/sUoiwpkBLskpHyBcrQMi5L3/Vyf7BgTOylTgdo3iI2m7qmWVBpRMWqrofpo933x7vR3skiqap768LleUfR",
   "signed-by": "github.com/zeroSteiner"
 }
