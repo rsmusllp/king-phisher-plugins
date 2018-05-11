@@ -16,7 +16,7 @@ class Plugin(plugins.ClientPlugin):
 	title = 'URI Spoof Generator'
 	description = """
 	Exports a redirect page which allows URI spoofing in the address bar of the
-	target's browser
+	target's browser.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
