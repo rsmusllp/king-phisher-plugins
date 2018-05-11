@@ -5,6 +5,7 @@ import king_phisher.server.signals as signals
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server :: Notifications :: Alerts']
 	title = 'Campaign Alerts: via Carrier SMS Email Gateways'
 	description = """
 	Send campaign alerts as SMS messages through cell carrier's email gateways.
@@ -12,7 +13,7 @@ class Plugin(plugins.ServerPlugin):
 	supported carrier through the King Phisher client.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.10.0b0'
+	req_min_version = '1.10.0'
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
 		return True

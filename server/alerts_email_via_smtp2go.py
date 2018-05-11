@@ -19,6 +19,7 @@ EXAMPLE_CONFIG = """\
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre', 'Mike Stringer']
+	classifiers = ['Plugin :: Server :: Notifications :: Alerts']
 	title = 'Campaign Alerts: via SMTP2Go'
 	description = """
 	Send campaign alerts via the SMTP2go lib. This requires that users specify
@@ -35,7 +36,7 @@ class Plugin(plugins.ServerPlugin):
 			description='Server email address to send notifications from'
 		)
 	]
-	req_min_version = '1.10.0b0'
+	req_min_version = '1.10.0'
 	req_packages = {
 		'smtp2go': has_smtp2go
 	}

@@ -46,6 +46,7 @@ else:
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre', 'Mike Stringer']
+	classifiers = ['Plugin :: Client :: Email :: Spam Evasion']
 	title = 'Message Padding'
 	description = """
 	Add and modify custom HTML messages from a file to reduce Spam Assassin
@@ -66,7 +67,7 @@ class Plugin(plugins.ClientPlugin):
 			default=True
 		)
 	]
-	req_min_version = '1.10.0b3'
+	req_min_version = '1.10.0'
 	version = '1.0'
 	req_packages = {
 		'markovify': has_markovify

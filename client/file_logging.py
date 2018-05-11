@@ -15,6 +15,7 @@ LOG_FILE_SIZE = 10
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Zach Janice', 'Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool']
 	title = 'File Logging'
 	description = """
 	Write the client's logs to a file in the users data directory. Additionally
@@ -22,7 +23,7 @@ class Plugin(plugins.ClientPlugin):
 	directory.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.6.0b1'
+	req_min_version = '1.6.0'
 	version = '2.0'
 	# this is the primary plugin entry point which is executed when the plugin is enabled
 	def initialize(self):

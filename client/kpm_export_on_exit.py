@@ -3,6 +3,7 @@ import king_phisher.client.gui_utilities as gui_utilities
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool :: Data Management']
 	title = 'Save KPM On Exit'
 	description = 'Prompt to save the message data as a KPM file when King Phisher exits.'
 	homepage = 'https://github.com/securestate/king-phisher-plugins'

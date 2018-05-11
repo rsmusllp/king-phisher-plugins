@@ -16,6 +16,7 @@ rules:
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server :: Notifications']
 	title = 'Request Redirect'
 	description = """
 	A plugin that allows requests to be redirected based on a matching source

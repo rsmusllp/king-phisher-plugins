@@ -105,6 +105,7 @@ class DMARCPolicy(object):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Email :: Spam Evasion']
 	title = 'DMARC Check'
 	description = """
 	This plugin adds another safety check to the message precheck routines to

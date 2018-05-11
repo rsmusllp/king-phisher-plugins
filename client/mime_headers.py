@@ -4,7 +4,7 @@ import re
 import king_phisher.version as version
 import king_phisher.client.plugins as plugins
 
-_min_version = '1.10.0b3'
+_min_version = '1.10.0'
 StrictVersion = distutils.version.StrictVersion
 api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(_min_version)
 
@@ -16,6 +16,7 @@ class MimeHeaderParseError(ValueError):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Email :: Spam Evasion']
 	title = 'Custom Message MIME Headers'
 	description = """
 	Add custom MIME headers to messages that are sent. This can, for example be

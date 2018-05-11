@@ -1,12 +1,12 @@
 import re
 
 import king_phisher.client.plugins as plugins
-import king_phisher.client.gui_utilities as gui_utilities
 
 import requests
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client']
 	title = 'Clockwork SMS'
 	description = """
 	Send SMS messages using the Clockwork SMS API's email gateway. While
@@ -21,7 +21,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Clockwork SMS API Key'
 		)
 	]
-	req_min_version = '1.10.0b3'
+	req_min_version = '1.10.0'
 	version = '1.0.1'
 	_sms_number_regex = re.compile(r'^[0-9]{10,12}')
 	def initialize(self):

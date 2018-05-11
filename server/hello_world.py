@@ -9,6 +9,7 @@ EXAMPLE_CONFIG = """\
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server']
 	title = 'Hello World!'
 	description = """
 	A 'hello world' plugin to serve as a basic template and demonstration. This

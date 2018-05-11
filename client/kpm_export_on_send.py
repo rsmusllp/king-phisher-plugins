@@ -16,6 +16,7 @@ def _expand_path(path, *joins, pathmod=os.path):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
+	classifiers = ['Plugin :: Client :: Tool :: Data Management']
 	title = 'Upload KPM'
 	description = """
 	Saves a KPM file to the King Phisher server when sending messages. The user
@@ -38,7 +39,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Remote Directory'
 		)
 	]
-	req_min_version = '1.6.0b3'
+	req_min_version = '1.6.0'
 	version = '1.2'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']

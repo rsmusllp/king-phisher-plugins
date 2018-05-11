@@ -16,6 +16,7 @@ EXAMPLE_CONFIG = """\
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server :: Notifications']
 	title = 'IFTTT Campaign Success Notification'
 	description = """
 	A plugin that will publish an event to a specified IFTTT Maker channel when

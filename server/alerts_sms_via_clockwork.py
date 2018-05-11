@@ -15,6 +15,7 @@ EXAMPLE_CONFIG = """\
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server :: Notifications :: Alerts']
 	title = 'Campaign Alerts: via Clockwork SMS'
 	description = """
 	Send campaign alerts via the Clockwork SMS API. This requires that users
@@ -27,7 +28,7 @@ class Plugin(plugins.ServerPlugin):
 			description='Clockwork SMS API Key'
 		)
 	]
-	req_min_version = '1.10.0b0'
+	req_min_version = '1.10.0'
 	req_packages = {
 		'clockwork': has_clockwork
 	}
