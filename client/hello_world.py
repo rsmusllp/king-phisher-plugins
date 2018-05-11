@@ -13,14 +13,15 @@ else:
 
 # this is the main plugin class, it is necessary to inherit from plugins.ClientPlugin
 class Plugin(plugins.ClientPlugin):
-	authors = ['Spencer McIntyre']  # the plugins author
-	title = 'Hello World!'          # the title of the plugin to be shown to users
+	authors = ['Spencer McIntyre']      # the plugins author
+	classifiers = ['Plugin :: Client']  # the list of classifiers for categorization
+	title = 'Hello World!'              # the title of the plugin to be shown to users
 	description = """
 	A 'hello world' plugin to serve as a basic template and demonstration. This
 	plugin will display a message box when King Phisher exits.
-	"""                             # a description of the plugin to be shown to users
+	"""                                 # a description of the plugin to be shown to users
 	homepage = 'https://github.com/securestate/king-phisher-plugins'  # an optional home page
-	options = [                     # specify options which can be configured through the GUI
+	options = [                         # specify options which can be configured through the GUI
 		plugins.ClientOptionString(
 			'name',                               # the name of the option as it will appear in the configuration
 			'The name to which to say goodbye.',  # the description of the option as shown to users

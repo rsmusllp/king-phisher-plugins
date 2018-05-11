@@ -12,7 +12,7 @@ import king_phisher.version as version
 PARSER_EPILOG = """\
 If no output file is specified, the input file will be modified in place.
 """
-min_version = '1.9.0b5'
+min_version = '1.9.0'
 StrictVersion = distutils.version.StrictVersion
 api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(min_version)
 
@@ -51,6 +51,7 @@ def phishery_inject(input_file, document_urls, output_file=None):
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Ryan Hanson', 'Spencer McIntyre', 'Erik Daguerre']
+	classifiers = ['Plugin :: Client :: Email :: Attachment']
 	title = 'Phishery DOCX URL Injector'
 	description = """
 	Inject Word Document Template URLs into DOCX files. The Phishery technique is

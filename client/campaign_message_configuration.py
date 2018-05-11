@@ -26,6 +26,7 @@ def is_managed_key(key):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool :: Data Management']
 	title = 'Campaign Message Configuration Manager'
 	description = """
 	Store campaign message configurations for their respective campaigns. This
@@ -44,7 +45,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Transfer Settings'
 		)
 	]
-	req_min_version = '1.10.0b1'
+	req_min_version = '1.10.0'
 	version = '1.0.1'
 	def initialize(self):
 		self.signal_connect('campaign-set', self.signal_kpc_campaign_set)

@@ -22,6 +22,7 @@ else:
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Jeremy Schoeneman']
+	classifiers = ['Plugin :: Client :: Email :: Attachment']
 	title = 'Generate PDF'
 	description = """
 	Generates a PDF file with a link which includes the campaign URL with the
@@ -44,7 +45,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			display_name='Link Text'
 		)
 	]
-	req_min_version = '1.8.0b0'
+	req_min_version = '1.8.0'
 	req_packages = {
 		'reportlab': has_reportlab
 	}

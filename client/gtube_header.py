@@ -9,6 +9,7 @@ WARNING_BANNER = """\
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Email']
 	title = 'GTUBE Header'
 	description = """
 	Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE
@@ -18,7 +19,7 @@ class Plugin(plugins.ClientPlugin):
 	This will cause messages to be identified as SPAM.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.10.0b3'
+	req_min_version = '1.10.0'
 	version = '1.0'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']

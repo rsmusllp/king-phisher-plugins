@@ -16,6 +16,7 @@ COLORS = ('blue', 'cyan', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool']
 	title = 'Blink(1) Notifications'
 	description = """
 	A plugin which will flash a Blink(1) peripheral based on campaign events
@@ -44,7 +45,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Credentials Flash Color'
 		),
 	]
-	req_min_version = '1.6.0b0'
+	req_min_version = '1.6.0'
 	req_packages = {
 		'blink1': has_blink1
 	}

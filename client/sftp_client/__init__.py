@@ -11,6 +11,7 @@ from gi.repository import GObject
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Josh Jacob', 'Spencer McIntyre', 'Erik Daguerre']
+	classifiers = ['Plugin :: Client :: Tool :: Data Management']
 	title = 'SFTP Client'
 	description = """
 	Secure File Transfer Protocol Client that can be used to upload, download,
@@ -20,7 +21,7 @@ class Plugin(plugins.ClientPlugin):
 	designed for the use of editing remote web pages on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-	req_min_version = '1.9.0b4'
+	req_min_version = '1.9.0'
 	version = '1.3.2'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""

@@ -11,6 +11,7 @@ else:
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool']
 	title = 'Spell Check'
 	description = """
 	Add spell check capabilities to the message editor. This requires GtkSpell

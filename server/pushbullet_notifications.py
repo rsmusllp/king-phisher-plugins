@@ -20,6 +20,7 @@ EXAMPLE_CONFIG = """\
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Brandan Geise']
+	classifiers = ['Plugin :: Server :: Notifications']
 	title = 'Pushbullet Notifications'
 	description = """
 	A plugin that uses Pushbullet's API to send push notifications
@@ -42,7 +43,7 @@ class Plugin(plugins.ServerPlugin):
 			default=False
 		)
 	]
-	req_min_version = '1.4.0b0'
+	req_min_version = '1.4.0'
 	req_packages = {
 		'pushbullet.py': has_pushbullet
 	}

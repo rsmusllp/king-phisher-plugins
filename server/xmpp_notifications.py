@@ -91,6 +91,7 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Server :: Notifications']
 	title = 'XMPP Notifications'
 	description = """
 	A plugin which pushes notifications regarding the King Phisher server to a
@@ -105,7 +106,7 @@ class Plugin(plugins.ServerPlugin):
 		# verify_cert only functions when sleekxmpp supports it
 		plugin_opts.OptionBoolean('verify_cert', 'verify the ssl certificate', default=True)
 	]
-	req_min_version = '1.4.0b0'
+	req_min_version = '1.4.0'
 	req_packages = {
 		'sleekxmpp': has_sleekxmpp
 	}

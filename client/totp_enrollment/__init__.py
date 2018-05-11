@@ -29,6 +29,7 @@ user_gql_query = relpath('user_query.graphql')
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
+	classifiers = ['Plugin :: Client :: Tool']
 	title = 'TOTP Self Enrollment'
 	description = """
 	This plugin allows users to manage the two factor authentication settings
@@ -37,7 +38,7 @@ class Plugin(plugins.ClientPlugin):
 	with free mobile applications such as Google Authenticator.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.10.0b1'
+	req_min_version = '1.10.0'
 	req_packages = {
 		'qrcode': has_qrcode,
 		'pillow': has_pillow

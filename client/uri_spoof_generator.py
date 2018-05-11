@@ -1,4 +1,3 @@
-import posixpath
 import os
 
 import king_phisher.client.gui_utilities as gui_utilities
@@ -13,6 +12,7 @@ def _expand_path(output_file, *joins, pathmod=os.path):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
+	classifiers = ['Plugin :: Client :: Tool']
 	title = 'URI Spoof Generator'
 	description = """
 	Exports a redirect page which allows URI spoofing in the address bar of the

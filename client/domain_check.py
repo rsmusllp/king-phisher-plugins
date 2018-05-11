@@ -19,6 +19,7 @@ def domain_has_mx_record(domain):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
+	classifiers = ['Plugin :: Client :: Email :: Spam Evasion']
 	title = 'Domain Validator'
 	description = """
 	Checks to see if a domain can be resolved and then looks up the WHOIS

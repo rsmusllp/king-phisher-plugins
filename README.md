@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2018-05-10 16:23:16 -->
+<!-- generated at: 2018-05-11 21:36:06 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -32,7 +32,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | Name                                      | Description       |
 |:------------------------------------------|:------------------|
 | [Campaign Alerts: via SMTP2Go](/server/alerts_email_via_smtp2go.py) | Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications. |
-| [Campaign Alerts: via Clockwork SMS](/server/alerts_sms_clockwork.py) | Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client. |
+| [Campaign Alerts: via Clockwork SMS](/server/alerts_sms_via_clockwork.py) | Send campaign alerts via the Clockwork SMS API. This requires that users specify their cell phone number through the King Phisher client. |
 | [Campaign Alerts: via Carrier SMS Email Gateways](/server/alerts_sms_via_email.py) | Send campaign alerts as SMS messages through cell carrier's email gateways. This requires that users supply both their cell phone number and specify a supported carrier through the King Phisher client. |
 | [Hello World!](/server/hello_world.py) | A 'hello world' plugin to serve as a basic template and demonstration. This plugin will log simple messages to show that it is functioning. |
 | [IFTTT Campaign Success Notification](/server/ifttt_on_campaign_success.py) | A plugin that will publish an event to a specified IFTTT Maker channel when a campaign has been deemed 'successful'. |
