@@ -76,9 +76,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	that a separate capture/sniffer application such as Metasploit's
 	auxiliary/server/capture/smb module will have to be used to capture NTLM hashes.
 	The plugin and King Phisher will only support injecting the URL path into the
-	document.\n\n
-	Original Project:\n
-	Phishery homepage: https://github.com/ryhanson/phishery
+	document.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
@@ -96,9 +94,9 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			display_name='Add Landing Pages'
 		)
 	]
+	reference_urls = ['https://github.com/ryhanson/phishery']
 	req_min_version = min_version
 	version = '2.1.0'
-
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
