@@ -105,7 +105,10 @@ class DMARCPolicy(object):
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
-	classifiers = ['Plugin :: Client :: Email :: Spam Evasion']
+	classifiers = [
+		'Plugin :: Client :: Email :: Spam Evasion',
+		'Script :: CLI'
+	]
 	title = 'DMARC Check'
 	description = """
 	This plugin adds another safety check to the message precheck routines to
@@ -114,6 +117,7 @@ class Plugin(plugins.ClientPlugin):
 	is set to 0, the message sending operation will proceed.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	reference_urls = ['https://dmarc.org/overview/']
 	req_min_version = '1.5.0'
 	version = '1.1'
 	def initialize(self):

@@ -5,21 +5,19 @@
         "authors": [
           "Spencer McIntyre"
         ],
-        "classifiers": [
-          "Plugin :: Client :: Tool"
-        ],
         "description": "A plugin which will flash a Blink(1) peripheral based on campaign events such as when a new visit is received or new credentials have been submitted.",
         "files": [
           {
             "path-destination": "blink1.py",
             "path-source": "client/blink1.py",
-            "signature": "AHZygaqtGT4K0RB6rkhhQknRjvY/1R9pIkg+v4t86kznPfjps9/X9r/XmQx2wclHP0J7ewA+d61r3fYO0+Z2uYNRAfL3CLWbTvJzfjLqF1pmbxxgbyAKggAlZ+U9l0kAbc0bjBpdIeZ63X3KOgAVEDPR+PCvKiKtXYiPc6b//V5u0R1j",
+            "signature": "AOHfhk9rqxvYxeknBB06vQxwMwfpH9mvjwaU2DVWXD65y7dnpe7Ng0gK/0Sr7ktIn0TmlfMF42WFNrWVfpb3KJNOAP/n2YzIhaJ73PdGw2Z9MSmP1OJmuBK3D8bx9ONjULhoaa+ejxVPONM2c/Ndddn4lS+n8tvrX+BXKhU/08H/A289",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "blink1",
         "requirements": {
+          "minimum-python-version": null,
           "minimum-version": "1.6.0",
           "packages": [
             "blink1"
@@ -83,22 +81,22 @@
         "authors": [
           "Spencer McIntyre"
         ],
-        "classifiers": [
-          "Plugin :: Client :: Email :: Spam Evasion"
-        ],
         "description": "This plugin adds another safety check to the message precheck routines to verify that if DMARC exists the message will not be quarentined or rejected. If no DMARC policy is present, the policy is set to none or the percentage is set to 0, the message sending operation will proceed.",
         "files": [
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AU1RBT+ybn8WNCAl5M9pgDDHaXuiYngujF8EyQo2+bFHvbDmpVdUWgCW9vGf1lSdXIPiguP6ACmnudKyGC9N5WGNAKrudoO+j69smJW19oi12dIdRq+gGmyrVlaFzLe48M9QTCG3ZIigG/qDlbCU+J3PorXimx2m+M1uITnA8OCA/tSE",
+            "signature": "AMRR6B40Z0DNzTpULWdoGC1eoENicjHUUwpNhD9A0Eb9jAIybd+Y6sGXVgyFLV9AhZXM0/qgglm3qzStAqBQSJTlAdYXGL+2Ys+jcBnUB2cMbJkNUEprVd91EnIor1RtCO7GM60fSr20svTkOpyNqkvHigEdlKwCJ6H3cbKp04B63rpd",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "dmarc",
         "requirements": {
-          "minimum-version": "1.5.0"
+          "minimum-python-version": null,
+          "minimum-version": "1.5.0",
+          "packages": [],
+          "platforms": []
         },
         "title": "DMARC Check",
         "version": "1.1"
@@ -159,22 +157,22 @@
         "authors": [
           "Spencer McIntyre"
         ],
-        "classifiers": [
-          "Plugin :: Client :: Email"
-        ],
         "description": "Add the Generic Test for Unsolicited Bulk Email (GTUBE) string as a X-GTUBE header and append it to the end of all text/* parts of the MIME messages that are sent.\n\nThis will cause messages to be identified as SPAM.",
         "files": [
           {
             "path-destination": "gtube_header.py",
             "path-source": "client/gtube_header.py",
-            "signature": "AfFbNKAWExbCWWpmrWjNkdmnYiQTXXk30E8t4ZGJXs5xE112yRhWYMzqzYu2wngZlpIk+p9iH65F/hyaXJySMjfGASfPdWnB/PzeruHPx7dN6JtZVHbNOZZf2CUFbmjgiEKq0hgr1xS9yRqa13PbGIApd1XYrBokbibbdhImJMgzdyPf",
+            "signature": "AP9ozG1zk1Y0hxqhOPhQALi9MF2H6PCOi+2nxrfpLd9dwKfiHMMjIUj06YZ5JUS6Pwb7X5joUkpmANndYXKZV4WkAJ0PypoI8jeD/bAfZefF17Ii0dqjmXVbu/R6V1CgAa0DglFrkvp7YWrHpcY7tESy7YVOTzDMaD1otf4DVP3iMBmK",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "gtube_header",
         "requirements": {
-          "minimum-version": "1.10.0"
+          "minimum-python-version": null,
+          "minimum-version": "1.10.0",
+          "packages": [],
+          "platforms": []
         },
         "title": "GTUBE Header",
         "version": "1.0"
@@ -315,22 +313,22 @@
         "authors": [
           "Spencer McIntyre"
         ],
-        "classifiers": [
-          "Plugin :: Client :: Email :: Attachment"
-        ],
         "description": "Remove metadata from Microsoft Office 2007+ file types. These files types generally use the extension docx, pptx, xlsx etc. If the attachment file is not an Office 2007+ file, this plugin does not modify it or block the sending operation.",
         "files": [
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "AKEgs2UXw+3v5S7Npy6P3gMf4Df8LmRRlGDnrN+Yfp5acgY65+E+vRWkcvAcIo6vI83aPvPv6Nd0oCEGJQokLUNwARaMCA4QIhUhHGP1dabjUijr9U4HjJTS5t8rmGpeycnKeiAdwfNWAVN3OcfOjzw45p7YlbE3FNQNN7bDVJ/SnwcK",
+            "signature": "AXjPP8sM6cTDwgTyM6Tzo87sfjz3GqR9mYNP2vxHdCwdPxTuMvJ1xAxtPHNBkEVWzNU4LqZgG2Ue7RunWX9cYXizAOMsxT3i0E7u8Q2lOwuD4U6u8ore/X5BMIptaoYcOaOh/1qOopLYQXHltE/HMKbuX+9qFsyRH5AeXEijaWlbDze1",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "office_metadata_remover",
         "requirements": {
-          "minimum-version": "1.9.0"
+          "minimum-python-version": null,
+          "minimum-version": "1.9.0",
+          "packages": [],
+          "platforms": []
         },
         "title": "Office 2007+ Document Metadata Remover",
         "version": "1.0"
@@ -368,25 +366,22 @@
           "Spencer McIntyre",
           "Erik Daguerre"
         ],
-        "classifiers": [
-          "Plugin :: Client :: Email :: Attachment"
-        ],
         "description": "Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per line from the plugin settings).\n\n* HTTP URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when documents are opened.\n\nNote that to only track opened documents, DO NOT put a URL link into the phishing email to the landing page. This will ensure that visits are only registered for instance where the document is opened.\n\n* HTTPS URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTPS landing page that requires basic authentication.\n\nNote that for HTTPS URLs, the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\n* FILE URL\n\nUtilizing the file://yourtargetserver/somepath URL format will capture SMB credentials.\n\nNote that King Phisher does not support SMB, and utilization of SMB requires that a separate capture/sniffer application such as Metasploit's auxiliary/server/capture/smb module will have to be used to capture NTLM hashes. The plugin and King Phisher will only support injecting the URL path into the document.",
         "files": [
           {
             "path-destination": "phishery_docx.py",
             "path-source": "client/phishery_docx.py",
-            "signature": "AUd8JRrawSey0C1QJ8LxkVtkotuB7ebBrJDFEy3m+PqCtu0zqI9vFu9+vEbZlyLo6IUWMU4t2cN/hw/G7dZ4XojBAdYw8Tr/jsnCuNhWFO3GI7z8M7GdYjW0RHnOdMeBisuUUSn5YoLgueYvMrdORAcCeYnCQcPK4DZk3f2SdJWlrjYi",
+            "signature": "ACvzP1+Dy+lz7zdbNtXw3rZ1jgj54CbY591H9s2tACHt4WL6MtNckLAaOFwlZubkA9kVlC6byvBnxKdHeXm7cErnACQM+SJVjzHHCIt72S40J74Kre013u9PUSea4iQ9ccpWiMXIqxqZJ/FW7kMdZvBt3cXD83vkZ0LA6ROc7i/IZP9e",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "phishery_docx",
-        "reference_urls": [
-          "https://github.com/ryhanson/phishery"
-        ],
         "requirements": {
-          "minimum-version": "1.9.0"
+          "minimum-python-version": null,
+          "minimum-version": "1.9.0",
+          "packages": [],
+          "platforms": []
         },
         "title": "Phishery DOCX URL Injector",
         "version": "2.1.0"
@@ -759,8 +754,8 @@
       }
     ]
   },
-  "created": "2018-05-11T21:40:23.234168+00:00",
+  "created": "2018-05-12T14:33:12.268787+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AKRMK0A3UGP6vJaPXYrDmL8G4EU5WvyK4poctjHHPontDFGcF+fcCRn/j5Hm1yM/Q8RoZzqB4z5Lt2OpZuim7p8nAbEzICMeAvYNqZlD0x7hJ4CA8PBJlBnakxilSadBTsI/KnURI0P7CrGMSzHiHpmKDIoJjOhK52i4Kh5h45UfKh/B",
+  "signature": "AINnqJO8YfnZ87eVI06ZnRWMjb8/7b0e6TWCLkYq0InQ2lvQW0H6nJsI01BWk3in+5D4tnkJAW6IeQe3DrgWC38DAGcyv5u669vHN5ww81cXtDIwVz4T4Wc9jaILcMvHlMDnTGv78AHY3kmDtuVNpBkc4rZaggSeaBoAMo4Hc3sPnEol",
   "signed-by": "github.com/zeroSteiner"
 }

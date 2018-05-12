@@ -44,7 +44,10 @@ def remove_office_metadata(input_file, output_file=None):
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Spencer McIntyre']
-	classifiers = ['Plugin :: Client :: Email :: Attachment']
+	classifiers = [
+		'Plugin :: Client :: Email :: Attachment',
+		'Script :: CLI'
+	]
 	title = 'Office 2007+ Document Metadata Remover'
 	description = """
 	Remove metadata from Microsoft Office 2007+ file types. These files types
