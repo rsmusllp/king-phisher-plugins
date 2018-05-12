@@ -45,6 +45,7 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Credentials Flash Color'
 		),
 	]
+	reference_urls = ['https://blink1.thingm.com/']
 	req_min_version = '1.6.0'
 	req_packages = {
 		'blink1': has_blink1

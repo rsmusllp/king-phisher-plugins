@@ -19,6 +19,7 @@ class Plugin(plugins.ClientPlugin):
 	This will cause messages to be identified as SPAM.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	reference_urls = ['https://spamassassin.apache.org/gtube/']
 	req_min_version = '1.10.0'
 	version = '1.0'
 	def initialize(self):

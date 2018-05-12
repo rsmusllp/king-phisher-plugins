@@ -51,7 +51,10 @@ def phishery_inject(input_file, document_urls, output_file=None):
 
 class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlugin)):
 	authors = ['Ryan Hanson', 'Spencer McIntyre', 'Erik Daguerre']
-	classifiers = ['Plugin :: Client :: Email :: Attachment']
+	classifiers = [
+		'Plugin :: Client :: Email :: Attachment',
+		'Script :: CLI'
+	]
 	title = 'Phishery DOCX URL Injector'
 	description = """
 	Inject Word Document Template URLs into DOCX files. The Phishery technique is
