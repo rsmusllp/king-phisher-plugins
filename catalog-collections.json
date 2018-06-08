@@ -504,25 +504,19 @@
           {
             "path-destination": "totp_enrollment/__init__.py",
             "path-source": "client/totp_enrollment/__init__.py",
-            "signature": "AI3evw20ZHfZ0ynXy7revTbF/euaQqf+Ot86tCEmiKql/rH1itLUaYrtBJ+RnBE2+pqcyyAe8Ph7dq9jGZDh6jaCADLJCfWBwB2cq5Ti0TjWOdx0IUtJZv2saJZYFnqu2vOtLUWC9d/DnHyJqpDMRT00fkwsXrSyS52fh8ajivi0Ozqe",
+            "signature": "AILOuMW4/ks3FiXEsnPaAMabhiJ3Sjg1LXmIuUlnrZSLDoKCPETuAoQiXH6/S1xmJZjgfCdmygio+G9yNuLNCM6uAdLz0TZ8AWAcgZQqAmyY4eHApFsCcl3YMdOGTanOy29DO+ILCT9FJbg8wu7QuPOCRRVh2oK60EDJGlBIeCj8/EVf",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/totp_enrollment.ui",
             "path-source": "client/totp_enrollment/totp_enrollment.ui",
-            "signature": "ANFqO4k9KDugKlZEPhl5yKw3eY6Goz1Fq8oZY6XrbhvODse9QsDS3Zn4WW0uBqvhnXh4/qUoDUHd6JJi25AmtD39ASVn+AT3KoyuA9nmZk8Lxtiq0Z9vSdQSsfFfmzfMaga63j15+tG1gFAoSCk3mYkEWIhuQ97z8kQc6le0AzV8yU9e",
-            "signed-by": "github.com/zeroSteiner"
-          },
-          {
-            "path-destination": "totp_enrollment/totp_enrollment.ui~",
-            "path-source": "client/totp_enrollment/totp_enrollment.ui~",
-            "signature": "AQ08xAESRfpM8pm/DlzK4IQP/ogKxH7dJmwKyfXpvPjHN+O9WUqawvLHPqDOmQwm7s+KAXpcWy+n/Qkj6P1rcQu2AetDQXePXKroC+W13D7PMy6K4rOXsSJ44PKpo68L0xn3wJH3LQPF0qHAM6OkjYYJKD2b+KSRYGP5nflN+yeKCuaK",
+            "signature": "AZzce9WbXLKLcnwz5skts+WlZfuCNN1l58dv6jXa57eajqa7AeuHKL0+jbz+XrK8udq4QjA1aN+Q/Pn3os020IkYAW2EFA78GYWsgT7oalAcxazdmHUKMj4txBbj9jv+O+QgeM813RvwBbvnmZx4ZMPhgbNEFFfiAaKP3R9kyLyhnZMM",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "totp_enrollment/user_query.graphql",
             "path-source": "client/totp_enrollment/user_query.graphql",
-            "signature": "AMiQp9WdKrfbWa4B1FPapZmIMkj20pLSd3KNm0vPEJ84sYUuYU+mQ5OslDjjgza/MyYVyCzmhHNEmAaOX5gp98kGAdondeAlScxmLDjt8cHkgSj/cOGnD10wK/dA7ysegveLcitb8f2R5T/LtSNMBKnSYL+QwODffNp47wOGOCnXlrDP",
+            "signature": "AK6e/4M+p5re7ua3rWF3FXuaF6QahYnbfjc6RYrars22vCrxqlp1/qMyi5/BCVuAqLXKpgVDNGOMtCZZtNy8ab5ZALHlFF/Jidqvq5OX+XuJi/xGNKfQq/tjLkG8uy70altgVUPTm4YNwHCEqRu14QNGrPOYco4FN3UwicHNuGMrbnE+",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -536,7 +530,7 @@
           ]
         },
         "title": "TOTP Self Enrollment",
-        "version": "1.1.1"
+        "version": "1.1.2"
       },
       {
         "authors": [
@@ -771,8 +765,8 @@
       }
     ]
   },
-  "created": "2018-05-15T15:47:40.186953+00:00",
+  "created": "2018-06-08T20:02:11.055060+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ATjdywUzLlGGRq4OdMs92IGMaoB7+jRhk0qhajiqw1ecGY/l/S1iIFdsjx6rjsmYIZCvevL/qVYDRv2RSD0OivGBADcqfsFVtWVVkqEcpiUsSnmae8cFKtxIfGjFHUhXYNDs3yTQyhlOdN275XtqN4G/6cUysSiEEqkAj9mZY4meXFGf",
+  "signature": "AXiE7L2i+IRaTUT0pv6wXjRHSEOvTeJwKreMM3waA+Ro9mhD6Kzv673l0k2c57waT6yHk+iTAmLP2TDGd4S3J2kFAMioU6H5lvLce6KDKFUk+w+ebktvXrlxSoxKDpc+yZ2SVJt5GcRpyQCi8L2Kvc+CC1o4DHZvLG64O/97jfUjfVxj",
   "signed-by": "github.com/zeroSteiner"
 }
