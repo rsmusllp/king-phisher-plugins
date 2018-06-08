@@ -43,7 +43,7 @@ class Plugin(plugins.ClientPlugin):
 		'qrcode': has_qrcode,
 		'pillow': has_pillow
 	}
-	version = '1.1.1'
+	version = '1.1.2'
 	def initialize(self):
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
