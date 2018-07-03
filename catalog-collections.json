@@ -386,9 +386,15 @@
         "description": "Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per line from the plugin settings).\n\n* HTTP URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when documents are opened.\n\nNote that to only track opened documents, DO NOT put a URL link into the phishing email to the landing page. This will ensure that visits are only registered for instance where the document is opened.\n\n* HTTPS URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTPS landing page that requires basic authentication.\n\nNote that for HTTPS URLs, the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\n* FILE URL\n\nUtilizing the file://yourtargetserver/somepath URL format will capture SMB credentials.\n\nNote that King Phisher does not support SMB, and utilization of SMB requires that a separate capture/sniffer application such as Metasploit's auxiliary/server/capture/smb module will have to be used to capture NTLM hashes. The plugin and King Phisher will only support injecting the URL path into the document.",
         "files": [
           {
-            "path-destination": "phishery_docx.py",
-            "path-source": "client/phishery_docx.py",
-            "signature": "AcmcrvkDeeDA9M/N3Qrr+hiaXSLHhZQQq63/mSok+naCEF5UnvI/JbRcZsogI5ZwT+mC6k+RaLoGQ7Y0wdC29tapAdZiHfMfFMbYOULJ+NHf2joyYxCFlyqAOwFGd4qNcBz3R3d9JkGY7YiHjDrtT4JnrUY9vOjHos3al7cK+np6SYG8",
+            "path-destination": "phishery_docx/README.md",
+            "path-source": "client/phishery_docx/README.md",
+            "signature": "AFzum3nkMjhMu1RF0bxITvZM2cPL1a07Yg3y3xh5u913jy0CF6hJl32o3KzSiTRUinm9QUSRYMcOKT7MpubesDCHAImUe18POtk/0maEZwhlXucuEk8+ns14G60B3qMkquKxTSVCLUN0u2bMtJ70fAEybQ0mtnGHCNyBWmBQf6K5EMnp",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "phishery_docx/__init__.py",
+            "path-source": "client/phishery_docx/__init__.py",
+            "signature": "ALmv428GFxC9SfDq72UfcUsuxcKm1AbVfn8WbKts+cF828uAhlPu48cGqQmBPf/JfH4LmXceP8xhWiA2ELjX8zskAHwMb/dtg/banmHytXQCIcxapFJzV5ik4BvjU2kcuS0IWchnmSGaqyyQSSMu8nGovVZ4JrEbzxD3hiCyxy9IV7yT",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -765,8 +771,8 @@
       }
     ]
   },
-  "created": "2018-06-08T20:00:19.048740+00:00",
+  "created": "2018-07-03T15:57:51.753987+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AV+o6eJmta/WcjYapM9FvppFfIJl8mllEEJ4vkzcLQH+SPujArZbyNfOovDr33+tmmcFLI/Qr5Lg9eXlUeAQ4WR5AO6pN/F6IYjFlsqtGt/YCwCPLG6UI91QqU1S3ZK6VKQYsBDXWorx+cIIvTQzvonvWQONPw67J1jvOjemYuxLbHjP",
+  "signature": "AUhVz/GjsYP1cfLm8mSQWbZ8vFpk83rjyysG95U5MTrBun85krDt9TdSeXk7Nu8zRuzht6/LMauWl+EtJyBsYXN/AfBsXaczsEjxdVGb6fcXoVmBkYZLgTOzN8Cnh4UdLZRzSyKkNJca2k650BCOMIdoGmPpFtUwbJ39qn9tWdpPzse3",
   "signed-by": "github.com/zeroSteiner"
 }
