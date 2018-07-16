@@ -383,18 +383,18 @@
           "Plugin :: Client :: Email :: Attachment",
           "Script :: CLI"
         ],
-        "description": "Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per line from the plugin settings).\n\n* HTTP URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when documents are opened.\n\nNote that to only track opened documents, DO NOT put a URL link into the phishing email to the landing page. This will ensure that visits are only registered for instance where the document is opened.\n\n* HTTPS URL\n\nThe Jinja variable {{ url.webserver }} can be used for an HTTPS landing page that requires basic authentication.\n\nNote that for HTTPS URLs, the King Phisher server needs to be configured with a proper, trusted SSL certificate for the user to be presented with the basic authentication prompt.\n\n* FILE URL\n\nUtilizing the file://yourtargetserver/somepath URL format will capture SMB credentials.\n\nNote that King Phisher does not support SMB, and utilization of SMB requires that a separate capture/sniffer application such as Metasploit's auxiliary/server/capture/smb module will have to be used to capture NTLM hashes. The plugin and King Phisher will only support injecting the URL path into the document.",
+        "description": "Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per-line from the plugin settings).",
         "files": [
           {
             "path-destination": "phishery_docx/README.md",
             "path-source": "client/phishery_docx/README.md",
-            "signature": "AFzum3nkMjhMu1RF0bxITvZM2cPL1a07Yg3y3xh5u913jy0CF6hJl32o3KzSiTRUinm9QUSRYMcOKT7MpubesDCHAImUe18POtk/0maEZwhlXucuEk8+ns14G60B3qMkquKxTSVCLUN0u2bMtJ70fAEybQ0mtnGHCNyBWmBQf6K5EMnp",
+            "signature": "AGBgv+rwnSQyaWekM0rS9n7IwxmX8Ii7eHhr/1bYriSeUtPhGmKXg6EMjW3+GXZ51+pL5cpCTBPcGJDHCH4cl+RSANQbNBT4ErILsAZm/c/yiVk8ampFOvAu9kddogu3EBIui9p4buMB0tDVjIIBQ2qGIgKlc6xos/WXZQFL1MB1QTXU",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "phishery_docx/__init__.py",
             "path-source": "client/phishery_docx/__init__.py",
-            "signature": "ALmv428GFxC9SfDq72UfcUsuxcKm1AbVfn8WbKts+cF828uAhlPu48cGqQmBPf/JfH4LmXceP8xhWiA2ELjX8zskAHwMb/dtg/banmHytXQCIcxapFJzV5ik4BvjU2kcuS0IWchnmSGaqyyQSSMu8nGovVZ4JrEbzxD3hiCyxy9IV7yT",
+            "signature": "ALhOUT08hpo86mxoAM95+7Ujar3s7r7mzUmgzGiL1c1MU9mdv/n1A2LN0cfWeECgntlRqlFtvjXVSSWK6KZRCINFAHQ4ktzux7wqjXwQ6Qzzh2GxScWUXW9yaYCWOQxZ+4ititlvXsE0FdwVISmyjo2le+EzIR6UOBbw0N8eL2nDAWDZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -407,7 +407,7 @@
           "minimum-version": "1.9.0"
         },
         "title": "Phishery DOCX URL Injector",
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "authors": [
@@ -771,8 +771,8 @@
       }
     ]
   },
-  "created": "2018-07-03T15:57:51.753987+00:00",
+  "created": "2018-07-16T21:14:17.483433+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AUhVz/GjsYP1cfLm8mSQWbZ8vFpk83rjyysG95U5MTrBun85krDt9TdSeXk7Nu8zRuzht6/LMauWl+EtJyBsYXN/AfBsXaczsEjxdVGb6fcXoVmBkYZLgTOzN8Cnh4UdLZRzSyKkNJca2k650BCOMIdoGmPpFtUwbJ39qn9tWdpPzse3",
+  "signature": "AcIvGBmYkS/ySzDvsRjBnyCLwWC9hu0a05JW5r5MO9kkLL4aus/5o1RLO/DSaS3GEO5SWdsfor4/TOeP1EePT1lJAVMdEueRWgCObfXuVXLE8ZD1QpC7tGF60I6rBMOVJm3AKMxcV0MMCfldSFdCXMZGhqtFB3zJlZQUJ+fPb2CmhzMp",
   "signed-by": "github.com/zeroSteiner"
 }
