@@ -1,4 +1,5 @@
 import king_phisher.client.plugins as plugins
+import king_phisher.client.gui_utilities as gui_utilities
 
 try:
 	from bs4 import BeautifulSoup
@@ -25,7 +26,21 @@ class Plugin(plugins.ClientPlugin):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.signal_connect('message-create', self.signal_message_create, gobject=mailer_tab)
 		if not has_bs4:
-			return False
+			return
+
+		if 'message_padding' in self.application.config['plugins']:
+			proceed = gui_utilities.show_dialog_yes_no(
+				'Warning: You are running a conflicting plugin!',
+				self.application.get_active_window(),
+				'The "message_padding" plugin conflicts with "message_plaintext" in such a way ' \
+				+ 'that will cause the message padding to be revealed in the plaintext version ' \
+				+ 'of the email. It is recommended you disable one of these plugins, or append ' \
+				+ 'additional line breaks in the HTML to conceal it.\n\n' \
+				+ 'Do you wish to continue?'
+			)
+			if not proceed:
+				return
+
 		return True
 
 	def signal_message_create(self, mailer_tab, target, message):
