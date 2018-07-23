@@ -1,7 +1,7 @@
 #!/opt/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  server/king_phisher/plugins/alerts_email_via_python3.py
+#  server/king_phisher/plugins/alerts_email_via_smtp.py
 #
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -32,28 +32,22 @@
 
 import datetime
 import os
+import smtplib
 
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.plugins as plugins
 import king_phisher.server.signals as signals
+import king_phisher.templates
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from jinja2 import Environment, select_autoescape
-
-try:
-	import smtplib
-except ImportError:
-	has_smtp = False
-else:
-	has_smtp = True
 
 EXAMPLE_CONFIG = """
 	smtp_host = <smtp.wonderland.com>
 	smtp_port = <port>
 	smtp_email = <your_username>
 	smtp_password = <password>
-	ssl_tls = <boolean>
+	ssl = <boolean>
 	email_jinja_template = <path>
 	mail_options = <your_options>
 """
@@ -152,8 +146,8 @@ class Plugin(plugins.ServerPlugin):
 			default=''
 		),
 		plugin_opts.OptionBoolean(
-			name='ssl_tls',
-			description='Set connection to smtp server to use ssl/tls connection',
+			name='ssl',
+			description='Set connection to smtp server to use ssl connection',
 			default=True
 		),
 		plugin_opts.OptionString(
@@ -167,14 +161,16 @@ class Plugin(plugins.ServerPlugin):
 			default=''
 		),
 	]
-	req_min_version = '1.3'
-	req_min_py_version = '3.0'
-	req_packages = {
-		'smtplib': has_smtp
-	}
+	req_min_version = '1.10'
 
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
+		email_jinja_template = ''
+		if os.path.isfile(self.config['email_jinja_template']):
+			with open(self.config['email_jinja_template'], 'r') as file_:
+				email_jinja_template = file_.read()
+		self.email_template = email_jinja_template if email_jinja_template else HTML_EMAIL_TEMPLATE
+		self.render_template = king_phisher.templates.TemplateEnvironmentBase().from_string(self.email_template)
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):
@@ -213,14 +209,8 @@ class Plugin(plugins.ServerPlugin):
 		plaintext_part = MIMEText(txt_content, 'plain')
 		textual_message.attach(plaintext_part)
 
-		email_jinja_template = ''
-		if os.path.isfile(self.config['email_jinja_template']):
-			with open(self.config['email_jinja_template'], 'r') as file_:
-				email_jinja_template = file_.read()
-
-		email_template = email_jinja_template if email_jinja_template else HTML_EMAIL_TEMPLATE
 		try:
-			rendered_email = Environment().from_string(email_template).render(template_vars=self.get_template_vars(table, alert_subscription, count))
+			rendered_email = self.render_template.render(template_vars=self.get_template_vars(table, alert_subscription, count))
 		except:
 			self.logger.warning('failed to render email jinja template', exc_info=True)
 			return False
@@ -236,24 +226,31 @@ class Plugin(plugins.ServerPlugin):
 		if not msg:
 			return False
 		source_email = self.config['smtp_email']
-
-
-		if self.config['ssl_tls']:
+		server = smtplib.SMTP(self.config['smtp_host'], self.config['smtp_port'])
+		if self.config.get('ssl', False):
 			try:
-				server = smtplib.SMTP(self.config['smtp_host'], self.config['smtp_port'])
-				server.ehlo()
-				server.starttls()
+				server = smtplib.SMTP_SSL(self.config['smtp_host'], self.config['smtp_port'])
 			except smtplib.SMTPException:
-				try:
-					server = smtplib.SMTP_SSL(self.config['smtp_host'], 465)
-				except smtplib.SMTPException:
-					self.logger.warning('received an SMTPException while negotiating STARTTLS with the SMTP server', exc_info=True)
-					return False
+				self.logger.warning('received an SMTPException while negotiating STARTTLS with the SMTP server', exc_info=True)
+				return False
 
 		try:
 			server.connect(self.config['smtp_host'], self.config['smtp_port'])
-			self.logger.info('successfully connected to SMTP server')
 			server.ehlo()
+		except smtplib.SMTPException:
+			self.logger.warning('received an SMTPException while connecting to SMTP server', exc_info=True)
+			return False
+
+		if not self.config.get('ssl', False) and 'starttls' in server.esmtp_features:
+			self.logger.debug('target SMTP server supports the STARTTLS extension')
+			try:
+				server.starttls()
+				server.ehlo()
+			except smtplib.SMTPException:
+				self.logger.warning('received an SMTPException wile negotiating STARTTLS with SMTP server', exc_info=True)
+				return False
+
+		try:
 			server.login(self.config['smtp_email'], self.config['smtp_password'])
 		except smtplib.SMTPNotSupportedError:
 			self.logger.debug('SMTP server does not support authentication')
