@@ -304,6 +304,33 @@
       },
       {
         "authors": [
+          "Mike Stringer"
+        ],
+        "classifiers": [
+          "Plugin :: Client :: Email :: Spam Evasion"
+        ],
+        "description": "Parse and include a plaintext version of an email based on the HTML version.",
+        "files": [
+          {
+            "path-destination": "message_plaintext.py",
+            "path-source": "client/message_plaintext.py",
+            "signature": "AFr8Si21hnkmQDuEArKE9gtKEaOkRI7hZGI1sVEyRCvi89TNFjWrHJpH4zAFFBcNmBFLq8duHREkmcznWXkfVDc1ANZK4XZDIMBkjD2ob/cfdYayhqymioWlXNEv7OZ2EYr8INn4Mh/hGzS3NF2VvR93sSXdBzgPAf5npg2FPiWYf/sg",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "message_plaintext",
+        "requirements": {
+          "minimum-version": "1.10.0",
+          "packages": [
+            "bs4"
+          ]
+        },
+        "title": "Message Plaintext",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
         "classifiers": [],
@@ -796,8 +823,8 @@
       }
     ]
   },
-  "created": "2018-05-10T16:23:16.407558+00:00",
+  "created": "2018-08-01T15:00:29.854379+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AU7o9lUkRvOeiioS3XCooRjXElAJlJr9QZnZCK9S3pREYKw1TVuL9htEKZcHeKvToADpbquvGndj7GmyNHLkldPCAOfrPplpYkoKGh3ikliZ3g6hk7V8Jt8k74S6OO+TVn40jouNsx6TXXPaFfrLIxP4wdbcFWPXbN2dLM/euKh6L1no",
+  "signature": "AMW7gGQHSVG0QG+hPPnlKrKRBpygJ56Z8MEIGLzoK8pNoa5W9hHnvYNLJMP8Fe0VfFnjItSTlPmgB2vI/PFTHz3oAd5035yVnOSqP4cCZ28PE+jBNG6nxqMmn5KGxUUaD0aOlq1wNbrqN6cN99l/hqrAuHbzXQMMkgWEgoHvatI5HXqD",
   "signed-by": "github.com/zeroSteiner"
 }
