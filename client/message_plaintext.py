@@ -25,8 +25,6 @@ class Plugin(plugins.ClientPlugin):
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.signal_connect('message-create', self.signal_message_create, gobject=mailer_tab)
-		if not has_bs4:
-			return
 
 		if 'message_padding' in self.application.config['plugins']:
 			proceed = gui_utilities.show_dialog_yes_no(
@@ -39,12 +37,10 @@ class Plugin(plugins.ClientPlugin):
 				+ 'Do you wish to continue?'
 			)
 			if not proceed:
-				return
-
+				return False
 		return True
 
 	def signal_message_create(self, mailer_tab, target, message):
-
 		for part in message.walk():
 			if not part.get_content_type().startswith('text/html'):
 				continue
@@ -53,7 +49,7 @@ class Plugin(plugins.ClientPlugin):
 		try:
 			soup = BeautifulSoup(html_string, 'html.parser')
 		except NameError:
-			self.logger.error('Unable to generate plaintext message from HTML.')
+			self.logger.error('unable to generate plaintext message from HTML')
 			return False
 
 		plaintext_payload_string = soup.get_text()
@@ -64,5 +60,4 @@ class Plugin(plugins.ClientPlugin):
 			if not part.get_content_type().startswith('text/plain'):
 				continue
 			part.payload_string = plaintext_payload_string
-			self.logger.info('Plaintext modified from html successfully.')
-
+			self.logger.debug('plaintext modified from html successfully')
