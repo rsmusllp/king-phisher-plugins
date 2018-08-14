@@ -1,38 +1,7 @@
-#!/opt/bin/env python3
-# -*- coding: utf-8 -*-
-#
-#  server/king_phisher/plugins/alerts_email_via_smtp.py
-#
-#  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions are
-#  met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following disclaimer
-#    in the documentation and/or other materials provided with the
-#    distribution.
-#  * Neither the name of the project nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-#  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
 import datetime
 import os
 import smtplib
+import socket
 
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.plugins as plugins
@@ -43,13 +12,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 EXAMPLE_CONFIG = """
-	smtp_server = <smtp.wonderland.com>
-	smtp_port = <port>
-	smtp_email = <your_username>
-	smtp_password = <password>
-	ssl = <boolean>
-	email_jinja_template = <path>
-	mail_options = <your_options>
+  smtp_server: <smtp.server.com>
+  smtp_port: <port>
+  smtp_email: <source_email>
+  smtp_username: <username>
+  smtp_password: <password>
+  smtp_ssl: <boolean>
+  email_jinja_template: <path>
 """
 
 HTML_EMAIL_TEMPLATE = """
@@ -63,7 +32,7 @@ style='width:100.0%'><tr><td style='padding:.75pt .75pt .75pt .75pt'><h1 align=c
 style='color:white;font-size:19.5pt;font-weight:normal'>King Phisher Campaign Alert Triggered<o:p></o:p></span></h1>
 <table class=MsoNormalTable border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%;background:#FFC20E'>
 <tr><td style='padding:3.0pt 3.0pt 3.0pt 3.0pt'><p class=MsoNormal align=center style='margin-bottom:15.0pt;text-align:center'>
-<span style='color:black;text-transform:uppercase;letter-spacing:1.2pt'>Status update for: {{ template_vars.name }} <o:p>
+<span style='color:black;text-transform:uppercase;letter-spacing:1.2pt'>Status update for: {{ campaign.name }} <o:p>
 </o:p></span></p></td></tr></table></td></tr><tr><td style='padding:.75pt .75pt .75pt .75pt'><table class=MsoNormalTable 
 border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%'><tr><td style='color:white;padding:.75pt .75pt .75pt 
 .75pt'><h2><span style='font-size:13.5pt'>Basic Details:<o:p></o:p></span></h2></td></tr><tr><td style='padding:.75pt 
@@ -71,13 +40,13 @@ border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%'><tr><td s
 style='width:100.0%;border-collapse:collapse;border:none'><tr><td width=180 style='width:135.0pt;border:solid #414747 
 1.0pt;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt'><p class=MsoNormal><b><span style='font-size:10.5pt'>
 Campaign Name<o:p></o:p></span></b></p></td><td style='border:solid #414747 1.0pt;border-left:none;padding:3.75pt 
-3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span style='font-size:10.0pt'>{{ template_vars.name }}
+3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span style='font-size:10.0pt'>{{ campaign.name }}
 </span></code><span style='font-size:10.5pt'><o:p></o:p></span></p></td></tr><tr><td width=180 style='width:135.0pt;border:solid #414747 
 1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt;_border: none'><p class=MsoNormal><b><span 
 style='font-size:10.5pt'>Number of Visitors<o:p></o:p></span></b></p></td><td style='border-top:none;border-left:none;
 border-bottom:solid #414747 1.0pt;border-right:solid #414747 1.0pt;padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'>
-<p class=MsoNormal><code><span style='font-size:10.0pt'>{{ template_vars.visit_count }}</span></code><span style='font-size:10.5pt'>
-<o:p></o:p></span></p></td></tr><div>{% if template_vars.credential_count %}
+<p class=MsoNormal><code><span style='font-size:10.0pt'>{{ campaign.visit_count }}</span></code><span style='font-size:10.5pt'>
+<o:p></o:p></span></p></td></tr><div>{% if campaign.credential_count %}
 	<tr>
 	<td 
 	width=180 style='width:135.0pt;border:solid #414747 
@@ -87,19 +56,19 @@ border-bottom:solid #414747 1.0pt;border-right:solid #414747 1.0pt;padding:3.75p
 	style='border-top:none;border-left:none;border-bottom:solid #414747 
 	1.0pt;border-right:solid #414747 1.0pt;padding:3.75pt 3.75pt 3.75pt 
 	3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span 
-	style='font-size:10.0pt'>{{ template_vars.credential_count }}</span></code><span 
+	style='font-size:10.0pt'>{{ campaign.credential_count }}</span></code><span 
 	style='font-size:10.5pt'><o:p></o:p></span></p></td></tr>
 {% endif %}
 </div><tr><td width=180 style='width:135.0pt;border:solid #414747 1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 
 3.75pt;_border: none'><p class=MsoNormal><b><span style='font-size:10.5pt'>Time Alert Triggered<o:p></o:p></span></b></p>
 </td><td style='border-top:none;border-left:none;border-bottom:solid #414747 1.0pt;border-right:solid #414747 1.0pt;
 padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span style='font-size:10.0pt'>
-{{ template_vars.time }}</span></code><span style='font-size:10.5pt'><o:p></o:p></span></p></td></tr><tr><td width=180 
+{{ time.utc | strftime('%Y-%m-%dT%H:%M:%S+00:00') }}</span></code><span style='font-size:10.5pt'><o:p></o:p></span></p></td></tr><tr><td width=180 
 style='width:135.0pt;border:solid #414747 1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt;_border: none'>
 <p class=MsoNormal><b><span style='font-size:10.5pt'>Campaign Expiration<o:p></o:p></span></b></p></td>
 <td style='border-top:none;border-left:none;border-bottom:solid #414747 
 1.0pt;border-right:solid #FFC20E 1.0pt;padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code>
-<span style='font-size:10.0pt'>{{ template_vars.expiration }}</span></code><span style='font-size:10.5pt'><o:p></o:p>
+<span style='font-size:10.0pt'>{{ campaign.expiration }}</span></code><span style='font-size:10.5pt'><o:p></o:p>
 </span></p></td></tr></table></td></tr><tr><td style='padding:.75pt .75pt .75pt .75pt'>   <tr>
 <td width="100%" style='width:100.0%;border:none;padding:7.5pt .15in 7.5pt .15in;min-width: 315px;max-width: 660px'>
 <div align=center><table class=MsoNormalTable border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%'><tr>
@@ -141,34 +110,35 @@ class Plugin(plugins.ServerPlugin):
 			default=''
 		),
 		plugin_opts.OptionString(
+			name='smtp_username',
+			description='Username to authenticate to the SMTP server with'
+		),
+		plugin_opts.OptionString(
 			name='smtp_password',
-			description='Password associated with smtp email',
+			description='Password to authenticate to the SMTP server with',
 			default=''
 		),
 		plugin_opts.OptionBoolean(
-			name='ssl',
-			description='Set connection to smtp server to use ssl connection',
+			name='smtp_ssl',
+			description='Connect to the SMTP server with SSL',
 			default=False
 		),
 		plugin_opts.OptionString(
 			name='email_jinja_template',
-			description='custom email jinja template to use for alerts',
-			default=''
-		),
-		plugin_opts.OptionString(
-			name='mail_options',
-			description='Additional mail options',
+			description='Custom email jinja template to use for alerts',
 			default=''
 		),
 	]
 	req_min_version = '1.10'
-
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
 		self.email_jinja_template = HTML_EMAIL_TEMPLATE
 		if os.path.isfile(self.config['email_jinja_template']):
 			with open(self.config['email_jinja_template'], 'r') as file_:
 				self.email_jinja_template = file_.read()
+		elif self.config['email_jinja_template']:
+			self.logger.warning('invalid email template: ' + self.config['email_jinja_template'])
+			return False
 		self.render_template = king_phisher.templates.TemplateEnvironmentBase().from_string(self.email_jinja_template)
 		return True
 
@@ -177,24 +147,29 @@ class Plugin(plugins.ServerPlugin):
 		if not self.config['smtp_email']:
 			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.id))
 			return False
-		return self.send_message(table, alert_subscription, count, self.config['smtp_email'])
+		return self.send_message(table, alert_subscription, count)
 
 	def get_template_vars(self, table, alert_subscription, count):
 		campaign = alert_subscription.campaign
 		template_vars = {
-			'id': str(campaign.id),
-			'name': campaign.name,
-			'created': campaign.created,
-			'expiration': campaign.expiration,
-			'has_expired': campaign.has_expired,
-			'message_count': len(campaign.messages),
-			'visit_count': len(campaign.visits),
-			'credential_count': len(campaign.credentials),
-			'time': datetime.datetime.utcnow()
+			'campaign': {
+				'id': str(campaign.id),
+				'name': campaign.name,
+				'created': campaign.created,
+				'expiration': campaign.expiration,
+				'has_expired': campaign.has_expired,
+				'message_count': len(campaign.messages),
+				'visit_count': len(campaign.visits),
+				'credential_count': len(campaign.credentials)
+			},
+			'time': {
+				'local': datetime.datetime.now(),
+				'utc': datetime.datetime.utcnow()
+			}
 		}
 		return template_vars
 
-	def create_headers(self, table, alert_subscription, count):
+	def create_message(self, table, alert_subscription, count):
 		message = MIMEMultipart()
 		message['Subject'] = "Campaign Event: {0}".format(alert_subscription.campaign.name)
 		message['From'] = "<{0}>".format(self.config['smtp_email'])
@@ -206,7 +181,7 @@ class Plugin(plugins.ServerPlugin):
 		textual_message.attach(plaintext_part)
 
 		try:
-			rendered_email = self.render_template.render(template_vars=self.get_template_vars(table, alert_subscription, count))
+			rendered_email = self.render_template.render(self.get_template_vars(table, alert_subscription, count))
 		except:
 			self.logger.warning('failed to render email jinja template', exc_info=True)
 			return False
@@ -217,27 +192,26 @@ class Plugin(plugins.ServerPlugin):
 		encoded_email = message.as_string()
 		return encoded_email
 
-	def send_message(self, table, alert_subscription, count, target_email):
-		msg = self.create_headers(table, alert_subscription, count)
+	def send_message(self, table, alert_subscription, count):
+		msg = self.create_message(table, alert_subscription, count)
 		if not msg:
 			return False
-		source_email = self.config['smtp_email']
-		server = smtplib.SMTP(self.config['smtp_server'], self.config['smtp_port'])
-		if self.config['ssl']:
-			try:
-				server = smtplib.SMTP_SSL(self.config['smtp_server'], self.config['smtp_port'])
-			except smtplib.SMTPException:
-				self.logger.warning('received an SMTPException while negotiating STARTTLS with the SMTP server', exc_info=True)
-				return False
 
+		if self.config['smtp_ssl']:
+			SmtpClass = smtplib.SMTP_SSL
+		else:
+			SmtpClass = smtplib.SMTP
 		try:
-			server.connect(self.config['smtp_server'], self.config['smtp_port'])
+			server = SmtpClass(self.config['smtp_server'], self.config['smtp_port'], timeout=15)
 			server.ehlo()
 		except smtplib.SMTPException:
-			self.logger.warning('received an SMTPException while connecting to SMTP server', exc_info=True)
+			self.logger.warning('received an SMTPException while connecting to the SMTP server', exc_info=True)
+			return False
+		except socket.error:
+			self.logger.warning('received a socket.error while connecting to the SMTP server')
 			return False
 
-		if not self.config['ssl'] and 'starttls' in server.esmtp_features:
+		if not self.config['smtp_ssl'] and 'starttls' in server.esmtp_features:
 			self.logger.debug('target SMTP server supports the STARTTLS extension')
 			try:
 				server.starttls()
@@ -246,22 +220,23 @@ class Plugin(plugins.ServerPlugin):
 				self.logger.warning('received an SMTPException wile negotiating STARTTLS with SMTP server', exc_info=True)
 				return False
 
-		if self.config['smtp_password']:
+		if self.config['smtp_username']:
 			try:
-				server.login(self.config['smtp_email'], self.config['smtp_password'])
+				server.login(self.config['smtp_username'], self.config['smtp_password'])
 			except smtplib.SMTPNotSupportedError:
 				self.logger.debug('SMTP server does not support authentication')
 			except smtplib.SMTPException as error:
 				self.logger.warning("received an {0} while authenticating to the SMTP server".format(error.__class__.__name__))
+				server.quit()
 				return False
 
+		mail_options = ['SMTPUTF8'] if server.has_extn('SMTPUTF8') else []
 		try:
-			server.sendmail(source_email, target_email, msg, self.config['mail_options'])
+			server.sendmail(self.config['smtp_email'], alert_subscription.user.email_address, msg, mail_options)
 		except smtplib.SMTPException as error:
 			self.logger.warning("received error {0} while sending mail".format(error.__class__.__name__))
-			server.quit()
 			return False
-
+		finally:
+			server.quit()
 		self.logger.info('successfully sent alert email')
-		server.quit()
 		return True

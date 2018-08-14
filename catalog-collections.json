@@ -560,6 +560,33 @@
     "plugins/server": [
       {
         "authors": [
+          "Austin DeFrancesco",
+          "Spencer McIntyre",
+          "Mike Stringer",
+          "Erik Daguerre"
+        ],
+        "classifiers": [
+          "Plugin :: Server :: Notifications :: Alerts"
+        ],
+        "description": "Send campaign alerts via the SMTP Python 3 lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
+        "files": [
+          {
+            "path-destination": "alerts_email_via_smtp.py",
+            "path-source": "server/alerts_email_via_smtp.py",
+            "signature": "AG8d/LnBpbnVuqUMYhL/vn4H68S5N/slyARFo/7WAaTXPl/QbfMJFWgXwOTGGN9KlBisWgPl7GpveomkbeIQDn2xACnMn3m3hqfhEsQ6TiBfFjAilr5Yry1Nn7LxFsc/FwddNM0jYIMszrUZXvuS8KZArZO3hXHMNRvJ5Bg48KhfzewX",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "alerts_email_via_smtp",
+        "requirements": {
+          "minimum-version": "1.10"
+        },
+        "title": "Campaign Alerts: via Python 3 SMTPLib",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre",
           "Mike Stringer"
         ],
@@ -765,8 +792,8 @@
       }
     ]
   },
-  "created": "2018-06-08T20:00:19.048740+00:00",
+  "created": "2018-08-14T14:44:30.165638+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AV+o6eJmta/WcjYapM9FvppFfIJl8mllEEJ4vkzcLQH+SPujArZbyNfOovDr33+tmmcFLI/Qr5Lg9eXlUeAQ4WR5AO6pN/F6IYjFlsqtGt/YCwCPLG6UI91QqU1S3ZK6VKQYsBDXWorx+cIIvTQzvonvWQONPw67J1jvOjemYuxLbHjP",
+  "signature": "ALdlfwfYOKHQETPSGfv1MZDOMPBtB53NORr84DREuPfYD1ptdksVmnnD3gepX/4c8FVwg059O0C4kUnk5K/GjKM1AGZf+/xBfOlsy0HaUikAFXtgExAmg2ZJp/jFFizDr0BNUx1G+h21RRCtbA8l96Umxqi76t1xSyHslj1QyvkRwzpa",
   "signed-by": "github.com/zeroSteiner"
 }
