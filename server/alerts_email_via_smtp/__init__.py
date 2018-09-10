@@ -6,7 +6,7 @@ import socket
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.plugins as plugins
 import king_phisher.server.signals as signals
-import king_phisher.templates
+import king_phisher.templates as templates
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -82,7 +82,7 @@ class Plugin(plugins.ServerPlugin):
 			return False
 		with open(template_path, 'r') as file_:
 			template_data = file_.read()
-		self.render_template = king_phisher.templates.TemplateEnvironmentBase().from_string(template_data)
+		self.render_template = templates.TemplateEnvironmentBase().from_string(template_data)
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):
@@ -92,7 +92,7 @@ class Plugin(plugins.ServerPlugin):
 			return False
 		return self.send_message(table, alert_subscription, count)
 
-	def get_template_vars(self, table, alert_subscription, count):
+	def get_template_vars(self, alert_subscription):
 		campaign = alert_subscription.campaign
 		template_vars = {
 			'campaign': {
@@ -124,9 +124,9 @@ class Plugin(plugins.ServerPlugin):
 		textual_message.attach(plaintext_part)
 
 		try:
-			rendered_email = self.render_template.render(self.get_template_vars(table, alert_subscription, count))
+			rendered_email = self.render_template.render(self.get_template_vars(alert_subscription))
 		except:
-			self.logger.warning('failed to render email jinja template', exc_info=True)
+			self.logger.warning('failed to render the email template', exc_info=True)
 			return False
 		html_part = MIMEText(rendered_email, 'html')
 		textual_message.attach(html_part)

@@ -600,13 +600,13 @@
           {
             "path-destination": "alerts_email_via_smtp/__init__.py",
             "path-source": "server/alerts_email_via_smtp/__init__.py",
-            "signature": "AZV0RTtAzremDT4gTfrVecigC7/oBeJft1T/J690L59u3J8QLp6CffbldeaO+56Fyedw82n4T5ViDbKBmWUDrb6LAXB+HOd15BP4NLyV0G69672BVaqWVkJVlBTjd77XwRpKXyMYf8GX1E2i2b2aKyqgcod0dR8HvSYqtKCkHAhCC8fh",
+            "signature": "AKM61KyXgxgW9xaHjRwOr/cpNqOY79MiT+/1J8XqBDIEljfuD+GMQ2xySS2eBeXM8LLkB+lxsu8sQldsH9FIWSqyAKwMDCCpVrYvtM8AIwd43j7OPYz6y8yrb+KS32GtqBeei4WvKHX2oihNGmGSylOaG2YL3/tM3mTSFRARDLctgySV",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "alerts_email_via_smtp/template.html",
             "path-source": "server/alerts_email_via_smtp/template.html",
-            "signature": "AZ+Qkq+9vbUQU7Df4Uep3MzFCwP4232uU1EzYGENShjYGYgSyhuJM9ElkVZ5SRz3wnEyyYADjQXQjv7Ib5hdY2qqAZxYazHGCwCuHhItAcRZdmDUjKwxbwHq54gouH8HRxL7MoT/H76WwKgz7uvo18LTECOlm2UhCwUFku8mKY6xcg18",
+            "signature": "AWTf5kwq1uPYLmGvNg4b3BHZ3GEPif6NNIkrF/pTtupLyTMqGn1zGZLhA/IvFu6XyQ+mZFdXmms40c4MIYUpKo/eALKQ9K54jfPzkJTQTpz2dPdeqqFzKCYd2U1qiqW56JMqGrxhJADR2dm5wEzSG/jtKIuoo0NSy5G12NhsL8jHRbeB",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -629,22 +629,28 @@
         "description": "Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
         "files": [
           {
-            "path-destination": "alerts_email_via_smtp2go.py",
-            "path-source": "server/alerts_email_via_smtp2go.py",
-            "signature": "ASJIWCM7p8V9Ct8UzWN43Er+SIq2nmagXmB2XoiorrQ2hzjdHK2Cjj04WtPeN+rHSZ6hR6bb3mClpue1hX8qBe7HASUC7cYHwBjMXlzcc3olfI8efooxt0PLrkqlwzn5/fUilFyUwk6X7+qsZyaYH1LHhm1FTjVJGR5z2TFQE8YYTjjA",
+            "path-destination": "alerts_email_via_smtp2go/__init__.py",
+            "path-source": "server/alerts_email_via_smtp2go/__init__.py",
+            "signature": "AQeKSD9VyybBjyLURiRGPIQkGX0BhBVvK0IsMIK/V4XzXuqsDgLnGnmyiNM6tVv30TJ5HJOS0oRw27OnXP6Vr01kAU1fgPWY/ecQlc6re/KVeix7nALcpcl+qi2E5AOkcQwnklXfqXPSppsbXt7ZIyvBC8RD4zc2JKPzUO+D6gJepi+m",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "alerts_email_via_smtp2go/template.html",
+            "path-source": "server/alerts_email_via_smtp2go/template.html",
+            "signature": "AVV3TSNLYzTDiEBtjD8i6btVAV/dFJyimaGGJQN3YTf/0JRga2MiZ2YdcNyxZhGtZLuk9lg+qiEW6FzBab1IxneWACT2sjsjIurdIFOhhDqIY3J+raP99QYf5JNIPopVKFbqFIOOlGP9OTff8aomaDdj7HRS5YVBaBdVB8chtYcksRhZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_email_via_smtp2go",
         "requirements": {
-          "minimum-version": "1.10.0",
+          "minimum-version": "1.12.0b2",
           "packages": [
             "smtp2go"
           ]
         },
         "title": "Campaign Alerts: via SMTP2Go",
-        "version": "1.0"
+        "version": "1.1"
       },
       {
         "authors": [
@@ -825,8 +831,8 @@
       }
     ]
   },
-  "created": "2018-09-10T19:24:37.077272+00:00",
+  "created": "2018-09-10T20:36:22.134657+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AcMwtJ124JeG4/Q9BDrE3x+U1rJrp0LLldkxsbuIIqQ9eW08E7mmMcLR+S++Gx31MeNC64gH/r7Nlu4DHstu3W20AP93yxXMycM16SpRMzRt94ZrXbdwxxnDpDDXfqMo7xHN8s/ln/BpfUCpHQ5uWAye1+1ZZOewd3TsbmYaFS5yg9/n",
+  "signature": "AfzSBLAnW7I7G7moFuPHDLwIFAJtcS+qokEUbdNlrtBfy0XIBvCuE9A7ILFJR0sO+UT+yIG13LTvQeCLsrCQxgoqAAkNJWW0OF1vOnVxFFBi/659A1xhC1vDbc+MayNxBZpzMDwfEHZa1pJtPO+TPuabE/R/UgTNrNpPvBCEA8+JQdfx",
   "signed-by": "github.com/zeroSteiner"
 }
