@@ -22,32 +22,40 @@ class Plugin(plugins.ServerPlugin):
 	specify their cell phone number through the King Phisher client.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	version = '1.1'
 	options = [
 		plugin_opts.OptionString(
 			name='api_key',
 			description='Clockwork SMS API Key'
 		)
 	]
-	req_min_version = '1.10.0'
 	req_packages = {
 		'clockwork': has_clockwork
 	}
+	req_min_version = '1.12.0b2'
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
+		signals.campaign_alert_expired.connect(self.on_campaign_alert_expired)
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):
+		message = "Campaign '{0}' has reached {1:,} {2}".format(alert_subscription.campaign.name, count, table.replace('_', ' '))
+		return self.send_alert(alert_subscription, message)
+
+	def on_campaign_alert_expired(self, camapign, alert_subscription):
+		message = "Campaign '{0}' has expired".format(alert_subscription.campaign.name)
+		return self.send_alert(alert_subscription, message)
+
+	def send_alert(self, alert_subscription, message):
 		user = alert_subscription.user
 		if not user.phone_number:
-			self.logger.debug("user {0} has no cell phone number specified, skipping SMS alert".format(user.id))
+			self.logger.debug("user {0} has no cell phone number specified, skipping SMS alert".format(user.name))
 			return False
 		api = clockwork.API(self.config['api_key'])
 
-		message = "{0:,} {1} reached for campaign: {2}".format(count, table.replace('_', ' '), alert_subscription.campaign.name)
-		response = api.send(clockwork.SMS(user.phone_number, message))
-
+		response = api.send(clockwork.SMS(user.phone_number, message)) 
 		if not response.success:
 			self.logger.error("received error {0} ({1})".format(response.error_code, response.error_message))
 			return False
-		self.logger.debug("sent an SMS alert to user {0}".format(user.id))
+		self.logger.debug("sent an SMS alert to user {0}".format(user.name))
 		return True
