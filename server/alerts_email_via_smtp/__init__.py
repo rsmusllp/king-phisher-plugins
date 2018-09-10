@@ -74,6 +74,7 @@ class Plugin(plugins.ServerPlugin):
 	req_min_version = '1.12.0b2'
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
+		signals.campaign_alert_expired.connect(self.on_campaign_alert_expired)
 		template_path = self.config['email_jinja_template']
 		if not template_path:
 			template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'template.html')
@@ -86,11 +87,10 @@ class Plugin(plugins.ServerPlugin):
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):
-		user = alert_subscription.user
-		if not self.config['smtp_email']:
-			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.id))
-			return False
-		return self.send_message(table, alert_subscription, count)
+		return self.send_alert(alert_subscription)
+
+	def on_campaign_alert_expired(self, camapign, alert_subscription):
+		return self.send_alert(alert_subscription)
 
 	def get_template_vars(self, alert_subscription):
 		campaign = alert_subscription.campaign
@@ -112,15 +112,14 @@ class Plugin(plugins.ServerPlugin):
 		}
 		return template_vars
 
-	def create_message(self, table, alert_subscription, count):
+	def create_message(self, alert_subscription):
 		message = MIMEMultipart()
 		message['Subject'] = "Campaign Event: {0}".format(alert_subscription.campaign.name)
 		message['From'] = "<{0}>".format(self.config['smtp_email'])
 		message['To'] = "<{0}>".format(alert_subscription.user.email_address)
 
 		textual_message = MIMEMultipart('alternative')
-		txt_content = "{0:,} {1} reached for campaign: {2}".format(count, table.replace('_', ' '), alert_subscription.campaign.name)
-		plaintext_part = MIMEText(txt_content, 'plain')
+		plaintext_part = MIMEText('This message requires an HTML aware email agent to be properly viewed.\r\n\r\n', 'plain')
 		textual_message.attach(plaintext_part)
 
 		try:
@@ -135,8 +134,13 @@ class Plugin(plugins.ServerPlugin):
 		encoded_email = message.as_string()
 		return encoded_email
 
-	def send_message(self, table, alert_subscription, count):
-		msg = self.create_message(table, alert_subscription, count)
+	def send_alert(self, alert_subscription):
+		user = alert_subscription.user
+		if not user.email_address:
+			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.name))
+			return False
+
+		msg = self.create_message(alert_subscription)
 		if not msg:
 			return False
 
@@ -181,5 +185,5 @@ class Plugin(plugins.ServerPlugin):
 			return False
 		finally:
 			server.quit()
-		self.logger.info('successfully sent alert email')
+		self.logger.debug("successfully sent an email campaign alert to user: {0}".format(user.name))
 		return True

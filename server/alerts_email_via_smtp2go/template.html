@@ -35,13 +35,19 @@
                           <tr>
                             <td>
                               <div style="margin-bottom: 8px; text-align: center">
-                                <span style="color: white; font-size: 19.5pt; font-weight: bold">King Phisher Campaign Alert Triggered</span>
+                                <span style="color: white; font-size: 19.5pt; font-weight: bold">King Phisher Campaign Alert</span>
                               </div>
                               <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%; background: #FFC20E">
                                 <tr>
                                   <td>
                                     <p class="MsoNormal" align="center" style="margin-bottom: 6px; margin-top: 6px; text-align: center">
-                                      <span style="color: black; text-transform: uppercase; letter-spacing: 1.2pt">Status update for: {{ campaign.name }}</span>
+                                      <span style="color: black; text-transform: uppercase; letter-spacing: 1.2pt">
+                                        {% if campaign.has_expired %}
+                                        Expiration notification for: {{ campaign.name }}
+                                        {% else %}
+                                        Status update for: {{ campaign.name }}
+                                        {% endif %}
+                                      </span>
                                     </p>
                                   </td>
                                 </tr>

@@ -50,6 +50,7 @@ class Plugin(plugins.ServerPlugin):
 	}
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
+		signals.campaign_alert_expired.connect(self.on_campaign_alert_expired)
 		template_path = self.config['email_jinja_template']
 		if not template_path:
 			template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'template.html')
@@ -62,9 +63,35 @@ class Plugin(plugins.ServerPlugin):
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):
+		return self.send_alert(alert_subscription)
+
+	def on_campaign_alert_expired(self, camapign, alert_subscription):
+		return self.send_alert(alert_subscription)
+
+	def get_template_vars(self, alert_subscription):
+		campaign = alert_subscription.campaign
+		template_vars = {
+			'campaign': {
+				'id': str(campaign.id),
+				'name': campaign.name,
+				'created': campaign.created,
+				'expiration': campaign.expiration,
+				'has_expired': campaign.has_expired,
+				'message_count': len(campaign.messages),
+				'visit_count': len(campaign.visits),
+				'credential_count': len(campaign.credentials)
+			},
+			'time': {
+				'local': datetime.datetime.now(),
+				'utc': datetime.datetime.utcnow()
+			}
+		}
+		return template_vars
+
+	def send_alert(self, alert_subscription):
 		user = alert_subscription.user
 		if not user.email_address:
-			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.id))
+			self.logger.debug("user {0} has no email address specified, skipping SMTP alert".format(user.name))
 			return False
 
 		# Workaround for python-smtp2go API, which forces the use of environment variables
@@ -93,25 +120,5 @@ class Plugin(plugins.ServerPlugin):
 			if response.errors:
 				self.logger.error(repr([err for err in response.errors]))
 			return False
-		self.logger.debug("sent an email alert to user {0}".format(user.id))
+		self.logger.debug("successfully sent an email campaign alert to user: {0}".format(user.name))
 		return True
-
-	def get_template_vars(self, alert_subscription):
-		campaign = alert_subscription.campaign
-		template_vars = {
-			'campaign': {
-				'id': str(campaign.id),
-				'name': campaign.name,
-				'created': campaign.created,
-				'expiration': campaign.expiration,
-				'has_expired': campaign.has_expired,
-				'message_count': len(campaign.messages),
-				'visit_count': len(campaign.visits),
-				'credential_count': len(campaign.credentials)
-			},
-			'time': {
-				'local': datetime.datetime.now(),
-				'utc': datetime.datetime.utcnow()
-			}
-		}
-		return template_vars
