@@ -1,0 +1,98 @@
+{% macro campaign_row(key, value) %}
+                                      <tr>
+                                        <td style="width: 135.0pt; border: solid #414747 1.0pt; background: #EEEEEE; padding: 3.75pt 3.75pt 3.75pt 3.75pt">
+                                          <p class="MsoNormal">
+                                            <b>
+                                              <span style="font-size:11.0pt">{{ key }}
+                                                <o:p></o:p>
+                                              </span>
+                                            </b>
+                                          </p>
+                                        </td>
+                                        <td style="border: solid #414747 1.0pt; background: #EEEEEE; padding: 3.75pt 3.75pt 3.75pt 3.75pt">
+                                          <p class="MsoNormal">
+                                            <span style="font-family: Courier; font-size:10.0pt">{{ value }}</span>
+                                          </p>
+                                        </td>
+                                      </tr>
+{% endmacro %}
+<html>
+  <body>
+    <class="MsoNormal">
+      <o:p>&nbsp;</o:p>
+    </p>
+    <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%; background: #00203a">
+      <tr>
+        <td style="padding: 20px">
+          <div align="center">
+            <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%">
+              <tr>
+                <td>
+                  <table class="MsoNormalTable" style="width: 100.0%; background: #5d84a8; border: solid #FFC20E 3px">
+                    <tr>
+                      <td style="padding: 20px">
+                        <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width:100.0%">
+                          <tr>
+                            <td>
+                              <div style="margin-bottom: 8px; text-align: center">
+                                <span style="color: white; font-size: 19.5pt; font-weight: bold">King Phisher Campaign Alert</span>
+                              </div>
+                              <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%; background: #FFC20E">
+                                <tr>
+                                  <td>
+                                    <p class="MsoNormal" align="center" style="margin-bottom: 6px; margin-top: 6px; text-align: center">
+                                      <span style="color: black; text-transform: uppercase; letter-spacing: 1.2pt">
+                                        {% if campaign.has_expired %}
+                                        Expiration notification for: {{ campaign.name }}
+                                        {% else %}
+                                        Status update for: {{ campaign.name }}
+                                        {% endif %}
+                                      </span>
+                                    </p>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%">
+                                <tr>
+                                  <td style="color: white; font-size: 13.5pt; padding-bottom: 3px; padding-top: 5px">
+                                    Basic Details:
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" style="width: 100.0%; border-collapse: collapse; border: none">
+                                      {{ campaign_row('Campaign Name', campaign.name) }}
+                                      {{ campaign_row('Time Alert Triggered', time.utc | strftime("%Y-%m-%dT%H:%M:%S+00:00")) }}
+                                      {{ campaign_row('Number of Visits', campaign.visit_count) }}
+                                      {% if campaign.credential_count %}
+                                      {{ campaign_row('Number of Credentials', campaign.credential_count) }}
+                                      {% endif %}
+                                      {{ campaign_row('Campaign Expiration', campaign.expiration) }}
+                                    </table>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="color: white; font-size: 9.5pt; padding-bottom: 3px; padding-top: 5px">
+                                    Powered by: <a href="https://github.com/securestate/king-phisher" style="color: white; font-weight: bolder">King Phisher</a>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
