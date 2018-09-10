@@ -21,65 +21,6 @@ EXAMPLE_CONFIG = """
   email_jinja_template: <path>
 """
 
-HTML_EMAIL_TEMPLATE = """
-<class=MsoNormal><o:p>&nbsp;</o:p></p><table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width="100%" 
-style='width:100.0%;background:#00203a'><tr><td style='padding:15.0pt 0in 15.0pt 0in'><div align=center>
-<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width="95%" style='width:95.0%'><tr><td 
-style='padding:7.5pt 0in 15.0pt 0in'><table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width="100%" 
-style='width:100.0%;background:#5d84a8;border:solid #FFC20E 1.0pt;border-top:solid #FFC20E 3.0pt'><tr>
-<td style='border:none;padding:.15in .15in .15in .15in'><table class=MsoNormalTable border=0 cellspacing=3 cellpadding=0 width="100%" 
-style='width:100.0%'><tr><td style='padding:.75pt .75pt .75pt .75pt'><h1 align=center style='text-align:center'><span 
-style='color:white;font-size:19.5pt;font-weight:normal'>King Phisher Campaign Alert Triggered<o:p></o:p></span></h1>
-<table class=MsoNormalTable border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%;background:#FFC20E'>
-<tr><td style='padding:3.0pt 3.0pt 3.0pt 3.0pt'><p class=MsoNormal align=center style='margin-bottom:15.0pt;text-align:center'>
-<span style='color:black;text-transform:uppercase;letter-spacing:1.2pt'>Status update for: {{ campaign.name }} <o:p>
-</o:p></span></p></td></tr></table></td></tr><tr><td style='padding:.75pt .75pt .75pt .75pt'><table class=MsoNormalTable 
-border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%'><tr><td style='color:white;padding:.75pt .75pt .75pt 
-.75pt'><h2><span style='font-size:13.5pt'>Basic Details:<o:p></o:p></span></h2></td></tr><tr><td style='padding:.75pt 
-.75pt .75pt .75pt;_border: none'><table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width="100%" 
-style='width:100.0%;border-collapse:collapse;border:none'><tr><td width=180 style='width:135.0pt;border:solid #414747 
-1.0pt;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt'><p class=MsoNormal><b><span style='font-size:10.5pt'>
-Campaign Name<o:p></o:p></span></b></p></td><td style='border:solid #414747 1.0pt;border-left:none;padding:3.75pt 
-3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span style='font-size:10.0pt'>{{ campaign.name }}
-</span></code><span style='font-size:10.5pt'><o:p></o:p></span></p></td></tr><tr><td width=180 style='width:135.0pt;border:solid #414747 
-1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt;_border: none'><p class=MsoNormal><b><span 
-style='font-size:10.5pt'>Number of Visitors<o:p></o:p></span></b></p></td><td style='border-top:none;border-left:none;
-border-bottom:solid #414747 1.0pt;border-right:solid #414747 1.0pt;padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'>
-<p class=MsoNormal><code><span style='font-size:10.0pt'>{{ campaign.visit_count }}</span></code><span style='font-size:10.5pt'>
-<o:p></o:p></span></p></td></tr><div>{% if campaign.credential_count %}
-	<tr>
-	<td 
-	width=180 style='width:135.0pt;border:solid #414747 
-	1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 
-	3.75pt;_border: none'><p class=MsoNormal><b><span 
-	style='font-size:10.5pt'>Number of Credentials<o:p></o:p></span></b></p></td><td 
-	style='border-top:none;border-left:none;border-bottom:solid #414747 
-	1.0pt;border-right:solid #414747 1.0pt;padding:3.75pt 3.75pt 3.75pt 
-	3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span 
-	style='font-size:10.0pt'>{{ campaign.credential_count }}</span></code><span 
-	style='font-size:10.5pt'><o:p></o:p></span></p></td></tr>
-{% endif %}
-</div><tr><td width=180 style='width:135.0pt;border:solid #414747 1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 
-3.75pt;_border: none'><p class=MsoNormal><b><span style='font-size:10.5pt'>Time Alert Triggered<o:p></o:p></span></b></p>
-</td><td style='border-top:none;border-left:none;border-bottom:solid #414747 1.0pt;border-right:solid #414747 1.0pt;
-padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code><span style='font-size:10.0pt'>
-{{ time.utc | strftime('%Y-%m-%dT%H:%M:%S+00:00') }}</span></code><span style='font-size:10.5pt'><o:p></o:p></span></p></td></tr><tr><td width=180 
-style='width:135.0pt;border:solid #414747 1.0pt;border-top:none;background:#EEEEEE;padding:3.75pt 3.75pt 3.75pt 3.75pt;_border: none'>
-<p class=MsoNormal><b><span style='font-size:10.5pt'>Campaign Expiration<o:p></o:p></span></b></p></td>
-<td style='border-top:none;border-left:none;border-bottom:solid #414747 
-1.0pt;border-right:solid #FFC20E 1.0pt;padding:3.75pt 3.75pt 3.75pt 3.75pt;background:#EEEEEE'><p class=MsoNormal><code>
-<span style='font-size:10.0pt'>{{ campaign.expiration }}</span></code><span style='font-size:10.5pt'><o:p></o:p>
-</span></p></td></tr></table></td></tr><tr><td style='padding:.75pt .75pt .75pt .75pt'>   <tr>
-<td width="100%" style='width:100.0%;border:none;padding:7.5pt .15in 7.5pt .15in;min-width: 315px;max-width: 660px'>
-<div align=center><table class=MsoNormalTable border=0 cellspacing=3 cellpadding=0 width="100%" style='width:100.0%'><tr>
-<td style='padding:.75pt .75pt .75pt .75pt;color:white'><p class=MsoNormal>Powered by: 
-<a href="https://github.com/securestate/king-phisher">RSM US, LLP</a> 
-<o:p></o:p></p></td></tr></table></div></td></tr></table><div class="Footer">
-<img src="https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png">
-</div>
-<p class=MsoNormal><o:p>&nbsp;</o:p></p></div></body></html>
-"""
-
 class Plugin(plugins.ServerPlugin):
 	authors = ['Austin DeFrancesco', 'Spencer McIntyre', 'Mike Stringer', 'Erik Daguerre']
 	classifiers = ['Plugin :: Server :: Notifications :: Alerts']
@@ -89,6 +30,7 @@ class Plugin(plugins.ServerPlugin):
 	their email through the King Phisher client to subscribe to notifications.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
+	version = '1.1'
 
 	# Email accounts with 2FA, such as Gmail, will not work unless "less secure apps" are allowed
 	# Reference: https://support.google.com/accounts/answer/60610255
@@ -129,17 +71,18 @@ class Plugin(plugins.ServerPlugin):
 			default=''
 		),
 	]
-	req_min_version = '1.10'
+	req_min_version = '1.12.0b2'
 	def initialize(self):
 		signals.campaign_alert.connect(self.on_campaign_alert)
-		self.email_jinja_template = HTML_EMAIL_TEMPLATE
-		if os.path.isfile(self.config['email_jinja_template']):
-			with open(self.config['email_jinja_template'], 'r') as file_:
-				self.email_jinja_template = file_.read()
-		elif self.config['email_jinja_template']:
-			self.logger.warning('invalid email template: ' + self.config['email_jinja_template'])
+		template_path = self.config['email_jinja_template']
+		if not template_path:
+			template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'template.html')
+		if not os.path.isfile(template_path):
+			self.logger.warning('invalid email template: ' + template_path)
 			return False
-		self.render_template = king_phisher.templates.TemplateEnvironmentBase().from_string(self.email_jinja_template)
+		with open(template_path, 'r') as file_:
+			template_data = file_.read()
+		self.render_template = king_phisher.templates.TemplateEnvironmentBase().from_string(template_data)
 		return True
 
 	def on_campaign_alert(self, table, alert_subscription, count):

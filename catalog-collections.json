@@ -598,19 +598,25 @@
         "description": "Send campaign alerts via the SMTP Python 3 lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
         "files": [
           {
-            "path-destination": "alerts_email_via_smtp.py",
-            "path-source": "server/alerts_email_via_smtp.py",
-            "signature": "AJXHzSyVspnhosAWG+RHheuYNhlvzs9a6H9Vi40vZTT8Iu5gWpGev8ylPIsxR0a6617Td8pkBk59dyfCxCvOa3G7AAzgM9hD/XQC8JEz6F18C0LhgVTIjxRmOjs8Pct7vAkCWQVGmBbBR5GSvCFG0QkwvmE5nwOID8dUF1qQ2Zwgc3+1",
+            "path-destination": "alerts_email_via_smtp/__init__.py",
+            "path-source": "server/alerts_email_via_smtp/__init__.py",
+            "signature": "AKwAArrlnGzcqQAFzFm0kCCNL9Gwx4Gppts+dR9GX2rvxE+WVcmwPGGe0Zl3dIKT0JoVsB5ZpxZR0HMKHkJZPF9oAFzrtARBupSOE4LhxvbaHjeBFz6BaJQGTOdFWJLk6+4OcFth4TWZNC0PtN0nus+GtgVqDBGtlxYzfSCRcxn1ntij",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "alerts_email_via_smtp/template.html",
+            "path-source": "server/alerts_email_via_smtp/template.html",
+            "signature": "AZHDhdB0hL9cASxqi8NmLFiMpT7X+QP7UyOoXiqKQDHW2l2fKw6HgpZKLbJf5RaE9Q/N65tlp6ILgp4ybZyMBMLYAI0bCp/bwgAkUYHgGGrPRNpMIx3gWvmRxBgnqUPlnP1/Rp8q8wPXCzWzhEbnC/O/3HL10C89VGX9zK6LjYs7LJf7",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_email_via_smtp",
         "requirements": {
-          "minimum-version": "1.10"
+          "minimum-version": "1.12.0b2"
         },
         "title": "Campaign Alerts: via Python 3 SMTPLib",
-        "version": "1.0"
+        "version": "1.1"
       },
       {
         "authors": [
@@ -819,8 +825,8 @@
       }
     ]
   },
-  "created": "2018-08-14T14:47:04.920955+00:00",
+  "created": "2018-09-10T17:44:11.114404+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AJlAXsr/tT3YmNVFG7t3giaD8ov5BfOzII6XfaBcOauPGYEu98bAckXfssomEWjYvLEu/X/ImN9jOqIBnl/Ykt5AAC1U5IVgSXlmLqp1tGrJ6aVgtTfBhws5N7ZNDYCmJI8LuHBruQG2uJa2tGqn+24JBdOBSyLz4eMpi9qJMDwLxTWI",
+  "signature": "AW6YBvsQ8pzbzZzzTrCs3GptPvA1Dqnucn8I+izKWFNBaePpfpqc4390j/yjwFFix1/98OtCviM8N0KyIqpn7/19AF8dWAl05Kw5YLPpvMYGK1jSODvy2sNQNMzJSQ2ncQgub9g3SF7cO83HRSuzxr5pUQg7fSX+XmpjGVlTWaeZycbb",
   "signed-by": "github.com/zeroSteiner"
 }
