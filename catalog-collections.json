@@ -299,6 +299,33 @@
       },
       {
         "authors": [
+          "Mike Stringer"
+        ],
+        "classifiers": [
+          "Plugin :: Client :: Email :: Spam Evasion"
+        ],
+        "description": "Parse and include a plaintext version of an email based on the HTML version.",
+        "files": [
+          {
+            "path-destination": "message_plaintext.py",
+            "path-source": "client/message_plaintext.py",
+            "signature": "AUDy4/cIL0UCUyS6o0gulRbqlz5iSimRLZsL0S3lphHTRO/IGgftjitBdNweJ7fyebbrnEKkvQhufKhp3l7KtwOJAf968J7hdYXYNAuamBTDcDMoGfFqe5IHlniD7FheQtWJFPj8mF/2CkRHXdodjrDDKeiaoOg+alAZHkYNsNJgHC2L",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "message_plaintext",
+        "requirements": {
+          "minimum-version": "1.10.0",
+          "packages": [
+            "bs4"
+          ]
+        },
+        "title": "Message Plaintext",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
         "classifiers": [
@@ -560,6 +587,39 @@
     "plugins/server": [
       {
         "authors": [
+          "Austin DeFrancesco",
+          "Spencer McIntyre",
+          "Mike Stringer",
+          "Erik Daguerre"
+        ],
+        "classifiers": [
+          "Plugin :: Server :: Notifications :: Alerts"
+        ],
+        "description": "Send campaign alerts via the SMTP Python 3 lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
+        "files": [
+          {
+            "path-destination": "alerts_email_via_smtp/__init__.py",
+            "path-source": "server/alerts_email_via_smtp/__init__.py",
+            "signature": "AEadhCtfVNqFmR3geRRBtjREYi38dY0ozfs0B4Y3oRIrwUgkzAng6/XFbxbjG94t7NsL4pjZ8pSkwJUUjVMJXQyjAABI6PCdfr1DMyvnOAHWM/OwFWiBLFAhrkjV695bjqc8d+4UexuvPamP/x++EqaTzYLVJH7mqfDB2+jfX/Ke6E13",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "alerts_email_via_smtp/template.html",
+            "path-source": "server/alerts_email_via_smtp/template.html",
+            "signature": "APyxozHpEUSohwbxAjwhLAObRMOGD8sQdVB9bubUHxLJdDabGbp4TTJQF1QYJpbuS2YALxhR/U8+MvJhpYd9sXjtAehaUuScvod6Weuu1Jjip9lw+Ggf16R9aFx43WrmwZLapAC0+XXgZdFMMvrgywbiMm6pcWDBdyFXwd4UUKyUuNWV",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "alerts_email_via_smtp",
+        "requirements": {
+          "minimum-version": "1.12.0b2"
+        },
+        "title": "Campaign Alerts: via Python 3 SMTPLib",
+        "version": "1.1"
+      },
+      {
+        "authors": [
           "Spencer McIntyre",
           "Mike Stringer"
         ],
@@ -569,22 +629,28 @@
         "description": "Send campaign alerts via the SMTP2go lib. This requires that users specify their email through the King Phisher client to subscribe to notifications.",
         "files": [
           {
-            "path-destination": "alerts_email_via_smtp2go.py",
-            "path-source": "server/alerts_email_via_smtp2go.py",
-            "signature": "AeZ7GAkP50SW8wH/yLDwfqTd0jRmtPYf5Tmj3i+pf/3SB11lsec3si0jtTQJAhz+ITFgo3pNIDBVvdibWtBFPjlRACk8ZWrkMPcUtuepwNm42DBgIv56AvG13F6x/PMowq0fCs9D1/GrRx9C5ibT0fhV01SGDQ0CbRkTzF4s0BUl6zHE",
+            "path-destination": "alerts_email_via_smtp2go/__init__.py",
+            "path-source": "server/alerts_email_via_smtp2go/__init__.py",
+            "signature": "ADyruEQ/1CO85wJbBLJ8pgnlgcTjZ/j2mOzzf3iSqnssmmxdYYDH7zUz5aOqmVlWD2NEcfSpdHVHwSfC6zj5p0z1AMjx77rnuVx1C1s9+9c5glLBbG5QoLIYUg9v0Z6WnDEuJtLOYai9GIv5I3aRXa0EbWrqrEtoeMHY/8o0eLnFXEnx",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "alerts_email_via_smtp2go/template.html",
+            "path-source": "server/alerts_email_via_smtp2go/template.html",
+            "signature": "AatoDnfIZ+SqKviR2LHntiV8xblqt5yQrB8L1pathiAI7zqVOO5A/5pNl/8oyYw7MGfS5LDcPiNdjp3XlFrWhMgpAa2e2vK8A84mpkOfQH35xfW1A3wWxetIZoVWHJrKb61irdfVQhi4e6mfSvbHoSlAdtCIT+6mkmojq9a5hyUTKXay",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "alerts_email_via_smtp2go",
         "requirements": {
-          "minimum-version": "1.10.0",
+          "minimum-version": "1.12.0b2",
           "packages": [
             "smtp2go"
           ]
         },
         "title": "Campaign Alerts: via SMTP2Go",
-        "version": "1.0"
+        "version": "1.1"
       },
       {
         "authors": [
@@ -765,8 +831,8 @@
       }
     ]
   },
-  "created": "2018-09-10T15:28:45.647564+00:00",
+  "created": "2018-09-10T20:45:12.808591+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AJ/sxuWFdK4DTGC1Q8s95kUXxiWA6+6u+oKIWPaiQr/Z285//9thxPFOJqGxGA4rDmqkEpSfHKlyKv0fnoXqx5viAUIYUgJuZajki/40Ik/7GkzTcwYtz3eml1znVHelcPMrcOOTsWW+ALybTLGTBuApsmZmHV/T0z9JH6HmtRtr0Ewp",
+  "signature": "AVrsB0u8Y7bRKVAMHb7hp3HgTs5ULZsfZebumbiVg1K+3CO3SbHABdngAk5u8vkodIq+9OOdQA1WbjSdB96VopKiAVdYqtMSedn7o2fgzrlyXQ6aFkekagrd73l0syK884yKmG1cGVCQ/IGGcIWp/wfGTi7dbLyoZSib/jqGme+kyhc1",
   "signed-by": "github.com/zeroSteiner"
 }
