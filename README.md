@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2018-11-14 14:42:28 -->
+<!-- generated at: 2018-11-14 14:51:59 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -50,9 +50,15 @@ directory, then loaded and enabled with the plugin manager.
 ### Server Plugin Installation
 Server plugins can be placed in the `data/server/king_phisher/plugins`
 directory of the King Phisher installation. Additional search paths can be
-defined using `plugin_directories` in the server's configuration file. After
-being copied into the necessary directory, the server's configuration file
-needs to be updated to enable the plugin.
+defined using the `plugin_directories` option in the server's configuration
+file. After being copied into the necessary directory, the server's
+configuration file needs to be updated to enable the plugin.
+
+### Dependency Installation
+Some plugins require additional Python packages to be installed in order to
+function. These packages must be installed in the King Phisher environment by
+running `pipenv install $package` from within the King Phisher installation
+directory.
 
 ## License
 King Phisher Plugins are released under the BSD 3-clause license, for more
