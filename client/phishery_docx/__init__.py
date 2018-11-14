@@ -57,29 +57,9 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	]
 	title = 'Phishery DOCX URL Injector'
 	description = """
-	Inject Word Document Template URLs into DOCX files. The Phishery technique is
-	used to place multiple document template URLs into the word document (one per
-	line from the plugin settings).\n\n
-	* HTTP URL\n\n
-	The Jinja variable {{ url.webserver }} can be used for an HTTP URL to track when
-	documents are opened.\n
-	Note that to only track opened documents, DO NOT put a URL link into the
-	phishing email to the landing page. This will ensure that visits are only
-	registered for instance where the document is opened.\n\n
-	* HTTPS URL\n\n
-	The Jinja variable {{ url.webserver }} can be used for an HTTPS landing page
-	that requires basic authentication.\n
-	Note that for HTTPS URLs, the King Phisher server needs to be configured with a
-	proper, trusted SSL certificate for the user to be presented with the basic
-	authentication prompt.\n\n
-	* FILE URL\n\n
-	Utilizing the file://yourtargetserver/somepath URL format will capture SMB
-	credentials.\n
-	Note that King Phisher does not support SMB, and utilization of SMB requires
-	that a separate capture/sniffer application such as Metasploit's
-	auxiliary/server/capture/smb module will have to be used to capture NTLM hashes.
-	The plugin and King Phisher will only support injecting the URL path into the
-	document.
+	Inject Word Document Template URLs into DOCX files. The Phishery technique
+	is used to place multiple document template URLs into the word document (one
+	per-line from the plugin settings).
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
@@ -99,7 +79,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	]
 	reference_urls = ['https://github.com/ryhanson/phishery']
 	req_min_version = min_version
-	version = '2.1.0'
+	version = '2.2.0'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
