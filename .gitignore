@@ -1,2 +1,5 @@
 *.pyc
 *.ui~
+.venv/*
+Pipfile
+Pipfile.lock

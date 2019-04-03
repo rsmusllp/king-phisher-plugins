@@ -820,7 +820,7 @@
           {
             "path-destination": "xmpp_notifications.py",
             "path-source": "server/xmpp_notifications.py",
-            "signature": "AWNrE4s5MF5HPFlWy3mhF+7LW7PwRx9mFzmdrfeoJj6osdwLCjiKeqNngBeONMyWwoyJrPSqvcFeDQioQRcUU4oLAY1VRJd2zUxhV/VFKq5aew2Gvc9mJcnwInpDTW57z5ox9EOg2d9ei8tougEcYzwnD7bxVzBIX95jI4fKWMciLLQw",
+            "signature": "ACpFDBqgg0D91IIMtR3zRr+mrx+Zcg2v69hoOEPbMMgF7oT0MQMsuPNeKcTWQSvUAzK8gqHu2V6LP/1W1HW2vE2nAFn6UZ2h/EQUBFtpNrfZ9N/FF+8TrDxJdHmid4K8jqKzHIPI+sdJ7MmH6hY+yyvsMvqBqgcfrm6cTtjguB9B6HlS",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -837,8 +837,8 @@
       }
     ]
   },
-  "created": "2018-11-26T22:19:56.902468+00:00",
+  "created": "2019-04-03T15:23:53.873273+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AXliSH9bFriig50EGf4gBWgdk7l//AMB30nzFuJ1R1IKpzfuKEXKt3EaJ20L9tPycDPCYuD1dIFArtl/NxkWGCsmAB4VD4eu71Oa9zhWlugRk3OnsfQCpWgVjUp1/SVFTXCpkFaKWvGa4xpaM0zX2lj4YenfrWoWFqwmV3vZKHzmKeF5",
+  "signature": "AAr3/cqlZb/CPA2ohd10G0aCski27chnYIDAqrcde1ParBh/eTqB4AM2lc+/GMIP5VVDy9WI0MaNG5ajUHxL77zFAD4qGg9xpmX+lCsjids0ukIWFycrvfKVSAH/ZjnbsTGZ2aA6VWvfYzcCsFtdGaS2Pt78EUhIverMrrxY2ZJJF50z",
   "signed-by": "github.com/zeroSteiner"
 }

@@ -33,10 +33,11 @@ class NotificationBot(_sleekxmpp_ClientXMPP):
 		self.add_event_handler('ssl_invalid_cert', self.on_xmpp_ssl_invalid_cert)
 		self.register_plugin('xep_0030')  # service discovery
 		self.register_plugin('xep_0045')  # multi-user chat
+		self.register_plugin('xep_0071')  # xhtml im
 		self.register_plugin('xep_0199')  # xmpp ping
 		self.room = room
 		self.verify_cert = verify_cert
-		self.logger = logging.getLogger('KingPhisher.Plugins.XMPPNoficationBot')
+		self.logger = logging.getLogger('KingPhisher.Plugins.XMPPNotificationBot')
 
 	def send_notification(self, message):
 		ET = sleekxmpp.xmlstream.ET
