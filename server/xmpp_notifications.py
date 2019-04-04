@@ -111,6 +111,7 @@ class Plugin(plugins.ServerPlugin):
 	req_packages = {
 		'sleekxmpp': has_sleekxmpp
 	}
+	version = '1.0.1'
 	def initialize(self):
 		logger = logging.getLogger('sleekxmpp')
 		logger.setLevel(logging.INFO)
