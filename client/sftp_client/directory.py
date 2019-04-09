@@ -35,6 +35,16 @@ logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.directory')
 ObjectLock = collections.namedtuple('ObjectLock', ('object', 'lock'))
 DirectoryContents = collections.namedtuple('DirectoryContents', ('dirpath', 'dirnames', 'filenames'))
 
+_ModelNamedRow = collections.namedtuple('ModelNamedRow', (
+	'base_name',
+	'icon',
+	'full_path',
+	'permissions',
+	'size_string',
+	'size',
+	'ts_modified'
+))
+
 class DirectoryBase(object):
 	"""
 	Base directory object that is used by both the remote and local directory to
@@ -95,14 +105,23 @@ class DirectoryBase(object):
 		self._get_popup_menu()
 
 	def _format_perm(self, st_mode):
-		perm = ''
+		if bool(st_mode & stat.S_IFDIR):
+			perm = 'd'
+		else:
+			perm = '-'
 		perm += 'r' if bool(st_mode & stat.S_IRUSR) else '-'
 		perm += 'w' if bool(st_mode & stat.S_IWUSR) else '-'
-		perm += 'x' if bool(st_mode & stat.S_IXUSR) else '-'
+		if bool(st_mode & stat.S_ISUID):
+			perm += 's' if bool(st_mode & stat.S_IXUSR) else 'S'
+		else:
+			perm += 'x' if bool(st_mode & stat.S_IXUSR) else '-'
 
 		perm += 'r' if bool(st_mode & stat.S_IRGRP) else '-'
 		perm += 'w' if bool(st_mode & stat.S_IWGRP) else '-'
-		perm += 'x' if bool(st_mode & stat.S_IXGRP) else '-'
+		if bool(st_mode & stat.S_ISGID):
+			perm += 's' if bool(st_mode & stat.S_IXGRP) else 'S'
+		else:
+			perm += 'x' if bool(st_mode & stat.S_IXGRP) else '-'
 
 		perm += 'r' if bool(st_mode & stat.S_IROTH) else '-'
 		perm += 'w' if bool(st_mode & stat.S_IWOTH) else '-'
@@ -507,7 +526,10 @@ class DirectoryBase(object):
 		selection = self.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		if treeiter:
-			if not self.get_is_folder(model[treeiter][2]):
+			named_row = _ModelNamedRow(*model[treeiter])
+			if named_row.full_path is None:
+				return
+			if not self.get_is_folder(named_row.full_path):
 				logger.warning('cannot create a directory under a file')
 				gui_utilities.show_dialog_error(
 					'Plugin Error',

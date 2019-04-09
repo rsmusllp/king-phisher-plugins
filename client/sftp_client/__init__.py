@@ -22,7 +22,7 @@ class Plugin(plugins.ClientPlugin):
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 	req_min_version = '1.9.0'
-	version = '1.3.3'
+	version = '1.3.4'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
