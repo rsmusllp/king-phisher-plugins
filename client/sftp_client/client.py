@@ -475,10 +475,16 @@ class FileManager(object):
 		selection = self.local.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		local_path = self.local.cwd if treeiter is None else model[treeiter][2]
+		if local_path is None:
+			logger.warning('can not queue a transfer when the local path is unspecified')
+			return
 
 		selection = self.remote.treeview.get_selection()
 		model, treeiter = selection.get_selected()
 		remote_path = self.remote.cwd if treeiter is None else model[treeiter][2]
+		if remote_path is None:
+			logger.warning('can not queue a transfer when the remote path is unspecified')
+			return
 
 		if issubclass(task_cls, tasks.DownloadTask):
 			src_path, dst_path = remote_path, local_path
