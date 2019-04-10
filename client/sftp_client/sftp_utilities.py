@@ -10,6 +10,7 @@ from gi.repository import GObject
 
 logger = logging.getLogger('KingPhisher.Plugins.SFTPClient.utilities')
 GTYPE_LONG = GObject.type_from_name('glong')
+GTYPE_ULONG = GObject.type_from_name('gulong')
 gtk_builder_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sftp_client.ui')
 _gtk_objects = {}
 _builder = None
@@ -75,22 +76,3 @@ def handle_permission_denied(function, *args, **kwargs):
 			return False
 		return True
 	return wrapper
-
-def get_treeview_column(name, renderer, m_col, m_col_sort=None, resizable=False):
-	"""
-	A function used to generate a generic treeview column.
-
-	:param str name: The name of the column.
-	:param renderer: The Gtk renderer to be used for the column.
-	:param m_col: The column position in the model.
-	:param m_col_sort: The column to sort column data by.
-	:param bool resizable: Decide whether the column should be resizable.
-	:return: A TreeViewColumn Object with the desired setttings.
-	"""
-	tv_col = Gtk.TreeViewColumn(name)
-	tv_col.pack_start(renderer, True)
-	tv_col.add_attribute(renderer, 'text', m_col)
-	tv_col.set_property('resizable', resizable)
-	if m_col_sort is not None:
-		tv_col.set_sort_column_id(m_col_sort)
-	return tv_col

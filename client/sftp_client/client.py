@@ -4,15 +4,13 @@ import os
 import stat
 import threading
 
-import boltons.strutils
-import boltons.timeutils
-
 from . import tasks
 from . import directory
 from . import sftp_utilities
 from . import editor
 
 from king_phisher.client import gui_utilities
+from king_phisher.client.widget import extras
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -32,16 +30,12 @@ class StatusDisplay(object):
 		self.treeview_transfer = sftp_utilities.get_object('SFTPClient.notebook.page_stfp.treeview_transfer_statuses')
 		self._tv_lock = threading.RLock()
 
-		col_text = Gtk.CellRendererText()
 		col_img = Gtk.CellRendererPixbuf()
 		col = Gtk.TreeViewColumn('')
 		col.pack_start(col_img, False)
 		col.add_attribute(col_img, 'pixbuf', 0)
 		self.treeview_transfer.append_column(col)
-
-		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Local File', col_text, 1, m_col_sort=1, resizable=True))
-		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Remote File', col_text, 2, m_col_sort=2, resizable=True))
-		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Status', col_text, 3, m_col_sort=3, resizable=True))
+		gui_utilities.gtk_treeview_set_column_titles(self.treeview_transfer, ('Local File', 'Remote File', 'Status'), column_offset=1)
 
 		col_bar = Gtk.TreeViewColumn('Progress')
 		progress = Gtk.CellRendererProgress()
@@ -51,8 +45,9 @@ class StatusDisplay(object):
 		col_bar.set_min_width(125)
 		self.treeview_transfer.append_column(col_bar)
 
-		self.treeview_transfer.append_column(sftp_utilities.get_treeview_column('Size', col_text, 5, m_col_sort=3, resizable=True))
-		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, str, object)
+		# todo: make this a CellRendererBytes
+		gui_utilities.gtk_treeview_set_column_titles(self.treeview_transfer, ('Size',), column_offset=5, renderers=(extras.CellRendererBytes(),))
+		self._tv_model = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, str, str, int, int, object)
 		self.treeview_transfer.connect('size-allocate', self.signal_tv_size_allocate)
 		self.treeview_transfer.connect('button_press_event', self.signal_tv_button_pressed)
 
@@ -138,7 +133,7 @@ class StatusDisplay(object):
 					task.remote_path,
 					task.state,
 					0,
-					None if (task.size is None or isinstance(task, tasks.TransferDirectoryTask)) else boltons.strutils.bytes2human(task.size),
+					None if isinstance(task, tasks.TransferDirectoryTask) else task.size,
 					task
 				])
 				task.treerowref = Gtk.TreeRowReference.new(self._tv_model, self._tv_model.get_path(treeiter))

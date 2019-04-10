@@ -9,25 +9,23 @@ import shutil
 import stat
 import threading
 
-import boltons.strutils
-import boltons.timeutils
-
 from . import sftp_utilities
-from . import editor
 
 from king_phisher import its
-from king_phisher import utilities
 from king_phisher.client import gui_utilities
+from king_phisher.client.widget import extras
 
-from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GdkPixbuf
+from gi.repository import GObject
+from gi.repository import Gtk
 
 if its.on_windows:
 	import win32api
 	import win32con
 
 GTYPE_LONG = sftp_utilities.GTYPE_LONG
+GTYPE_ULONG = sftp_utilities.GTYPE_ULONG
 
 PARENT_DIRECTORY = '..'
 CURRENT_DIRECTORY = '.'
@@ -39,11 +37,41 @@ _ModelNamedRow = collections.namedtuple('ModelNamedRow', (
 	'base_name',
 	'icon',
 	'full_path',
-	'permissions',
-	'size_string',
+	'st_mode',
 	'size',
 	'ts_modified'
 ))
+
+# extras.CellRendererPythonText was added in v1.13, so use getattr to allow this
+# to load, but rely on the plugins minimum king phisher version
+class _CellRendererPermissions(getattr(extras, 'CellRendererPythonText', object)):
+	python_value = GObject.Property(type=int, flags=GObject.ParamFlags.READWRITE)
+	@staticmethod
+	def render_python_value(value):
+		if not isinstance(value, int):
+			return
+		if value & stat.S_IFDIR:
+			perm = 'd'
+		else:
+			perm = '-'
+		perm += 'r' if value & stat.S_IRUSR else '-'
+		perm += 'w' if value & stat.S_IWUSR else '-'
+		if value & stat.S_ISUID:
+			perm += 's' if value & stat.S_IXUSR else 'S'
+		else:
+			perm += 'x' if value & stat.S_IXUSR else '-'
+
+		perm += 'r' if value & stat.S_IRGRP else '-'
+		perm += 'w' if value & stat.S_IWGRP else '-'
+		if value & stat.S_ISGID:
+			perm += 's' if value & stat.S_IXGRP else 'S'
+		else:
+			perm += 'x' if value & stat.S_IXGRP else '-'
+
+		perm += 'r' if value & stat.S_IROTH else '-'
+		perm += 'w' if value & stat.S_IWOTH else '-'
+		perm += 'x' if value & stat.S_IXOTH else '-'
+		return perm
 
 class DirectoryBase(object):
 	"""
@@ -59,7 +87,8 @@ class DirectoryBase(object):
 		self.cwd = None
 		self.col_name = Gtk.CellRendererText()
 		self.col_name.connect('edited', self.signal_text_edited)
-		col_text = Gtk.CellRendererText()
+		col_bytes = extras.CellRendererBytes()
+		col_datetime = extras.CellRendererDatetime()
 		col_img = Gtk.CellRendererPixbuf()
 
 		col = Gtk.TreeViewColumn('Files')
@@ -71,9 +100,12 @@ class DirectoryBase(object):
 		col.set_sort_column_id(0)
 
 		self.treeview.append_column(col)
-		self.treeview.append_column(sftp_utilities.get_treeview_column('Permissions', col_text, 3, m_col_sort=3, resizable=True))
-		self.treeview.append_column(sftp_utilities.get_treeview_column('Size', col_text, 4, m_col_sort=5, resizable=True))
-		self.treeview.append_column(sftp_utilities.get_treeview_column('Date Modified', col_text, 6, m_col_sort=6, resizable=True))
+		gui_utilities.gtk_treeview_set_column_titles(
+			self.treeview,
+			('Permissions', 'Size', 'Date Modified'),
+			column_offset=3,
+			renderers=(_CellRendererPermissions(), col_bytes, col_datetime)
+		)
 
 		self.treeview.connect('button_press_event', self.signal_tv_button_press)
 		self.treeview.connect('key-press-event', self.signal_tv_key_press)
@@ -83,10 +115,9 @@ class DirectoryBase(object):
 			str,               # 0 base name
 			GdkPixbuf.Pixbuf,  # 1 icon
 			str,               # 2 full path
-			str,               # 3 permissions
-			str,               # 4 human readable size
-			GTYPE_LONG,        # 5 size in bytes
-			str                # 6 modified timestamp
+			int,               # 3 st_mode
+			GTYPE_ULONG,       # 4 size in bytes
+			object             # 5 modified timestamp
 		)
 		self._tv_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
 		self._tv_model_filter = self._tv_model.filter_new()
@@ -104,30 +135,6 @@ class DirectoryBase(object):
 		self.show_hidden = False
 		self._get_popup_menu()
 
-	def _format_perm(self, st_mode):
-		if bool(st_mode & stat.S_IFDIR):
-			perm = 'd'
-		else:
-			perm = '-'
-		perm += 'r' if bool(st_mode & stat.S_IRUSR) else '-'
-		perm += 'w' if bool(st_mode & stat.S_IWUSR) else '-'
-		if bool(st_mode & stat.S_ISUID):
-			perm += 's' if bool(st_mode & stat.S_IXUSR) else 'S'
-		else:
-			perm += 'x' if bool(st_mode & stat.S_IXUSR) else '-'
-
-		perm += 'r' if bool(st_mode & stat.S_IRGRP) else '-'
-		perm += 'w' if bool(st_mode & stat.S_IWGRP) else '-'
-		if bool(st_mode & stat.S_ISGID):
-			perm += 's' if bool(st_mode & stat.S_IXGRP) else 'S'
-		else:
-			perm += 'x' if bool(st_mode & stat.S_IXGRP) else '-'
-
-		perm += 'r' if bool(st_mode & stat.S_IROTH) else '-'
-		perm += 'w' if bool(st_mode & stat.S_IWOTH) else '-'
-		perm += 'x' if bool(st_mode & stat.S_IXOTH) else '-'
-		return perm
-
 	def _delete_selection(self):
 		selection = self.treeview.get_selection()
 		_, treeiter = selection.get_selected()
@@ -135,27 +142,28 @@ class DirectoryBase(object):
 			return
 		treeiter = self._treeiter_sort_to_model(treeiter)
 
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
 		# if empty placeholder just delete
-		if not self._tv_model[treeiter][2]:
+		if not named_row.full_path:
 			self._tv_model.remove(treeiter)
 			return
 
 		confirmed = gui_utilities.show_dialog_yes_no(
 			'Confirm Delete',
 			self.application.get_active_window(),
-			"Are you sure you want to delete the selected {0}: {1}?".format(('directory' if self._tv_model[treeiter][5] == -1 else 'file'), self.path_mod.basename(self._tv_model[treeiter][2]))
+			"Are you sure you want to delete the selected {0}: {1}?".format(('directory' if named_row.size == -1 else 'file'), self.path_mod.basename(named_row.full_path))
 		)
 		if confirmed:
 			self.delete(treeiter)
 			selection.unselect_all()
 
 	def _filter_entries(self, model, treeiter, _):
-		if model[treeiter][0] in (None, '.', '..'):
+		named_row = _ModelNamedRow(*model[treeiter])
+		if named_row.base_name in (None, '.', '..'):
 			return True
-		path = model[treeiter][2]
-		if path is None:
+		if named_row.full_path is None:
 			return True
-		if not self.config['show_hidden'] and self.path_is_hidden(path):
+		if not self.config['show_hidden'] and self.path_is_hidden(named_row.full_path):
 			return False
 		return True
 
@@ -412,7 +420,8 @@ class DirectoryBase(object):
 		model, treeiter = self.treeview.get_selection().get_selected()
 		if not treeiter:
 			return
-		if not self.get_is_folder(model[treeiter][2]):
+		named_row = _ModelNamedRow(*model[treeiter])
+		if not self.get_is_folder(named_row.full_path):
 			logger.warning('cannot set a file as an active working directory')
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
@@ -428,7 +437,7 @@ class DirectoryBase(object):
 		while current:
 			self._tv_model.remove(current)
 			current = self._tv_model.iter_children(treeiter)
-		self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
+		self._tv_model.append(treeiter, [None, None, None, None, None, None])
 
 	def signal_tv_expand_row(self, treeview, treeiter, treepath):
 		treeiter = self._treeiter_sort_to_model(treeiter)
@@ -464,20 +473,16 @@ class DirectoryBase(object):
 			stat_info = self.stat(path)
 		except (OSError, IOError):
 			icon = Gtk.IconTheme.get_default().load_icon('emblem-unreadable', 13, 0)
-			self._tv_model.append(parent, [basename, icon, path, None, None, None, None])
+			self._tv_model.append(parent, [basename, icon, path, None, None, None])
 			return
-		perm = self._format_perm(stat_info.st_mode)
 		date = datetime.datetime.fromtimestamp(stat_info.st_mtime)
-		date_modified = utilities.format_datetime(date)
 		if stat.S_ISDIR(stat_info.st_mode):
 			icon = Gtk.IconTheme.get_default().load_icon('folder', 20, 0)
-			current = self._tv_model.append(parent, (basename, icon, path, perm, None, -1, date_modified))
-			self._tv_model.append(current, [None, None, None, None, None, None, None])
+			current = self._tv_model.append(parent, (basename, icon, path, stat_info.st_mode, stat_info.st_size, date))
+			self._tv_model.append(current, [None, None, None, None, None, None])
 		else:
-			file_size = self.get_file_size(path)
-			hr_file_size = boltons.strutils.bytes2human(file_size)
 			icon = Gtk.IconTheme.get_default().load_icon('text-x-preview', 12.5, 0)
-			self._tv_model.append(parent, (basename, icon, path, perm, hr_file_size, file_size, date_modified))
+			self._tv_model.append(parent, (basename, icon, path, stat_info.st_mode, stat_info.st_size, date))
 
 	def signal_menu_activate_collapse_all(self, _):
 		self.treeview.collapse_all()
@@ -493,7 +498,7 @@ class DirectoryBase(object):
 			treeiter = model.get_iter_first()
 		else:
 			parent_treeiter = treeiter
-			parent_path = model[parent_treeiter][2]
+			parent_path = _ModelNamedRow(*model[parent_treeiter]).full_path
 			treeiter = model.iter_children(treeiter)
 		self._refresh(treeiter, parent_treeiter, parent_path)
 
@@ -529,7 +534,7 @@ class DirectoryBase(object):
 			named_row = _ModelNamedRow(*model[treeiter])
 			if named_row.full_path is None:
 				return
-			if not self.get_is_folder(named_row.full_path):
+			if not named_row.st_mode & stat.S_IFDIR:
 				logger.warning('cannot create a directory under a file')
 				gui_utilities.show_dialog_error(
 					'Plugin Error',
@@ -538,7 +543,7 @@ class DirectoryBase(object):
 				)
 				return
 		if treeiter is None:
-			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None])
 			self.rename(current)
 			return
 		treeiter = self._treeiter_sort_to_model(treeiter)
@@ -546,12 +551,13 @@ class DirectoryBase(object):
 		if not self.treeview.row_expanded(path):
 			self.treeview.expand_row(path, False)
 		if self._tv_model.iter_children(treeiter) is None:
-			# If no children, one dummy node must be created to make row expandable and the other to be used as a placemark for new folder
-			self._tv_model.append(treeiter, [None, None, None, None, None, None, None])
-			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
+			# If no children, one dummy node must be created to make row expandable and the other to be used as a place
+			# marker for new folders
+			self._tv_model.append(treeiter, [None, None, None, None, None, None])
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None])
 			self.treeview.expand_row(path, False)
 		else:
-			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None, None])
+			current = self._tv_model.append(treeiter, [' ', None, None, None, None, None])
 		self.rename(current)
 
 	def signal_text_edited(self, renderer, treepath, text):
@@ -561,19 +567,20 @@ class DirectoryBase(object):
 		if parent is None:
 			new_path = self.path_mod.join(self.cwd, text)
 		else:
-			new_path = self.path_mod.join(self._tv_model[parent][2], text)
+			new_path = self.path_mod.join(_ModelNamedRow(*self._tv_model[parent]).full_path, text)
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
 		# if empty placeholder was not named assume user bailed creation
-		if not text or text == ' ' and not self._tv_model[treeiter][2]:
+		if not text or text == ' ' and not named_row.full_path:
 			self._tv_model.remove(treeiter)
 			return
-		if not text or text == self._tv_model[treeiter][0]:
+		if not text or text == named_row.base_name:
 			return
 		if stat.S_ISDIR(self.path_mode(new_path)):
 			gui_utilities.show_dialog_error('Unable to make directory', self.application.get_active_window(), "Directory: {0} already exists".format(new_path))
 			return
-		if self._tv_model[treeiter][2] is not None:
+		if named_row.full_path is not None:
 			try:
-				self._rename_file(treeiter, new_path)
+				self._rename_path(treeiter, new_path)
 			except (OSError, IOError):
 				gui_utilities.show_dialog_error('Plugin Error', self.application.get_active_window(), 'Error renaming the file.')
 		else:
@@ -619,8 +626,9 @@ class LocalDirectory(DirectoryBase):
 			return 0
 		return stat.S_IFMT(self.stat(path).st_mode)
 
-	def _rename_file(self, _iter, path):
-		os.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
+	def _rename_path(self, treeiter, path):
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
+		os.rename(named_row.full_path, path)  # pylint: disable=unsubscriptable-object
 
 	def change_cwd(self, new_dir):
 		new_dir = super(LocalDirectory, self).change_cwd(new_dir)
@@ -676,12 +684,12 @@ class LocalDirectory(DirectoryBase):
 
 		:param treeiter: The TreeIter that points to the selected file.
 		"""
-		row = self._tv_model[treeiter]
-		if row[5] == -1:
-			shutil.rmtree(row[2])
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
+		if named_row.st_mode & stat.S_IFDIR:
+			shutil.rmtree(named_row.full_path)
 		else:
-			os.remove(row[2])
-		logger.info("deleting {0}: {1}".format(('directory' if self._tv_model[treeiter][5] == -1 else 'file'), row[2]))
+			os.remove(named_row.full_path)
+		logger.info("deleting {0}: {1}".format(('directory' if named_row.size == -1 else 'file'), named_row.full_path))
 		self._tv_model.remove(treeiter)
 
 	@sftp_utilities.handle_permission_denied
@@ -751,9 +759,10 @@ class RemoteDirectory(DirectoryBase):
 		return
 
 	# todo: should this be rename_path?
-	def _rename_file(self, _iter, path):
+	def _rename_path(self, treeiter, path):
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
 		with self.ftp_handle() as ftp:
-			ftp.rename(self._tv_model[_iter][2], path)  # pylint: disable=unsubscriptable-object
+			ftp.rename(named_row.full_path, path)
 
 	def _yield_dir_list(self, path):
 		with self.ftp_handle() as ftp:
@@ -782,11 +791,11 @@ class RemoteDirectory(DirectoryBase):
 
 		:param treeiter: The TreeIter that points to the selected file.
 		"""
-		name = self._tv_model[treeiter][2]  # pylint: disable=unsubscriptable-object
-		if self.get_is_folder(name):
-			if not self.remove_by_folder_name(name):
+		named_row = _ModelNamedRow(*self._tv_model[treeiter])
+		if self.get_is_folder(named_row.full_path):
+			if not self.remove_by_folder_name(named_row.full_path):
 				return
-		elif not self.remove_by_file_name(name):
+		elif not self.remove_by_file_name(named_row.full_path):
 			return
 		self._tv_model.remove(treeiter)
 
@@ -832,8 +841,7 @@ class RemoteDirectory(DirectoryBase):
 
 	def path_mode(self, path):
 		try:
-			with self.ftp_handle() as ftp:
-				return stat.S_IFMT(ftp.stat(path).st_mode)
+			return stat.S_IFMT(self.stat(path).st_mode)
 		except IOError as error:
 			if error.errno in (errno.ENOENT, errno.EACCES):
 				return 0

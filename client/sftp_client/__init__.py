@@ -21,8 +21,8 @@ class Plugin(plugins.ClientPlugin):
 	designed for the use of editing remote web pages on the King Phisher Server.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-	req_min_version = '1.9.0'
-	version = '1.3.4'
+	req_min_version = '1.13.0'
+	version = '1.3.5'
 	def initialize(self):
 		"""Connects to the start SFTP Client Signal to the plugin and checks for .ui file."""
 		self.sftp_window = None
