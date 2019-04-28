@@ -1,10 +1,10 @@
-import collections
 import functools
 import os
 
-import king_phisher.client.plugins as plugins
-import king_phisher.client.gui_utilities as gui_utilities
-import king_phisher.client.widget.managers as managers
+from king_phisher import utilities
+from king_phisher.client import gui_utilities
+from king_phisher.client import plugins
+from king_phisher.client.widget import managers
 
 from gi.repository import Gtk
 
@@ -15,18 +15,13 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'Request Redirect'
 	description = """
-
+	Edit rules for the server "Request Redirect" plugin.
 	"""
-	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.10.0'
-	version = '1.0'
-	_RowModel = collections.namedtuple('RowModel', (
-		'permanent',
-		'rule',
-		'source',
-		'target',
-	))
+	homepage = 'https://github.com/securestate/king-phisher'
+	req_min_version = '1.12'
+	version = '1.0.0'
 	def initialize(self):
+		self.window = None
 		if not os.access(gtk_builder_file, os.R_OK):
 			gui_utilities.show_dialog_error(
 				'Plugin Error',
@@ -34,72 +29,58 @@ class Plugin(plugins.ClientPlugin):
 				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(gtk_builder_file))
 			)
 			return False
-		self.window = None
+		self._builder = None
+		self._tv_model = Gtk.ListStore(int, str, bool, str, str)
 		self.menu_items = {}
-		self.menu_items['redirect_rules'] = self.add_menu_item('Tools > Request Redirect Rules', self.show_rules_window)
+		self.menu_items['edit_rules'] = self.add_menu_item('Tools  > Request Redirect Rules', self.show_editor_window)
 		return True
+
+	def _get_object(self, name):
+		if self._builder is None:
+			self._builder = Gtk.Builder()
+			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
+			self._builder.add_from_file(gtk_builder_file)
+		return self._builder.get_object('RequestRedirect.' + name)
+
+	def _loader_routine(self):
+		rules = self.application.rpc('plugins/request_redirect/rules/list')
+		things = []
+		for idx, rule in enumerate(rules, 1):
+			if 'rule' in rule:
+				type_ = 'Rule'
+				text = rule['rule']
+			elif 'source' in rule:
+				type_ = 'Source'
+				text = rule['source']
+			else:
+				self.logger.warning("rule #{0} contains neither a rule or source key".format(idx))
+				continue
+			things.append((idx, rule['target'], rule['permanent'], type_, text))
+		gui_utilities.glib_idle_add_store_extend(self._tv_model, things, clear=True)
 
 	def finalize(self):
 		if self.window is not None:
 			self.window.destroy()
 
-	def _init_treeview(self, treeview):
-		self._tv_model = Gtk.ListStore(str, str, str, bool)
-		treeview.set_model(self._tv_model)
-		self.treeview_manager = managers.TreeViewManager(
-			treeview,
-			selection_mode=None,#Gtk.SelectionMode.MULTIPLE,
-			cb_delete=self._tv_delete,
-			cb_refresh=self._tv_refresh
-		)
-		self.treeview_manager.set_column_titles(
-			('Source', 'Rule', 'Target', 'Permanent'),
-			renderers=(
-				Gtk.CellRendererText(),
-				Gtk.CellRendererText(),
-				Gtk.CellRendererText(),
-				Gtk.CellRendererToggle()
-			)
-		)
-		self.popup_menu = self.treeview_manager.get_popup_menu()
-		self._tv_refresh()
-
-	def _rpc_call(self, method, *args, **kwargs):
-		return self.application.rpc('plugins/request_redirect/rules/' + method, *args, **kwargs)
-
-	def _tv_delete(self, treeview, selection):
-		(model, tree_iter) = selection.get_selected()
-		if not tree_iter:
-			return
-		if not gui_utilities.show_dialog_yes_no('Delete This Rule?', self.window, 'Are you sure you want to delete this rule?'):
-			return
-		path = model.get_path(tree_iter)
-		index = path.get_indices()[0]
-		self._rpc_call('remove', index)
-		del model[path]
-
-	def _tv_refresh(self):
-		self._tv_model.clear()
-		for redirect_rule in self._rpc_call('list'):
-			redirect_rule = self._RowModel(**redirect_rule)
-			self._tv_model.append((
-				redirect_rule.source,
-				redirect_rule.rule,
-				redirect_rule.target,
-				redirect_rule.permanent
-			))
-
-	def show_rules_window(self, _):
+	def show_editor_window(self, _):
 		if self.window is None:
-			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
-			builder = Gtk.Builder()
-			builder.add_from_file(gtk_builder_file)
-			builder.connect_signals(self)
-			self.window = builder.get_object('RequestRedirect.window')
+			self.window = self._get_object('editor_window')
 			self.window.set_transient_for(self.application.get_active_window())
-			self.application.add_window(self.window)
-			self._init_treeview(builder.get_object('RequestRedirect.treeview_rules'))
-			self.window.connect('destroy', self.signal_window_destroy)
+			treeview = self._get_object('treeview_editor')
+			treeview.set_model(self._tv_model)
+			tvm = managers.TreeViewManager(treeview)
+			tvm.set_column_titles(
+				('#', 'Target', 'Permanent', 'Type', 'Text'),
+				renderers=(
+					Gtk.CellRendererText(),    # #
+					Gtk.CellRendererText(),    # Target
+					Gtk.CellRendererToggle(),  # Permanent
+					Gtk.CellRendererText(),    # Type
+					Gtk.CellRendererText()     # Text
+				)
+			)
+			self._loader_thread = utilities.Thread(self._loader_routine)
+			self._loader_thread.start()
 		self.window.show()
 		self.window.present()
 
