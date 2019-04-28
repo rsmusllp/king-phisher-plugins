@@ -1,9 +1,8 @@
-import collections
 import ipaddress
 
 import king_phisher.errors as errors
-import king_phisher.utilities as utilities
 import king_phisher.server.plugins as plugins
+import king_phisher.server.server_rpc as server_rpc
 import king_phisher.server.signals as signals
 
 try:
@@ -14,7 +13,7 @@ else:
 	has_rule_engine = True
 
 EXAMPLE_CONFIG = """\
-redirect_rules:
+rules:
   # first rule is an exception because no target is specified
   - source: 192.168.0.0/16
   # second rule redirects all ipv4 addresses to google
@@ -44,8 +43,6 @@ def _context_resolver(handler, name):
 		return handler.vhost
 	raise rule_engine.SymbolResolutionError(name)
 
-RedirectRule = collections.namedtuple('RedirectRule', ('permanent', 'rule', 'source', 'target'))
-
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'Request Redirect'
@@ -65,81 +62,91 @@ class Plugin(plugins.ServerPlugin):
 		'rule-engine': has_rule_engine
 	}
 	version = '1.1'
+	rule_types = {
+		'accept': rule_engine.DataType.STRING,
+		'dst_addr': rule_engine.DataType.STRING,
+		'dst_port': rule_engine.DataType.FLOAT,
+		'path': rule_engine.DataType.STRING,
+		'src_addr': rule_engine.DataType.STRING,
+		'src_port': rule_engine.DataType.FLOAT,
+		'user_agent': rule_engine.DataType.STRING,
+		'verb': rule_engine.DataType.STRING,
+		'vhost': rule_engine.DataType.STRING,
+	}
 	def initialize(self):
 		self._context = rule_engine.Context(
 			resolver=_context_resolver,
-			type_resolver=rule_engine.type_resolver_from_dict({
-				'accept': rule_engine.DataType.STRING,
-				'dst_addr': rule_engine.DataType.STRING,
-				'dst_port': rule_engine.DataType.FLOAT,
-				'path': rule_engine.DataType.STRING,
-				'src_addr': rule_engine.DataType.STRING,
-				'src_port': rule_engine.DataType.FLOAT,
-				'user_agent': rule_engine.DataType.STRING,
-				'verb': rule_engine.DataType.STRING,
-				'vhost': rule_engine.DataType.STRING,
-			})
+			type_resolver=rule_engine.type_resolver_from_dict(self.rule_types)
 		)
-		self.redirect_rules = []
-		for index, redirect_rule in enumerate(self.config.get('rules', [])):
-			self._insert_redirect_rule(index, redirect_rule)
+		for idx, rule in enumerate(self.rules, 1):
+			if 'rule' in rule:
+				rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
+			elif 'source' in rule:
+				rule['source'] = ipaddress.ip_network(rule['source'])
+			else:
+				raise RuntimeError("rule #{0} contains neither a rule or source key".format(idx))
+			rule['permanent'] = rule.get('permanent', True)
 		signals.request_handle.connect(self.on_request_handle)
-		self.logger.info("initialized with {0:,} redirect redirect_rules".format(len(self.redirect_rules)))
+		self.logger.info("initialized with {0:,} redirect rules".format(len(self.rules)))
 
-		self.register_rpc('rules/insert', self._rpc_request_insert)
-		self.register_rpc('rules/list', self._rpc_request_list)
-		self.register_rpc('rules/remove', self._rpc_request_remove)
+		rpc_api_base = '/plugins/request_redirect/rules/'
+		server_rpc.register_rpc(rpc_api_base + 'insert')(self._rpc_request_insert)
+		server_rpc.register_rpc(rpc_api_base + 'list')(self._rpc_request_list)
+		server_rpc.register_rpc(rpc_api_base + 'remove')(self._rpc_request_remove)
+		server_rpc.register_rpc(rpc_api_base + 'symbols')(self._rpc_request_symbols)
 		return True
 
-	def _insert_redirect_rule(self, index, redirect_rule):
-		if 'rule' in redirect_rule:
-			redirect_rule['rule'] = rule_engine.Rule(redirect_rule['rule'], context=self._context)
-		if 'source' in redirect_rule:
-			redirect_rule['source'] = ipaddress.ip_network(redirect_rule['source'])
-		if 'rule' not in redirect_rule and 'source' not in redirect_rule:
-			raise RuntimeError("rule index {0} contains neither a rule or source key".format(index))
-		self.redirect_rules.insert(index, RedirectRule(
-			permanent=redirect_rule.get('permanent', True),
-			rule=redirect_rule.get('rule'),
-			source=redirect_rule.get('source'),
-			target=utilities.nonempty_string(redirect_rule.get('target'))
-		))
-
-	def _rpc_request_insert(self, handler, index, redirect_rule):
-		self._insert_redirect_rule(index, redirect_rule)
+	def _rpc_request_insert(self, handler, index, rule):
+		if 'rule' in rule:
+			rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
+		elif 'source' in rule:
+			rule['source'] = ipaddress.ip_network(rule['source'])
+		else:
+			raise RuntimeError("rule #{0} contains neither a rule or source key".format(index))
+		self.rules.insert(index, rule)
 
 	def _rpc_request_list(self, handler):
-		redirect_rules = []
-		for redirect_rule in self.redirect_rules:
-			redirect_rule = redirect_rule._asdict()
-			if redirect_rule.get('rule'):
-				redirect_rule['rule'] = str(redirect_rule['rule'])
-			if redirect_rule.get('source'):
-				redirect_rule['source'] = str(redirect_rule['source'])
-			redirect_rules.append(redirect_rule)
-		return redirect_rules
+		rules = []
+		for rule in self.rules:
+			rule = dict(rule)  # shallow copy
+			if 'rule' in rule:
+				rule['rule'] = rule['rule'].text
+			if 'source' in rule:
+				rule['source'] = str(rule['source'])
+			rules.append(rule)
+		return rules
 
 	def _rpc_request_remove(self, handler, index):
-		del self.redirect_rules[index]
+		del self.rules[index]
+
+	def _rpc_request_symbols(self, handler):
+		return {key: value.type for key, value in self.rule_types.items()}
+
+	@property
+	def rules(self):
+		if not 'rules' in self.config:
+			self.config['rules'] = []
+		return self.config['rules']
 
 	def on_request_handle(self, handler):
 		if handler.command == 'RPC' or handler.path.startswith('/_/'):
 			return
 		client_ip = ipaddress.ip_address(handler.client_address[0])
-		for redirect_rule in self.redirect_rules:
-			if redirect_rule.rule and not redirect_rule.matches(handler):
+		for rule in self.rules:
+			if 'rule' in rule and not rule['rule'].matches(handler):
 				continue
-			if redirect_rule.source and client_ip not in redirect_rule.source:
+			if 'source' in rule and client_ip not in rule['source']:
 				continue
-			if redirect_rule.target is None:
+			target = rule.get('target')
+			if not target:
 				self.logger.debug("request redirect rule for {0} matched exception".format(str(client_ip)))
 				break
-			self.logger.debug("request redirect rule for {0} matched target: {1}".format(str(client_ip), redirect_rule.target))
-			self.respond_redirect(handler, redirect_rule)
+			self.logger.debug("request redirect rule for {0} matched target: {1}".format(str(client_ip), target))
+			self.respond_redirect(handler, rule)
 			raise errors.KingPhisherAbortRequestError(response_sent=True)
 
-	def respond_redirect(self, handler, redirect_rule):
-		handler.send_response(301 if redirect_rule.permanent else 302)
+	def respond_redirect(self, handler, rule):
+		handler.send_response(301 if rule['permanent'] else 302)
 		handler.send_header('Content-Length', 0)
-		handler.send_header('Location', redirect_rule.target)
+		handler.send_header('Location', rule['target'])
 		handler.end_headers()

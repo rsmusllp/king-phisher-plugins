@@ -702,19 +702,17 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "AIRPsb5oJ2ArEwvKBEDSbPCDMZgimcU/M9vPYkvkREg/mwjRcyk9dprtJ8o1+fgFRX0+b0yy0W1x3MLamTpOvcBrAX2vFBWE9ZugYLTKTJZgFuIZVHPLQwRH2w9PxPsNue9mv97u+pJzh+CsBn51cfRlUtTZE9EszkKQWlMWtU6zbCnF",
+            "signature": "AMkXLsJYJ+6PP0lcBiKbSe1po4/VSFE+vmIyGHSI1IvHyPvcvhp52IsaQZ7YHdvMB0Q/gCI3Yv/XftjUN2hRpVoTAXQ4R6J+j5X8HJwuIJjuBPFcEkOnAi1hStlHsORFYCYsejcxhVCL8XQ/Xyu8NXpVzfCA20CpuSc1Bz3g1RLPINUL",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
         "name": "request_redirect",
         "requirements": {
-          "minimum-python-version": null,
           "minimum-version": "1.9.0",
           "packages": [
             "rule-engine"
-          ],
-          "platforms": []
+          ]
         },
         "title": "Request Redirect",
         "version": "1.1"
@@ -747,8 +745,8 @@
       }
     ]
   },
-  "created": "2018-05-09T01:22:54.690094+00:00",
+  "created": "2019-04-28T23:26:45.630411+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AGJwLUAvJN5guJzD3MLiGo7vTw6f/JNlXTIFCFGxoX87Y0b9yUMQmyYqLwdsukjSB534wS4azObAzLrSfvkGc4ZbAbov5dz3k6BMzpf+R/UVEesvaq5mu46fFlCrLwK53tfSeIIfv4mcSivVWTPikZ7f32VP8o0CbzwUO1pULalIQkyr",
+  "signature": "ALkzs93as313+2CPQsz1eE4DfCnemtGZWCR42OuRFlceKpBoT+i8f8dStawDjo61+QUYKZdaVtwwa/bNRrk1inq7AZ3gwl/jG15d7U49OI88VYYuW5tJ/WKQO3Pc2SGvTxrfpV0K1TyJpTcFYM3aX0G7bmmqg2qowBrZfVII/uc7Kgns",
   "signed-by": "github.com/zeroSteiner"
 }
