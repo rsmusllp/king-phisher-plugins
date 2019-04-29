@@ -1,15 +1,34 @@
+import collections
 import functools
 import os
 
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
+from king_phisher.client.widget import extras
 from king_phisher.client.widget import managers
 
+from gi.repository import GObject
 from gi.repository import Gtk
 
 relpath = functools.partial(os.path.join, os.path.dirname(os.path.realpath(__file__)))
 gtk_builder_file = relpath('request_redirect.ui')
+
+_ModelNamedRow = collections.namedtuple('ModelNamedRow', (
+	'index',
+	'target',
+	'permanent',
+	'type',
+	'text'
+))
+
+class _CellRendererIndex(getattr(extras, 'CellRendererPythonText', object)):
+	python_value = GObject.Property(type=int, flags=GObject.ParamFlags.READWRITE)
+	@staticmethod
+	def render_python_value(value):
+		if not isinstance(value, int):
+			return
+		return str(value + 1)
 
 class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
@@ -30,10 +49,28 @@ class Plugin(plugins.ClientPlugin):
 			)
 			return False
 		self._builder = None
+		self._loader_thread = None
 		self._tv_model = Gtk.ListStore(int, str, bool, str, str)
 		self.menu_items = {}
 		self.menu_items['edit_rules'] = self.add_menu_item('Tools  > Request Redirect Rules', self.show_editor_window)
 		return True
+
+	def _editor_refresh(self):
+		if self._loader_thread and self._loader_thread.is_alive():
+			self.logger.info('ignoring command to refresh because the loader thread is already running')
+			return
+		self._loader_thread = utilities.Thread(self._loader_routine)
+		self._loader_thread.start()
+
+	def _editor_delete(self, treeview, selection):
+		(model, tree_iter) = selection.get_selected()
+		if not tree_iter:
+			return
+		named_row = _ModelNamedRow(*model[tree_iter])
+		if not gui_utilities.show_dialog_yes_no('Delete This Entry?', self.window, 'Are you sure you want to delete this entry?'):
+			return
+		self._rpc('remove', named_row.index)
+		del model[tree_iter]
 
 	def _get_object(self, name):
 		if self._builder is None:
@@ -43,9 +80,9 @@ class Plugin(plugins.ClientPlugin):
 		return self._builder.get_object('RequestRedirect.' + name)
 
 	def _loader_routine(self):
-		rules = self.application.rpc('plugins/request_redirect/rules/list')
+		rules = self._rpc('list')
 		things = []
-		for idx, rule in enumerate(rules, 1):
+		for idx, rule in enumerate(rules):
 			if 'rule' in rule:
 				type_ = 'Rule'
 				text = rule['rule']
@@ -58,6 +95,10 @@ class Plugin(plugins.ClientPlugin):
 			things.append((idx, rule['target'], rule['permanent'], type_, text))
 		gui_utilities.glib_idle_add_store_extend(self._tv_model, things, clear=True)
 
+	def _rpc(self, method, *args, **kwargs):
+		method = 'plugins/request_redirect/rules/' + method
+		return self.application.rpc(method, *args, **kwargs)
+
 	def finalize(self):
 		if self.window is not None:
 			self.window.destroy()
@@ -66,21 +107,21 @@ class Plugin(plugins.ClientPlugin):
 		if self.window is None:
 			self.window = self._get_object('editor_window')
 			self.window.set_transient_for(self.application.get_active_window())
+			self.window.connect('destroy', self.signal_window_destroy)
 			treeview = self._get_object('treeview_editor')
 			treeview.set_model(self._tv_model)
-			tvm = managers.TreeViewManager(treeview)
+			tvm = managers.TreeViewManager(treeview, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
 			tvm.set_column_titles(
 				('#', 'Target', 'Permanent', 'Type', 'Text'),
 				renderers=(
-					Gtk.CellRendererText(),    # #
+					_CellRendererIndex(),      # index
 					Gtk.CellRendererText(),    # Target
 					Gtk.CellRendererToggle(),  # Permanent
 					Gtk.CellRendererText(),    # Type
 					Gtk.CellRendererText()     # Text
 				)
 			)
-			self._loader_thread = utilities.Thread(self._loader_routine)
-			self._loader_thread.start()
+			self._editor_refresh()
 		self.window.show()
 		self.window.present()
 
