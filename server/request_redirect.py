@@ -93,16 +93,21 @@ class Plugin(plugins.ServerPlugin):
 		server_rpc.register_rpc(rpc_api_base + 'insert')(self._rpc_request_insert)
 		server_rpc.register_rpc(rpc_api_base + 'list')(self._rpc_request_list)
 		server_rpc.register_rpc(rpc_api_base + 'remove')(self._rpc_request_remove)
+		server_rpc.register_rpc(rpc_api_base + 'set')(self._rpc_request_set)
 		server_rpc.register_rpc(rpc_api_base + 'symbols')(self._rpc_request_symbols)
 		return True
 
-	def _rpc_request_insert(self, handler, index, rule):
+	def _process_rule(self, rule, index=None):
 		if 'rule' in rule:
 			rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
 		elif 'source' in rule:
 			rule['source'] = ipaddress.ip_network(rule['source'])
 		else:
-			raise RuntimeError("rule #{0} contains neither a rule or source key".format(index))
+			raise RuntimeError("rule {}contains neither a rule or source key".format('' if index is None else '#' + str(index)))
+		return rule
+
+	def _rpc_request_insert(self, handler, index, rule):
+		rule = self._process_rule(rule, index)
 		self.rules.insert(index, rule)
 
 	def _rpc_request_list(self, handler):
@@ -118,6 +123,10 @@ class Plugin(plugins.ServerPlugin):
 
 	def _rpc_request_remove(self, handler, index):
 		del self.rules[index]
+
+	def _rpc_request_set(self, handler, index, rule):
+		rule = self._process_rule(rule, index)
+		self.rules[index] = rule
 
 	def _rpc_request_symbols(self, handler):
 		return {key: value.type for key, value in self.rule_types.items()}

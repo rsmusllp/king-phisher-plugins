@@ -66,11 +66,16 @@ class Plugin(plugins.ClientPlugin):
 		(model, tree_iter) = selection.get_selected()
 		if not tree_iter:
 			return
-		named_row = _ModelNamedRow(*model[tree_iter])
 		if not gui_utilities.show_dialog_yes_no('Delete This Entry?', self.window, 'Are you sure you want to delete this entry?'):
 			return
-		self._rpc('remove', named_row.index)
-		del model[tree_iter]
+		self._rpc('remove', _ModelNamedRow(*model[tree_iter]).index)
+		this_tree_iter = tree_iter
+		tree_iter = model.iter_next(tree_iter)
+		del model[this_tree_iter]
+		index = _ModelNamedRow._fields.index('index')
+		while tree_iter and model.iter_is_valid(tree_iter):
+			model[tree_iter][index] = model[tree_iter][index] - 1
+			tree_iter = model.iter_next(tree_iter)
 
 	def _get_object(self, name):
 		if self._builder is None:
@@ -111,19 +116,53 @@ class Plugin(plugins.ClientPlugin):
 			treeview = self._get_object('treeview_editor')
 			treeview.set_model(self._tv_model)
 			tvm = managers.TreeViewManager(treeview, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
+
+			# target renderer
+			target_renderer = Gtk.CellRendererText()
+			target_renderer.set_property('editable', True)
+			target_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'target'))
+
+			# permanent renderer
+			permanent_renderer = Gtk.CellRendererToggle()
+			permanent_renderer.connect('toggled', functools.partial(self.signal_renderer_toggled, 'permanent'))
+
+			# type renderer
+			store = Gtk.ListStore(str)
+			store.append(['Rule'])
+			store.append(['Source'])
+			type_renderer = Gtk.CellRendererCombo()
+			type_renderer.set_property('editable', True)
+			type_renderer.set_property('has-entry', False)
+			type_renderer.set_property('model', store)
+			type_renderer.set_property('text-column', 0)
+			type_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'type'))
+
+			# text renderer
+			text_renderer = Gtk.CellRendererText()
+			text_renderer.set_property('editable', True)
+			text_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'text'))
+
 			tvm.set_column_titles(
 				('#', 'Target', 'Permanent', 'Type', 'Text'),
 				renderers=(
 					_CellRendererIndex(),      # index
-					Gtk.CellRendererText(),    # Target
-					Gtk.CellRendererToggle(),  # Permanent
-					Gtk.CellRendererText(),    # Type
-					Gtk.CellRendererText()     # Text
+					target_renderer,           # Target
+					permanent_renderer,        # Permanent
+					type_renderer,             # Type
+					text_renderer              # Text
 				)
 			)
 			self._editor_refresh()
 		self.window.show()
 		self.window.present()
+
+	def signal_multi_edited(self, field, _, path, text):
+		text = text.strip()
+		self._tv_model[path][_ModelNamedRow._fields.index(field)] = text
+
+	def signal_renderer_toggled(self, field, _, path):
+		index = _ModelNamedRow._fields.index(field)
+		self._tv_model[path][index] = not self._tv_model[path][index]
 
 	def signal_window_destroy(self, window):
 		self.window = None
