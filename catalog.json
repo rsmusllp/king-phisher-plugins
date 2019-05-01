@@ -1,5 +1,5 @@
 {
-  "created": "2017-09-01T15:26:26.125886+00:00",
+  "created": "2019-05-01T15:04:19.092613+00:00",
   "created-by": "github.com/zeroSteiner",
   "id": "securestate/king-phisher-plugins",
   "maintainers": [
@@ -27,6 +27,6 @@
       "url-base": "https://raw.githubusercontent.com/securestate/king-phisher-plugins/master"
     }
   ],
-  "signature": "AWQrcrRdDZF2PakMqe9XCAwW/Rx2YRYu4RR2y/WcApGIWMZWjv1QinDm2Kt7oUGvhy7JTuR2f/cfgI5SZhqAGRGRARJc7pvOPorEkVG9neLIzLkV18uAg2jDT9VKcdwwieQs2x8dckc8d3c+xALpJq9MVbfAci7IuPhH4AjvcfAFZG+x",
+  "signature": "Aes3uaB96Lm4P+4SC/mkhgcjgTyIdok8AyLMckbw11omB4db54nNJvTLxzxERfLY/C7J4PC7J24xamByRMxyIx2mAVRA2NrvHNIMfKW3L4soEsxsAu8KNOLB5Vi+NLh3ClggvcOZHN2oSZ+CEQe8FMIAL5xWhr+xaETPvxIzAeb82wHV",
   "signed-by": "github.com/zeroSteiner"
 }
