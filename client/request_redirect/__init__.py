@@ -49,8 +49,11 @@ class Plugin(plugins.ClientPlugin):
 			)
 			return False
 		self._builder = None
+		self._label_summary = None
 		self._loader_thread = None
 		self._tv_model = Gtk.ListStore(int, str, bool, str, str)
+		self._tv_model.connect('row-inserted', self.signal_model_multi)
+		self._tv_model.connect('row-deleted', self.signal_model_multi)
 		self.menu_items = {}
 		self.menu_items['edit_rules'] = self.add_menu_item('Tools  > Request Redirect Rules', self.show_editor_window)
 		return True
@@ -104,12 +107,22 @@ class Plugin(plugins.ClientPlugin):
 		method = 'plugins/request_redirect/rules/' + method
 		return self.application.rpc(method, *args, **kwargs)
 
+	def _update_remote_entry(self, path):
+		named_row = _ModelNamedRow(*self._tv_model[path])
+		entry = {
+			'permanent': named_row.permanent,
+			'target': named_row.target,
+			named_row.type.lower(): named_row.text
+		}
+		self._rpc('set', named_row.index, entry)
+
 	def finalize(self):
 		if self.window is not None:
 			self.window.destroy()
 
 	def show_editor_window(self, _):
 		if self.window is None:
+			self._builder = None
 			self.window = self._get_object('editor_window')
 			self.window.set_transient_for(self.application.get_active_window())
 			self.window.connect('destroy', self.signal_window_destroy)
@@ -152,17 +165,25 @@ class Plugin(plugins.ClientPlugin):
 					text_renderer              # Text
 				)
 			)
+			self._label_summary = self._get_object('label_summary')
 			self._editor_refresh()
 		self.window.show()
 		self.window.present()
 
+	def signal_model_multi(self, model, *_):
+		if self._label_summary is None:
+			return
+		self._label_summary.set_text("Showing {:,} Redirect Configuration{}".format(len(model), '' if len(model) == 1 else 's'))
+
 	def signal_multi_edited(self, field, _, path, text):
 		text = text.strip()
 		self._tv_model[path][_ModelNamedRow._fields.index(field)] = text
+		self._update_remote_entry(path)
 
 	def signal_renderer_toggled(self, field, _, path):
 		index = _ModelNamedRow._fields.index(field)
 		self._tv_model[path][index] = not self._tv_model[path][index]
+		self._update_remote_entry(path)
 
 	def signal_window_destroy(self, window):
 		self.window = None
