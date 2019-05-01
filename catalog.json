@@ -25,21 +25,6 @@
       "id": "master",
       "title": "Offical King Phisher Plugins",
       "url-base": "https://raw.githubusercontent.com/securestate/king-phisher-plugins/master"
-    },
-    {
-      "collections-include": [
-        {
-          "path-source": "catalog-collections.json",
-          "types": [
-            "plugins/client",
-            "plugins/server"
-          ]
-        }
-      ],
-      "homepage": "https://github.com/securestate/king-phisher-plugins/tree/dev",
-      "id": "dev",
-      "title": "Offical King Phisher Plugins (Development)",
-      "url-base": "https://raw.githubusercontent.com/securestate/king-phisher-plugins/dev"
     }
   ],
   "signature": "AWQrcrRdDZF2PakMqe9XCAwW/Rx2YRYu4RR2y/WcApGIWMZWjv1QinDm2Kt7oUGvhy7JTuR2f/cfgI5SZhqAGRGRARJc7pvOPorEkVG9neLIzLkV18uAg2jDT9VKcdwwieQs2x8dckc8d3c+xALpJq9MVbfAci7IuPhH4AjvcfAFZG+x",
