@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2019-05-01 13:53:48 -->
+<!-- generated at: 2019-05-02 20:33:39 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -22,7 +22,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Message Plaintext](/client/message_plaintext.py) | Parse and include a plaintext version of an email based on the HTML version. |
 | [Custom Message MIME Headers](/client/mime_headers.py) | Add custom MIME headers to messages that are sent. This can, for example be used to add a Sender and / or a Return-Path header to outgoing messages. Headers are rendered as template strings and can use variables that are valid in messages. |
 | [Office 2007+ Document Metadata Remover](/client/office_metadata_remover.py) | Remove metadata from Microsoft Office 2007+ file types. These files types generally use the extension docx, pptx, xlsx etc. If the attachment file is not an Office 2007+ file, this plugin does not modify it or block the sending operation. |
-| [Generate PDF](/client/pdf_generator.py) | Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin. |
+| [Generate PDF](/client/pdf_generator.py) | Generates a PDF file from an html attachment that process client King Phisher Jinja variables allowing to embed links to your landing page so users that click the link in the PDF can be tracked when they visit. |
 | [Phishery DOCX URL Injector](/client/phishery_docx.py) | Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per-line from the plugin settings). |
 | [SFTP Client](/client/sftp_client.py) | Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server.<br /><br />The editor allows you edit files on remote or local system. It is primarily designed for the use of editing remote web pages on the King Phisher Server. |
 | [Spell Check](/client/spell_check.py) | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
