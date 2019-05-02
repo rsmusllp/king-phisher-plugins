@@ -1,7 +1,9 @@
 import collections
+import datetime
 import functools
 import os
 
+from king_phisher import serializers
 from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
@@ -21,6 +23,14 @@ _ModelNamedRow = collections.namedtuple('ModelNamedRow', (
 	'type',
 	'text'
 ))
+
+def named_row_to_entry(named_row):
+	entry = {
+		'permanent': named_row.permanent,
+		'target': named_row.target,
+		named_row.type.lower(): named_row.text
+	}
+	return entry
 
 class _CellRendererIndex(getattr(extras, 'CellRendererPythonText', object)):
 	python_value = GObject.Property(type=int, flags=GObject.ParamFlags.READWRITE)
@@ -109,11 +119,7 @@ class Plugin(plugins.ClientPlugin):
 
 	def _update_remote_entry(self, path):
 		named_row = _ModelNamedRow(*self._tv_model[path])
-		entry = {
-			'permanent': named_row.permanent,
-			'target': named_row.target,
-			named_row.type.lower(): named_row.text
-		}
+		entry = named_row_to_entry(named_row)
 		self._rpc('set', named_row.index, entry)
 
 	def finalize(self):
@@ -165,10 +171,29 @@ class Plugin(plugins.ClientPlugin):
 					text_renderer              # Text
 				)
 			)
+			menu_item = self._get_object('menuitem_export')
+			menu_item.connect('activate', self.signal_menu_item_export)
 			self._label_summary = self._get_object('label_summary')
 			self._editor_refresh()
 		self.window.show()
 		self.window.present()
+
+	def signal_menu_item_export(self, _):
+		dialog = extras.FileChooserDialog('Export Entries', self.window)
+		response = dialog.run_quick_save('request_redirect.json')
+		dialog.destroy()
+		if not response:
+			return
+		entries = []
+		for row in self._tv_model:
+			named_row = _ModelNamedRow(*row)
+			entries.append(named_row_to_entry(named_row))
+		export = {
+			'created': datetime.datetime.utcnow().isoformat() + '+00:00',
+			'entries': entries
+		}
+		with open(response['target_path'], 'w') as file_h:
+			serializers.JSON.dump(export, file_h)
 
 	def signal_model_multi(self, model, *_):
 		if self._label_summary is None:
