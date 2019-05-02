@@ -1,5 +1,7 @@
+import functools
 import ipaddress
 
+import king_phisher.plugins as plugin_opts
 import king_phisher.errors as errors
 import king_phisher.server.plugins as plugins
 import king_phisher.server.server_rpc as server_rpc
@@ -13,6 +15,8 @@ else:
 	has_rule_engine = True
 
 EXAMPLE_CONFIG = """\
+# the access level to require for users to change rules
+access_level_write: 1000
 rules:
   # first rule is an exception because no target is specified
   - source: 192.168.0.0/16
@@ -43,6 +47,15 @@ def _context_resolver(handler, name):
 		return handler.vhost
 	raise rule_engine.SymbolResolutionError(name)
 
+def check_access_level(function):
+	@functools.wraps(function)
+	def wrapped(plugin, handler, *args, **kwargs):
+		access_level = plugin.config.get('access_level_write')
+		if access_level is not None and handler.rpc_session.user_access_level > access_level:
+			raise errors.KingPhisherPermissionError('the user does not possess the necessary access level to change this data')
+		return function(plugin, handler, *args, **kwargs)
+	return wrapped
+
 class Plugin(plugins.ServerPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'Request Redirect'
@@ -57,11 +70,11 @@ class Plugin(plugins.ServerPlugin):
 	302 redirect should be used.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	req_min_version = '1.9.0'
+	req_min_version = '1.14.0b0'
 	req_packages = {
 		'rule-engine': has_rule_engine
 	}
-	version = '1.1'
+	version = '2.0'
 	rule_types = {
 		'accept': rule_engine.DataType.STRING,
 		'dst_addr': rule_engine.DataType.STRING,
@@ -73,6 +86,13 @@ class Plugin(plugins.ServerPlugin):
 		'verb': rule_engine.DataType.STRING,
 		'vhost': rule_engine.DataType.STRING,
 	}
+	options = [
+		plugin_opts.OptionInteger(
+			name='access_level_write',
+			description='An optional access level to require for changes to this plugin\'s data',
+			default=1000
+		),
+	]
 	def initialize(self):
 		self._context = rule_engine.Context(
 			resolver=_context_resolver,
@@ -106,6 +126,7 @@ class Plugin(plugins.ServerPlugin):
 			raise RuntimeError("rule {}contains neither a rule or source key".format('' if index is None else '#' + str(index)))
 		return rule
 
+	@check_access_level
 	def _rpc_request_insert(self, handler, index, rule):
 		rule = self._process_rule(rule, index)
 		self.rules.insert(index, rule)
@@ -121,9 +142,11 @@ class Plugin(plugins.ServerPlugin):
 			rules.append(rule)
 		return rules
 
+	@check_access_level
 	def _rpc_request_remove(self, handler, index):
 		del self.rules[index]
 
+	@check_access_level
 	def _rpc_request_set(self, handler, index, rule):
 		rule = self._process_rule(rule, index)
 		self.rules[index] = rule
