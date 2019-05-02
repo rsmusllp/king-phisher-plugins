@@ -170,7 +170,14 @@ class Plugin(plugins.ClientPlugin):
 					text_renderer              # Text
 				)
 			)
-			tvm.get_popup_menu()
+			# treeview right-click menu
+			menu = tvm.get_popup_menu()
+			menu_item = Gtk.MenuItem.new_with_label('Insert')
+			menu_item.connect('activate', self.signal_menu_item_insert)
+			menu_item.show()
+			menu.append(menu_item)
+
+			# top menu bar
 			menu_item = builder.get_object('RequestRedirect.menuitem_export')
 			menu_item.connect('activate', self.signal_menu_item_export)
 			self._label_summary = builder.get_object('RequestRedirect.label_summary')
@@ -197,6 +204,7 @@ class Plugin(plugins.ClientPlugin):
 		this_tree_iter = tree_iter
 		tree_iter = model.iter_next(tree_iter)
 		del model[this_tree_iter]
+		# todo: change this to process all entries regardless of order
 		index = _ModelNamedRow._fields.index('index')
 		while tree_iter and model.iter_is_valid(tree_iter):
 			model[tree_iter][index] = model[tree_iter][index] - 1
@@ -224,6 +232,28 @@ class Plugin(plugins.ClientPlugin):
 		with open(response['target_path'], 'w') as file_h:
 			serializers.JSON.dump(export, file_h)
 
+	def signal_menu_item_insert(self, _):
+		selection = self._tv.get_selection()
+		new_named_row = _ModelNamedRow(len(self._tv_model), '', True, 'Source', '0.0.0.0/32')
+		if selection.count_selected_rows() == 0:
+			self._tv_model.append(new_named_row)
+		elif selection.count_selected_rows() == 1:
+			(model, tree_iter) = selection.get_selected()
+			new_named_row = new_named_row._replace(index=_ModelNamedRow(*model[tree_iter]).index)
+			for row in model:
+				named_row = _ModelNamedRow(*row)
+				if named_row.index < new_named_row.index:
+					continue
+				model[row.iter][_ModelNamedRow._fields.index('index')] += 1
+			self._tv_model.insert_before(tree_iter, new_named_row)
+			# todo: ensure the row is correct even when the treeview is sorted
+
+		entry = named_row_to_entry(new_named_row)
+		self.application.rpc.async_call(
+			'plugins/request_redirect/rules/set',
+			(new_named_row.index, entry)
+		)
+
 	def signal_model_multi(self, model, *_):
 		if self._label_summary is None:
 			return
@@ -231,25 +261,26 @@ class Plugin(plugins.ClientPlugin):
 
 	def signal_renderer_edited(self, field, _, path, text):
 		text = text.strip()
-		entry_type = self._tv_model[path][_ModelNamedRow._fields.index('type')].lower()
-		if entry_type == 'source':
-			try:
-				ipaddress.ip_network(text)
-			except ValueError:
-				gui_utilities.show_dialog_error('Invalid Source', self.window, 'The specified text is not a valid IP network in CIDR notation.')
-				return
-		else:
-			try:
-				rule_engine.Rule(text, context=self._rule_context)
-			except rule_engine.SymbolResolutionError as error:
-				gui_utilities.show_dialog_error('Invalid Rule', self.window, "The specified rule text contains the unknown symbol {!r}.".format(error.symbol_name))
-				return
-			except rule_engine.SyntaxError:
-				gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified rule text contains a syntax error.')
-				return
-			except rule_engine.EngineError:
-				gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified text is not a valid rule.')
-				return
+		if field == 'text':
+			entry_type = self._tv_model[path][_ModelNamedRow._fields.index('type')].lower()
+			if entry_type == 'source':
+				try:
+					ipaddress.ip_network(text)
+				except ValueError:
+					gui_utilities.show_dialog_error('Invalid Source', self.window, 'The specified text is not a valid IP network in CIDR notation.')
+					return
+			else:
+				try:
+					rule_engine.Rule(text, context=self._rule_context)
+				except rule_engine.SymbolResolutionError as error:
+					gui_utilities.show_dialog_error('Invalid Rule', self.window, "The specified rule text contains the unknown symbol {!r}.".format(error.symbol_name))
+					return
+				except rule_engine.SyntaxError:
+					gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified rule text contains a syntax error.')
+					return
+				except rule_engine.EngineError:
+					gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified text is not a valid rule.')
+					return
 		self._tv_model[path][_ModelNamedRow._fields.index(field)] = text
 		self._update_remote_entry(path)
 
