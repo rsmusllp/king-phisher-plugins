@@ -4,7 +4,6 @@ import functools
 import os
 
 from king_phisher import serializers
-from king_phisher import utilities
 from king_phisher.client import gui_utilities
 from king_phisher.client import plugins
 from king_phisher.client.widget import extras
@@ -47,7 +46,7 @@ class Plugin(plugins.ClientPlugin):
 	Edit rules for the server "Request Redirect" plugin.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-	req_min_version = '1.12'
+	req_min_version = '1.14.0b0'
 	version = '1.0.0'
 	def initialize(self):
 		self.window = None
@@ -58,9 +57,7 @@ class Plugin(plugins.ClientPlugin):
 				"The GTK Builder data file ({0}) is not available.".format(os.path.basename(gtk_builder_file))
 			)
 			return False
-		self._builder = None
 		self._label_summary = None
-		self._loader_thread = None
 		self._tv_model = Gtk.ListStore(int, str, bool, str, str)
 		self._tv_model.connect('row-inserted', self.signal_model_multi)
 		self._tv_model.connect('row-deleted', self.signal_model_multi)
@@ -69,11 +66,11 @@ class Plugin(plugins.ClientPlugin):
 		return True
 
 	def _editor_refresh(self):
-		if self._loader_thread and self._loader_thread.is_alive():
-			self.logger.info('ignoring command to refresh because the loader thread is already running')
-			return
-		self._loader_thread = utilities.Thread(self._loader_routine)
-		self._loader_thread.start()
+		self.application.rpc.async_call(
+			'plugins/request_redirect/rules/list',
+			on_success=self.asyncrpc_list,
+			when_idle=False
+		)
 
 	def _editor_delete(self, treeview, selection):
 		(model, tree_iter) = selection.get_selected()
@@ -81,26 +78,17 @@ class Plugin(plugins.ClientPlugin):
 			return
 		if not gui_utilities.show_dialog_yes_no('Delete This Entry?', self.window, 'Are you sure you want to delete this entry?'):
 			return
-		self._rpc('remove', _ModelNamedRow(*model[tree_iter]).index)
-		this_tree_iter = tree_iter
-		tree_iter = model.iter_next(tree_iter)
-		del model[this_tree_iter]
-		index = _ModelNamedRow._fields.index('index')
-		while tree_iter and model.iter_is_valid(tree_iter):
-			model[tree_iter][index] = model[tree_iter][index] - 1
-			tree_iter = model.iter_next(tree_iter)
+		self.application.rpc.async_call(
+			'plugins/request_redirect/rules/remove',
+			(_ModelNamedRow(*model[tree_iter]).index,),
+			on_success=self.asyncrpc_remove,
+			when_idle=True,
+			cb_args=(model, tree_iter)
+		)
 
-	def _get_object(self, name):
-		if self._builder is None:
-			self._builder = Gtk.Builder()
-			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
-			self._builder.add_from_file(gtk_builder_file)
-		return self._builder.get_object('RequestRedirect.' + name)
-
-	def _loader_routine(self):
-		rules = self._rpc('list')
+	def asyncrpc_list(self, entries):
 		things = []
-		for idx, rule in enumerate(rules):
+		for idx, rule in enumerate(entries):
 			if 'rule' in rule:
 				type_ = 'Rule'
 				text = rule['rule']
@@ -113,14 +101,22 @@ class Plugin(plugins.ClientPlugin):
 			things.append((idx, rule['target'], rule['permanent'], type_, text))
 		gui_utilities.glib_idle_add_store_extend(self._tv_model, things, clear=True)
 
-	def _rpc(self, method, *args, **kwargs):
-		method = 'plugins/request_redirect/rules/' + method
-		return self.application.rpc(method, *args, **kwargs)
+	def asyncrpc_remove(self, model, tree_iter, _):
+		this_tree_iter = tree_iter
+		tree_iter = model.iter_next(tree_iter)
+		del model[this_tree_iter]
+		index = _ModelNamedRow._fields.index('index')
+		while tree_iter and model.iter_is_valid(tree_iter):
+			model[tree_iter][index] = model[tree_iter][index] - 1
+			tree_iter = model.iter_next(tree_iter)
 
 	def _update_remote_entry(self, path):
 		named_row = _ModelNamedRow(*self._tv_model[path])
 		entry = named_row_to_entry(named_row)
-		self._rpc('set', named_row.index, entry)
+		self.application.rpc.async_call(
+			'plugins/request_redirect/rules/set',
+			(named_row.index, entry)
+		)
 
 	def finalize(self):
 		if self.window is not None:
@@ -128,11 +124,14 @@ class Plugin(plugins.ClientPlugin):
 
 	def show_editor_window(self, _):
 		if self.window is None:
-			self._builder = None
-			self.window = self._get_object('editor_window')
+			builder = Gtk.Builder()
+			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
+			builder.add_from_file(gtk_builder_file)
+			
+			self.window = builder.get_object('RequestRedirect.editor_window')
 			self.window.set_transient_for(self.application.get_active_window())
 			self.window.connect('destroy', self.signal_window_destroy)
-			treeview = self._get_object('treeview_editor')
+			treeview = builder.get_object('RequestRedirect.treeview_editor')
 			treeview.set_model(self._tv_model)
 			tvm = managers.TreeViewManager(treeview, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
 
@@ -171,9 +170,10 @@ class Plugin(plugins.ClientPlugin):
 					text_renderer              # Text
 				)
 			)
-			menu_item = self._get_object('menuitem_export')
+			tvm.get_popup_menu()
+			menu_item = builder.get_object('RequestRedirect.menuitem_export')
 			menu_item.connect('activate', self.signal_menu_item_export)
-			self._label_summary = self._get_object('label_summary')
+			self._label_summary = builder.get_object('RequestRedirect.label_summary')
 			self._editor_refresh()
 		self.window.show()
 		self.window.present()
