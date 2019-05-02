@@ -1,6 +1,7 @@
 import collections
 import datetime
 import functools
+import ipaddress
 import os
 
 from king_phisher import serializers
@@ -11,6 +12,7 @@ from king_phisher.client.widget import managers
 
 from gi.repository import GObject
 from gi.repository import Gtk
+import rule_engine
 
 relpath = functools.partial(os.path.join, os.path.dirname(os.path.realpath(__file__)))
 gtk_builder_file = relpath('request_redirect.ui')
@@ -58,6 +60,8 @@ class Plugin(plugins.ClientPlugin):
 			)
 			return False
 		self._label_summary = None
+		self._rule_context = None
+		self._tv = None
 		self._tv_model = Gtk.ListStore(int, str, bool, str, str)
 		self._tv_model.connect('row-inserted', self.signal_model_multi)
 		self._tv_model.connect('row-deleted', self.signal_model_multi)
@@ -86,6 +90,94 @@ class Plugin(plugins.ClientPlugin):
 			cb_args=(model, tree_iter)
 		)
 
+	def _update_remote_entry(self, path):
+		named_row = _ModelNamedRow(*self._tv_model[path])
+		entry = named_row_to_entry(named_row)
+		self.application.rpc.async_call(
+			'plugins/request_redirect/rules/set',
+			(named_row.index, entry)
+		)
+
+	def finalize(self):
+		if self.window is not None:
+			self.window.destroy()
+
+	def show_editor_window(self, _):
+		self.application.rpc.async_graphql(
+			'query getPlugin($name: String!) { plugin(name: $name) { version } }',
+			query_vars={'name': self.name},
+			on_success=self.asyncrpc_graphql,
+			when_idle=True
+		)
+
+	def asyncrpc_graphql(self, plugin_info):
+		if plugin_info['plugin'] is None:
+			gui_utilities.show_dialog_error(
+				'Missing Server Plugin',
+				self.application.get_active_window(),
+				'The server side plugin is missing. It must be installed and enabled by the server administrator.'
+			)
+			return
+		if self.window is None:
+			self.application.rpc.async_call(
+				'plugins/request_redirect/rules/symbols',
+				on_success=self.asyncrpc_symbols,
+				when_idle=False
+			)
+			builder = Gtk.Builder()
+			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
+			builder.add_from_file(gtk_builder_file)
+			
+			self.window = builder.get_object('RequestRedirect.editor_window')
+			self.window.set_transient_for(self.application.get_active_window())
+			self.window.connect('destroy', self.signal_window_destroy)
+			self._tv = builder.get_object('RequestRedirect.treeview_editor')
+			self._tv.set_model(self._tv_model)
+			tvm = managers.TreeViewManager(self._tv, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
+
+			# target renderer
+			target_renderer = Gtk.CellRendererText()
+			target_renderer.set_property('editable', True)
+			target_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'target'))
+
+			# permanent renderer
+			permanent_renderer = Gtk.CellRendererToggle()
+			permanent_renderer.connect('toggled', functools.partial(self.signal_renderer_toggled, 'permanent'))
+
+			# type renderer
+			store = Gtk.ListStore(str)
+			store.append(['Rule'])
+			store.append(['Source'])
+			type_renderer = Gtk.CellRendererCombo()
+			type_renderer.set_property('editable', True)
+			type_renderer.set_property('has-entry', False)
+			type_renderer.set_property('model', store)
+			type_renderer.set_property('text-column', 0)
+			type_renderer.connect('edited', self.signal_renderer_edited_type)
+
+			# text renderer
+			text_renderer = Gtk.CellRendererText()
+			text_renderer.set_property('editable', True)
+			text_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'text'))
+
+			tvm.set_column_titles(
+				('#', 'Target', 'Permanent', 'Type', 'Text'),
+				renderers=(
+					_CellRendererIndex(),      # index
+					target_renderer,           # Target
+					permanent_renderer,        # Permanent
+					type_renderer,             # Type
+					text_renderer              # Text
+				)
+			)
+			tvm.get_popup_menu()
+			menu_item = builder.get_object('RequestRedirect.menuitem_export')
+			menu_item.connect('activate', self.signal_menu_item_export)
+			self._label_summary = builder.get_object('RequestRedirect.label_summary')
+			self._editor_refresh()
+		self.window.show()
+		self.window.present()
+
 	def asyncrpc_list(self, entries):
 		things = []
 		for idx, rule in enumerate(entries):
@@ -110,73 +202,10 @@ class Plugin(plugins.ClientPlugin):
 			model[tree_iter][index] = model[tree_iter][index] - 1
 			tree_iter = model.iter_next(tree_iter)
 
-	def _update_remote_entry(self, path):
-		named_row = _ModelNamedRow(*self._tv_model[path])
-		entry = named_row_to_entry(named_row)
-		self.application.rpc.async_call(
-			'plugins/request_redirect/rules/set',
-			(named_row.index, entry)
-		)
-
-	def finalize(self):
-		if self.window is not None:
-			self.window.destroy()
-
-	def show_editor_window(self, _):
-		if self.window is None:
-			builder = Gtk.Builder()
-			self.logger.debug('loading gtk builder file from: ' + gtk_builder_file)
-			builder.add_from_file(gtk_builder_file)
-			
-			self.window = builder.get_object('RequestRedirect.editor_window')
-			self.window.set_transient_for(self.application.get_active_window())
-			self.window.connect('destroy', self.signal_window_destroy)
-			treeview = builder.get_object('RequestRedirect.treeview_editor')
-			treeview.set_model(self._tv_model)
-			tvm = managers.TreeViewManager(treeview, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
-
-			# target renderer
-			target_renderer = Gtk.CellRendererText()
-			target_renderer.set_property('editable', True)
-			target_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'target'))
-
-			# permanent renderer
-			permanent_renderer = Gtk.CellRendererToggle()
-			permanent_renderer.connect('toggled', functools.partial(self.signal_renderer_toggled, 'permanent'))
-
-			# type renderer
-			store = Gtk.ListStore(str)
-			store.append(['Rule'])
-			store.append(['Source'])
-			type_renderer = Gtk.CellRendererCombo()
-			type_renderer.set_property('editable', True)
-			type_renderer.set_property('has-entry', False)
-			type_renderer.set_property('model', store)
-			type_renderer.set_property('text-column', 0)
-			type_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'type'))
-
-			# text renderer
-			text_renderer = Gtk.CellRendererText()
-			text_renderer.set_property('editable', True)
-			text_renderer.connect('edited', functools.partial(self.signal_multi_edited, 'text'))
-
-			tvm.set_column_titles(
-				('#', 'Target', 'Permanent', 'Type', 'Text'),
-				renderers=(
-					_CellRendererIndex(),      # index
-					target_renderer,           # Target
-					permanent_renderer,        # Permanent
-					type_renderer,             # Type
-					text_renderer              # Text
-				)
-			)
-			tvm.get_popup_menu()
-			menu_item = builder.get_object('RequestRedirect.menuitem_export')
-			menu_item.connect('activate', self.signal_menu_item_export)
-			self._label_summary = builder.get_object('RequestRedirect.label_summary')
-			self._editor_refresh()
-		self.window.show()
-		self.window.present()
+	def asyncrpc_symbols(self, symbols):
+		symbols = {k: getattr(rule_engine.DataType, v) for k, v in symbols.items()}
+		type_resolver = rule_engine.type_resolver_from_dict(symbols)
+		self._rule_context = rule_engine.Context(type_resolver=type_resolver)
 
 	def signal_menu_item_export(self, _):
 		dialog = extras.FileChooserDialog('Export Entries', self.window)
@@ -200,9 +229,39 @@ class Plugin(plugins.ClientPlugin):
 			return
 		self._label_summary.set_text("Showing {:,} Redirect Configuration{}".format(len(model), '' if len(model) == 1 else 's'))
 
-	def signal_multi_edited(self, field, _, path, text):
+	def signal_renderer_edited(self, field, _, path, text):
 		text = text.strip()
+		entry_type = self._tv_model[path][_ModelNamedRow._fields.index('type')].lower()
+		if entry_type == 'source':
+			try:
+				ipaddress.ip_network(text)
+			except ValueError:
+				gui_utilities.show_dialog_error('Invalid Source', self.window, 'The specified text is not a valid IP network in CIDR notation.')
+				return
+		else:
+			try:
+				rule_engine.Rule(text, context=self._rule_context)
+			except rule_engine.SymbolResolutionError as error:
+				gui_utilities.show_dialog_error('Invalid Rule', self.window, "The specified rule text contains the unknown symbol {!r}.".format(error.symbol_name))
+				return
+			except rule_engine.SyntaxError:
+				gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified rule text contains a syntax error.')
+				return
+			except rule_engine.EngineError:
+				gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified text is not a valid rule.')
+				return
 		self._tv_model[path][_ModelNamedRow._fields.index(field)] = text
+		self._update_remote_entry(path)
+
+	def signal_renderer_edited_type(self, _, path, text):
+		field_index = _ModelNamedRow._fields.index('type')
+		if self._tv_model[path][field_index] == text:
+			return
+		self._tv_model[path][field_index] = text
+		if text.lower() == 'source':
+			self._tv_model[path][_ModelNamedRow._fields.index('text')] = '0.0.0.0/32'
+		elif text.lower() == 'rule':
+			self._tv_model[path][_ModelNamedRow._fields.index('text')] = 'false'
 		self._update_remote_entry(path)
 
 	def signal_renderer_toggled(self, field, _, path):

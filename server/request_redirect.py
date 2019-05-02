@@ -129,7 +129,7 @@ class Plugin(plugins.ServerPlugin):
 		self.rules[index] = rule
 
 	def _rpc_request_symbols(self, handler):
-		return {key: value.type for key, value in self.rule_types.items()}
+		return {key: value.name for key, value in self.rule_types.items()}
 
 	@property
 	def rules(self):
