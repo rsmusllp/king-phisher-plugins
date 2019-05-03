@@ -33,6 +33,13 @@ def named_row_to_entry(named_row):
 	}
 	return entry
 
+def _update_model_indexes(model, starting, modifier):
+	for row in model:
+		named_row = _ModelNamedRow(*row)
+		if named_row.index < starting:
+			continue
+		model[row.iter][_ModelNamedRow._fields.index('index')] += modifier
+
 class _CellRendererIndex(getattr(extras, 'CellRendererPythonText', object)):
 	python_value = GObject.Property(type=int, flags=GObject.ParamFlags.READWRITE)
 	@staticmethod
@@ -77,18 +84,29 @@ class Plugin(plugins.ClientPlugin):
 		)
 
 	def _editor_delete(self, treeview, selection):
-		(model, tree_iter) = selection.get_selected()
-		if not tree_iter:
+		selection = treeview.get_selection()
+		(model, tree_paths) = selection.get_selected_rows()
+		if not tree_paths:
 			return
-		if not gui_utilities.show_dialog_yes_no('Delete This Entry?', self.window, 'Are you sure you want to delete this entry?'):
+		rows = []
+		for tree_path in tree_paths:
+			rows.append((_ModelNamedRow(*model[tree_path]).index, Gtk.TreeRowReference.new(model, tree_path)))
+		if len(rows) == 1:
+			message = 'Delete This Row?'
+		else:
+			message = "Delete These {0:,} Rows?".format(len(rows))
+		if not gui_utilities.show_dialog_yes_no(message, self.window, 'This information will be lost.'):
 			return
-		self.application.rpc.async_call(
-			'plugins/request_redirect/rules/remove',
-			(_ModelNamedRow(*model[tree_iter]).index,),
-			on_success=self.asyncrpc_remove,
-			when_idle=True,
-			cb_args=(model, tree_iter)
-		)
+
+		rows = reversed(sorted(rows, key=lambda item: item[0]))
+		for row_index, row_ref in rows:
+			self.application.rpc.async_call(
+				'plugins/request_redirect/rules/remove',
+				(row_index,),
+				on_success=self.asyncrpc_remove,
+				when_idle=True,
+				cb_args=(model, row_ref)
+			)
 
 	def _update_remote_entry(self, path):
 		named_row = _ModelNamedRow(*self._tv_model[path])
@@ -133,7 +151,12 @@ class Plugin(plugins.ClientPlugin):
 			self.window.connect('destroy', self.signal_window_destroy)
 			self._tv = builder.get_object('RequestRedirect.treeview_editor')
 			self._tv.set_model(self._tv_model)
-			tvm = managers.TreeViewManager(self._tv, cb_delete=self._editor_delete, cb_refresh=self._editor_refresh)
+			tvm = managers.TreeViewManager(
+				self._tv,
+				cb_delete=self._editor_delete,
+				cb_refresh=self._editor_refresh,
+				selection_mode=Gtk.SelectionMode.MULTIPLE,
+			)
 
 			# target renderer
 			target_renderer = Gtk.CellRendererText()
@@ -200,15 +223,13 @@ class Plugin(plugins.ClientPlugin):
 			things.append((idx, rule['target'], rule['permanent'], type_, text))
 		gui_utilities.glib_idle_add_store_extend(self._tv_model, things, clear=True)
 
-	def asyncrpc_remove(self, model, tree_iter, _):
-		this_tree_iter = tree_iter
-		tree_iter = model.iter_next(tree_iter)
-		del model[this_tree_iter]
-		# todo: change this to process all entries regardless of order
-		index = _ModelNamedRow._fields.index('index')
-		while tree_iter and model.iter_is_valid(tree_iter):
-			model[tree_iter][index] = model[tree_iter][index] - 1
-			tree_iter = model.iter_next(tree_iter)
+	def asyncrpc_remove(self, model, row_ref, _):
+		tree_path = row_ref.get_path()
+		if tree_path is None:
+			return
+		old_index = _ModelNamedRow(*model[tree_path]).index
+		del model[tree_path]
+		_update_model_indexes(model, old_index, -1)
 
 	def asyncrpc_symbols(self, symbols):
 		symbols = {k: getattr(rule_engine.DataType, v) for k, v in symbols.items()}
@@ -238,15 +259,18 @@ class Plugin(plugins.ClientPlugin):
 		if selection.count_selected_rows() == 0:
 			self._tv_model.append(new_named_row)
 		elif selection.count_selected_rows() == 1:
-			(model, tree_iter) = selection.get_selected()
+			(model, tree_paths) = selection.get_selected_rows()
+			tree_iter = model.get_iter(tree_paths[0])
 			new_named_row = new_named_row._replace(index=_ModelNamedRow(*model[tree_iter]).index)
-			for row in model:
-				named_row = _ModelNamedRow(*row)
-				if named_row.index < new_named_row.index:
-					continue
-				model[row.iter][_ModelNamedRow._fields.index('index')] += 1
+			_update_model_indexes(model, new_named_row.index, 1)
 			self._tv_model.insert_before(tree_iter, new_named_row)
-			# todo: ensure the row is correct even when the treeview is sorted
+		else:
+			gui_utilities.show_dialog_error(
+				'Can Not Insert Entry',
+				self.window,
+				'Can not insert a new entry when multiple entries are selected.'
+			)
+			return
 
 		entry = named_row_to_entry(new_named_row)
 		self.application.rpc.async_call(

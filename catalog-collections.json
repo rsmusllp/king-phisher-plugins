@@ -362,19 +362,19 @@
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/README.md",
             "path-source": "client/request_redirect/README.md",
-            "signature": "AEiRQKvKDUR9bTeKcWDjmRVWyKb/GTVFYldo8lxqZOfw94E2qGyUtKRi0t5fwC45enEASQnh3mCxi/tVZO+XJM/iAAWPrdkWFOfUUcduoVy6oG1iyB1XnVuI+5qcfrJzk3zI4Q0znObvXyHq3AHyVWcHrqOIZITrX6i9rzWcHFfqLtGo",
+            "signature": "AawMCg6KQkScdKGiwg90QgNTfX99bVzucqLj/1RyLrZAimME40GafxEUbDwK9N95CXGk5STVnxW/mmYeqA+pwBLKAGOherlvpHu3dPgfp+vAy9qwpoIVoTZJ2r6icDqRU4aoPdziw2/JyLwGa4QEY0CN3IoCqW+ogjP3dii4CsVdt1Qj",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/__init__.py",
             "path-source": "client/request_redirect/__init__.py",
-            "signature": "ANY8QVw2fFuIBbC+QNJqkDLNEnL5BEnN0z9yyrYDnyUNXc94KzLAs+TfwS10rB16HBHv9ZlmsHrmE16fbj1UnZdPAb7swuUnskevNl8sPjM2a39JJZ40HeZx6JSq8ZQ1iQqsnHCns+dLNoY3vJdji9ca5zARaTTUu8stbQrIhV1vKhRM",
+            "signature": "ADXDqU4EO1Hs8HmrhXjuUJN0VtuM6JeTkdA4q/u42Xk6aM5L2e6UGFKIVPoNiTaeWDaEJ7zrecyP8Ydp+Sgp37ovACoMKYn/toG8UAIqWXWuJXijjGy/TqG1O1H/tzT/SiptU5TO9pj9RgHmI8KmLGYNMrm47OHaIE0dA9ZVzHSICA6L",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/request_redirect.ui",
             "path-source": "client/request_redirect/request_redirect.ui",
-            "signature": "ALsT5zvHcQBLI+80S5pgIw3YWINa0Og/ZGO0hJA5rPsDOrBsHQhvL2kNINvROSuzft+uUQHoljsqeNvFdNULOKGuAfSmWnCn1WKC3s9wb8jar/G+0qNFjwHfUjjh28bLserPYZTMmenpFRs30G0ZmaqtrM3YObLqX2zAC/J63mHpE+C2",
+            "signature": "ANeWrN5tI7H/WoMhQ9mljzR7IKZY/ygOvK7pNkcc1km6Q8pz4mP0Vx9/ypSxd9bUCww7wjXYaDBgcn3OjytDIBiNALo3wqnoSfCnoQifxiPnenWFnSKdN1Oe5ieJ0gvvFZiN7i5yPNy9U32GZqlpZx7hopk81tRhCz96zfuOJYoOBMFx",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -742,8 +742,8 @@
       }
     ]
   },
-  "created": "2019-05-02T22:36:21.011419+00:00",
+  "created": "2019-05-03T00:50:50.268524+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AaRATMFZPV5+F56mWBTu6Db8eUlPRZzJpxTBBu2uo0kqzfOUrjPq0Pq13gCw6HhGAUusvbGrFHpMgl4yew6H73NuANSmvntSiKNo/eKUfyjkqiXIEDknwkcXSOUMVafWZ2+X2IfdKz6+dxDN85VB2n1sJiUOOGaSUSIt5om4DNtovlQd",
+  "signature": "AJ2gOh5PuAi8iHW6Ko5o4W8tiK9Gzehndbcn5iGVYvtkT11a+OeDpiKkkAWy/oIHXe7kMQm6y4n+Ce+yn7A7aaBJATMNA1ILW4BnG8Q9yAH/LbzauaFlQK0YUzU5NBK/9Y9yIZdTh+FnngYuvLQrNhhUXhF/uul2YXWkJoGF7evszhUN",
   "signed-by": "github.com/zeroSteiner"
 }
