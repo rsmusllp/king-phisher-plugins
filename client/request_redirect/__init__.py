@@ -12,10 +12,13 @@ from king_phisher.client.widget import managers
 
 from gi.repository import GObject
 from gi.repository import Gtk
+import jsonschema
 import rule_engine
+import rule_engine.errors
 
 relpath = functools.partial(os.path.join, os.path.dirname(os.path.realpath(__file__)))
 gtk_builder_file = relpath('request_redirect.ui')
+json_schema_file = relpath('schema.json')
 
 _ModelNamedRow = collections.namedtuple('ModelNamedRow', (
 	'index',
@@ -78,7 +81,7 @@ class Plugin(plugins.ClientPlugin):
 
 	def _editor_refresh(self):
 		self.application.rpc.async_call(
-			'plugins/request_redirect/rules/list',
+			'plugins/request_redirect/entries/list',
 			on_success=self.asyncrpc_list,
 			when_idle=False
 		)
@@ -101,7 +104,7 @@ class Plugin(plugins.ClientPlugin):
 		rows = reversed(sorted(rows, key=lambda item: item[0]))
 		for row_index, row_ref in rows:
 			self.application.rpc.async_call(
-				'plugins/request_redirect/rules/remove',
+				'plugins/request_redirect/entries/remove',
 				(row_index,),
 				on_success=self.asyncrpc_remove,
 				when_idle=True,
@@ -112,7 +115,7 @@ class Plugin(plugins.ClientPlugin):
 		named_row = _ModelNamedRow(*self._tv_model[path])
 		entry = named_row_to_entry(named_row)
 		self.application.rpc.async_call(
-			'plugins/request_redirect/rules/set',
+			'plugins/request_redirect/entries/set',
 			(named_row.index, entry)
 		)
 
@@ -136,9 +139,17 @@ class Plugin(plugins.ClientPlugin):
 				'The server side plugin is missing. It must be installed and enabled by the server administrator.'
 			)
 			return
+		self.application.rpc.async_call(
+			'plugins/request_redirect/permissions',
+			on_success=self.asyncrpc_permissions,
+			when_idle=True
+		)
+
+	def asyncrpc_permissions(self, permissions):
+		writable = 'write' in permissions
 		if self.window is None:
 			self.application.rpc.async_call(
-				'plugins/request_redirect/rules/symbols',
+				'plugins/request_redirect/rule_symbols',
 				on_success=self.asyncrpc_symbols,
 				when_idle=False
 			)
@@ -153,35 +164,39 @@ class Plugin(plugins.ClientPlugin):
 			self._tv.set_model(self._tv_model)
 			tvm = managers.TreeViewManager(
 				self._tv,
-				cb_delete=self._editor_delete,
+				cb_delete=(self._editor_delete if writable else None),
 				cb_refresh=self._editor_refresh,
 				selection_mode=Gtk.SelectionMode.MULTIPLE,
 			)
 
 			# target renderer
 			target_renderer = Gtk.CellRendererText()
-			target_renderer.set_property('editable', True)
-			target_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'target'))
+			if writable:
+				target_renderer.set_property('editable', True)
+				target_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'target'))
 
 			# permanent renderer
 			permanent_renderer = Gtk.CellRendererToggle()
-			permanent_renderer.connect('toggled', functools.partial(self.signal_renderer_toggled, 'permanent'))
+			if writable:
+				permanent_renderer.connect('toggled', functools.partial(self.signal_renderer_toggled, 'permanent'))
 
 			# type renderer
 			store = Gtk.ListStore(str)
 			store.append(['Rule'])
 			store.append(['Source'])
 			type_renderer = Gtk.CellRendererCombo()
-			type_renderer.set_property('editable', True)
 			type_renderer.set_property('has-entry', False)
 			type_renderer.set_property('model', store)
 			type_renderer.set_property('text-column', 0)
-			type_renderer.connect('edited', self.signal_renderer_edited_type)
+			if writable:
+				type_renderer.set_property('editable', True)
+				type_renderer.connect('edited', self.signal_renderer_edited_type)
 
 			# text renderer
 			text_renderer = Gtk.CellRendererText()
-			text_renderer.set_property('editable', True)
-			text_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'text'))
+			if writable:
+				text_renderer.set_property('editable', True)
+				text_renderer.connect('edited', functools.partial(self.signal_renderer_edited, 'text'))
 
 			tvm.set_column_titles(
 				('#', 'Target', 'Permanent', 'Type', 'Text'),
@@ -195,14 +210,24 @@ class Plugin(plugins.ClientPlugin):
 			)
 			# treeview right-click menu
 			menu = tvm.get_popup_menu()
-			menu_item = Gtk.MenuItem.new_with_label('Insert')
-			menu_item.connect('activate', self.signal_menu_item_insert)
-			menu_item.show()
-			menu.append(menu_item)
+			if writable:
+				menu_item = Gtk.MenuItem.new_with_label('Insert')
+				menu_item.connect('activate', self.signal_menu_item_insert)
+				menu_item.show()
+				menu.append(menu_item)
 
 			# top menu bar
+			menu_item = builder.get_object('RequestRedirect.menuitem_import')
+			menu_item.connect('activate', self.signal_menu_item_import)
+			menu_item.set_sensitive(writable)
 			menu_item = builder.get_object('RequestRedirect.menuitem_export')
 			menu_item.connect('activate', self.signal_menu_item_export)
+
+			infobar = builder.get_object('RequestRedirect.infobar_read_only_warning')
+			infobar.set_revealed(not writable)
+			button = builder.get_object('RequestRedirect.button_read_only_acknowledgment')
+			button.connect('clicked', lambda _: infobar.set_revealed(False))
+
 			self._label_summary = builder.get_object('RequestRedirect.label_summary')
 			self._editor_refresh()
 		self.window.show()
@@ -253,6 +278,51 @@ class Plugin(plugins.ClientPlugin):
 		with open(response['target_path'], 'w') as file_h:
 			serializers.JSON.dump(export, file_h)
 
+	def signal_menu_item_import(self, _):
+		dialog = extras.FileChooserDialog('Import Entries', self.window)
+		dialog.quick_add_filter('Data Files', '*.json')
+		dialog.quick_add_filter('All Files', '*')
+		response = dialog.run_quick_open()
+		dialog.destroy()
+		if not response:
+			return
+		try:
+			with open(response['target_path'], 'r') as file_h:
+				data = serializers.JSON.load(file_h)
+		except Exception:
+			gui_utilities.show_dialog_error(
+				'Import Failed',
+				self.window,
+				'Could not load the specified file.'
+			)
+			return
+		with open(json_schema_file, 'r') as file_h:
+			schema = serializers.JSON.load(file_h)
+		try:
+			jsonschema.validate(data, schema)
+		except jsonschema.exceptions.ValidationError:
+			gui_utilities.show_dialog_error(
+				'Import Failed',
+				self.window,
+				'Could not load the specified file, the data is malformed.'
+			)
+			return
+		cursor = len(self._tv_model)
+		for entry in data['entries']:
+			if 'rule' in entry:
+				entry_type = 'Rule'
+				text = entry['rule']
+			elif 'source' in entry:
+				entry_type = 'Source'
+				text = entry['source']
+			new_named_row = _ModelNamedRow(cursor, entry['target'], entry['permanent'], entry_type, text)
+			self.application.rpc.async_call(
+				'plugins/request_redirect/entries/insert',
+				(cursor, named_row_to_entry(new_named_row))
+			)
+			self._tv_model.append(new_named_row)
+			cursor += 1
+
 	def signal_menu_item_insert(self, _):
 		selection = self._tv.get_selection()
 		new_named_row = _ModelNamedRow(len(self._tv_model), '', True, 'Source', '0.0.0.0/32')
@@ -274,7 +344,7 @@ class Plugin(plugins.ClientPlugin):
 
 		entry = named_row_to_entry(new_named_row)
 		self.application.rpc.async_call(
-			'plugins/request_redirect/rules/set',
+			'plugins/request_redirect/entries/set',
 			(new_named_row.index, entry)
 		)
 
@@ -299,10 +369,10 @@ class Plugin(plugins.ClientPlugin):
 				except rule_engine.SymbolResolutionError as error:
 					gui_utilities.show_dialog_error('Invalid Rule', self.window, "The specified rule text contains the unknown symbol {!r}.".format(error.symbol_name))
 					return
-				except rule_engine.SyntaxError:
+				except rule_engine.errors.SyntaxError:
 					gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified rule text contains a syntax error.')
 					return
-				except rule_engine.EngineError:
+				except rule_engine.errors.EngineError:
 					gui_utilities.show_dialog_error('Invalid Rule', self.window, 'The specified text is not a valid rule.')
 					return
 		self._tv_model[path][_ModelNamedRow._fields.index(field)] = text

@@ -32,7 +32,7 @@ The following symbols are available for use in rules for matching requests.
 
 ### Example Rules
 
-Match Internet Explore by it's User-Agent:
+Match Internet Explore by applying a regex to the User-Agent:
 
 `user_agent =~~ 'MSIE \d+\.\d+; Windows NT'`
 

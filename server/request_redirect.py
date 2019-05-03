@@ -50,8 +50,7 @@ def _context_resolver(handler, name):
 def check_access_level(function):
 	@functools.wraps(function)
 	def wrapped(plugin, handler, *args, **kwargs):
-		access_level = plugin.config.get('access_level_write')
-		if access_level is not None and handler.rpc_session.user_access_level > access_level:
+		if not plugin.handler_has_write_access(handler):
 			raise errors.KingPhisherPermissionError('the user does not possess the necessary access level to change this data')
 		return function(plugin, handler, *args, **kwargs)
 	return wrapped
@@ -109,12 +108,13 @@ class Plugin(plugins.ServerPlugin):
 		signals.request_handle.connect(self.on_request_handle)
 		self.logger.info("initialized with {0:,} redirect rules".format(len(self.rules)))
 
-		rpc_api_base = '/plugins/request_redirect/rules/'
-		server_rpc.register_rpc(rpc_api_base + 'insert')(self._rpc_request_insert)
-		server_rpc.register_rpc(rpc_api_base + 'list')(self._rpc_request_list)
-		server_rpc.register_rpc(rpc_api_base + 'remove')(self._rpc_request_remove)
-		server_rpc.register_rpc(rpc_api_base + 'set')(self._rpc_request_set)
-		server_rpc.register_rpc(rpc_api_base + 'symbols')(self._rpc_request_symbols)
+		rpc_api_base = '/plugins/request_redirect/'
+		server_rpc.register_rpc(rpc_api_base + 'entries/insert')(self._rpc_request_entries_insert)
+		server_rpc.register_rpc(rpc_api_base + 'entries/list')(self._rpc_request_entries_list)
+		server_rpc.register_rpc(rpc_api_base + 'entries/remove')(self._rpc_request_entries_remove)
+		server_rpc.register_rpc(rpc_api_base + 'entries/set')(self._rpc_request_entries_set)
+		server_rpc.register_rpc(rpc_api_base + 'permissions')(self._rpc_request_permissions)
+		server_rpc.register_rpc(rpc_api_base + 'rule_symbols')(self._rpc_request_symbols)
 		return True
 
 	def _process_rule(self, rule, index=None):
@@ -127,11 +127,11 @@ class Plugin(plugins.ServerPlugin):
 		return rule
 
 	@check_access_level
-	def _rpc_request_insert(self, handler, index, rule):
+	def _rpc_request_entries_insert(self, handler, index, rule):
 		rule = self._process_rule(rule, index)
 		self.rules.insert(index, rule)
 
-	def _rpc_request_list(self, handler):
+	def _rpc_request_entries_list(self, handler):
 		rules = []
 		for rule in self.rules:
 			rule = dict(rule)  # shallow copy
@@ -142,17 +142,29 @@ class Plugin(plugins.ServerPlugin):
 			rules.append(rule)
 		return rules
 
+	def _rpc_request_permissions(self, handler):
+		permissions = ['read']
+		if self.handler_has_write_access(handler):
+			permissions.append('write')
+		return permissions
+
 	@check_access_level
-	def _rpc_request_remove(self, handler, index):
+	def _rpc_request_entries_remove(self, handler, index):
 		del self.rules[index]
 
 	@check_access_level
-	def _rpc_request_set(self, handler, index, rule):
+	def _rpc_request_entries_set(self, handler, index, rule):
 		rule = self._process_rule(rule, index)
 		self.rules[index] = rule
 
 	def _rpc_request_symbols(self, handler):
 		return {key: value.name for key, value in self.rule_types.items()}
+
+	def handler_has_write_access(self, handler):
+		access_level = self.config.get('access_level_write')
+		if access_level is None:
+			return True
+		return handler.rpc_session.user_access_level <= access_level
 
 	@property
 	def rules(self):
