@@ -55,7 +55,7 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Spencer McIntyre']
 	title = 'Request Redirect'
 	description = """
-	Edit rules for the server "Request Redirect" plugin.
+	Edit entries for the server "Request Redirect" plugin.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
 	req_min_version = '1.14.0b0'

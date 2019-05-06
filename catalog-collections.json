@@ -357,30 +357,30 @@
         "authors": [
           "Spencer McIntyre"
         ],
-        "description": "Edit rules for the server \"Request Redirect\" plugin.",
+        "description": "Edit entries for the server \"Request Redirect\" plugin.",
         "files": [
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/README.md",
             "path-source": "client/request_redirect/README.md",
-            "signature": "AXRblaJqUwzAsrPCHxmgcdx0O8YA5vdKOhxOou9Sk3lED3bloNDpy6Qq70QuUJ3BLn7PHHyAdz4wRhb3cqLahWV5AG0xsqcxTjpxYvjPvPCJm8LIkSBDkXH9AZ5Lt8kTcCAbuyUg6yXGUQciF33hAMuWPm85CdlmMy3sZ+FU7C+tbCXC",
+            "signature": "AM6qjvBHDmjjpfNJRGEFrLoLYu7KiTOcsuLm+TdOpsCts8dUnzZ8T2KiAcWViKz+gvlxP5OHF+REx/E8+mnMVLF6AAEmCtfj2Sge49O91B9hJlatBLV+LRMvq/BTl9JZEwG+GQz+ahPq1C6KDuJv3Y8HNPtusH69npAShS2VQLJgXuhs",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/__init__.py",
             "path-source": "client/request_redirect/__init__.py",
-            "signature": "AWti3htoQeHBxa+OGfnd5GAQBIL8XVKtGREkCmfQT9DEbyOvf6OkXTf4ZIquQlvKc3QrfRSCx3GN3RQqFloR5jzZAWEdQ32jN5UIulhvjLEJvnCN84nGdEaKT9YUWZ4QShFHThh58wJh96MFb+2l8/6NZxiuHmFjgVzb3nBKbpxyGGcd",
+            "signature": "AfF09LGKVB9P/yf9pGtXuuXjx123gx6F7UcLg+ku5ViDp8Pceb46CX8GLKS+GnlSgznwaN+iskybNUeb1EGpnrShAJfphnf6RgL2aqKAcBMBjL1jrsbAfdb6eOVk95I0XgoGtf+KWX79mrwtHKAg24V+ExZxIll+b3q+NgusKFzwYYbI",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/request_redirect.ui",
             "path-source": "client/request_redirect/request_redirect.ui",
-            "signature": "ATLANU8gSEujKm85+aOSztxXUt9SQYNfc07q9BC4M6w6bnxXyvqBwE2NbArUSFLjkqIbAcuQp01ezIMlYxqeNfITAPrNIiMtsZKS0iOH/kury0Z6mM5ZnkjI29n41sevjj4u0SB46kGg50iZFNhgFLhVFRsdalISsXw+2RQS6DAPXWXo",
+            "signature": "ACBci+H1K1KUauGui+vXziskniL5hQD30DBe5vc7CZY4IQF+gkWqn+AILP7LRZ0BXW658E8KR9mOPF6iHKUXKpL6AItmuWTh6MXOoTUNmUNDdm7IbEaOsTyoXDCDSGXSIyLGsY1LBoXaEA/isW0cxMPdfIMELfmFYhwL5QoVAJQOtSVR",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "../../king-phisher-plugins/client/request_redirect/schema.json",
             "path-source": "client/request_redirect/schema.json",
-            "signature": "AHvnHu0BGuZx505tcbkpCmp3DSWXIuEwUA1Y4IsP8snSlgxCjQ+hfww3Ys9G5mg4BrA+DA+479rHk8l4mZ2lRaDRAdtCIWf9WZOxVHQY4TOoEcV9Ku0dHsd9aCk9BSeK4dYci2d2gjzL/1p/oaoJDOUGkAriqgvTp07E8nLfGTkc2ZxG",
+            "signature": "ASQ0ApdyF0xRK0DTu5xEqpWXfKGC9Qkcup8H/T3/R3PPFtjCRFyGqfccdv4WzLYGGrYRAg74P0MkF7ejx+zbpq/AANCz4ZqI5/KDiyP8UXBx5ZM72ymQTvzYgq8sAi1ACpSZ2rtreMMbq2DaWrJzjY64EhP3PCRaBiN1eRQ+yYbt6HMs",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -705,7 +705,7 @@
           {
             "path-destination": "request_redirect.py",
             "path-source": "server/request_redirect.py",
-            "signature": "AfQ0Ga4Lw/8qw6yyJyaZfGmK8rFCJap60gAuIDb3QU2luax85+7pVSw3qsZBNJbNWNXQGKGIRzHVm0qjxP1stTLZAecDseAzAmNvLF6mYke57IuUUIQUnwjynUeDNHR5bUpcBeqHJJ3Vsja+GnvayGfby7UydU/59o1vEyKlUfOyo5mU",
+            "signature": "AZLSM7dD0cFNr2oduQObHeIyEqaLXDGYua1zaUB+5fttIlpJVRrx+KV1AzwmW2QRR+aHa3FOfy58j1wfgi9w2pjaAAbSaIKS3m/z08NbSme8JxRT7KODwYiwNBpB0diUGUYZ2NfxwA4oFXxg9s97n7dGyssbgkfv2e11U+SyPytlbm74",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -748,8 +748,8 @@
       }
     ]
   },
-  "created": "2019-05-03T17:50:14.967427+00:00",
+  "created": "2019-05-06T21:11:11.359978+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AU3iTlMOxPqouD9cZ09HFU+8+zwfWvfo87mXFX8/Kg/qJcpTQ12vrTz9nO1muD1NB8S8/a6Z/O1gS6d1Rn5UNv0kADGW+SIL3ckpvOIn0oS3QI8YgXVlgthchc4pKpVHJm4hzjG0lBhg33+9Ts0rXXlXrBvOtrKrYMmc6k2Vxo+ueQtM",
+  "signature": "AImLUlYjewD/3JXKEtVm7+gkvAWqgVz3mG56Ny9HyMFRlhiPvQF49fie2zAgaRC3/BpJFQKY9j1NoH8wE3wV5/2BAECxDU3/I3SoawyV2FBDgMCU2pS5eJ6py/GaZzcQbNMdxLnXIn2KBTsHm3qkut3y3gM5pP+CvFjRWrNwn2I1weAE",
   "signed-by": "github.com/zeroSteiner"
 }

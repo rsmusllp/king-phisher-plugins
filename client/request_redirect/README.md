@@ -16,7 +16,8 @@ Configuration entries come in one of the following types:
   the specified CIDR range, it will be redirected to the specified target.
 
 ### Rule Symbols
-The following symbols are available for use in rules for matching requests.
+The following symbols are available for use in configuration entries to match
+incoming requests.
 
 | Symbol       | Type   | Description                                             |
 | ------------ | ------ | ------------------------------------------------------- |
@@ -43,7 +44,7 @@ Match GET requests for `robost.txt`:
 ### Configuration Exceptions
 To create an exception, create a rule earlier in the chain (with a lower index
 number) with an empty target. Configuration entries are evaluated in order, just
-like firewall rules, and the first one to match is the target that will be used.
+like firewall entries, and the first one to match is the target that will be used.
 An empty target an exception and will cause the matching to stop, and the
 request will be handled by the King Phisher server.
 

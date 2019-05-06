@@ -1,7 +1,6 @@
 import functools
 import ipaddress
 
-import king_phisher.plugins as plugin_opts
 import king_phisher.errors as errors
 import king_phisher.server.plugins as plugins
 import king_phisher.server.server_rpc as server_rpc
@@ -15,11 +14,12 @@ else:
 	has_rule_engine = True
 
 EXAMPLE_CONFIG = """\
-# the access level to require for users to change rules
+# the optional access level to require for users to change entries
 access_level_write: 1000
-rules:
-  # first rule is an exception because no target is specified
+entries:
+  # first entry is an exception because no target is specified
   - source: 192.168.0.0/16
+
   # second rule redirects all ipv4 addresses to google
   - source: 0.0.0.0/0
     target: https://www.google.com
@@ -85,55 +85,44 @@ class Plugin(plugins.ServerPlugin):
 		'verb': rule_engine.DataType.STRING,
 		'vhost': rule_engine.DataType.STRING,
 	}
-	options = [
-		plugin_opts.OptionInteger(
-			name='access_level_write',
-			description='An optional access level to require for changes to this plugin\'s data',
-			default=1000
-		),
-	]
 	def initialize(self):
 		self._context = rule_engine.Context(
 			resolver=_context_resolver,
 			type_resolver=rule_engine.type_resolver_from_dict(self.rule_types)
 		)
-		for idx, rule in enumerate(self.rules, 1):
-			if 'rule' in rule:
-				rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
-			elif 'source' in rule:
-				rule['source'] = ipaddress.ip_network(rule['source'])
-			else:
-				raise RuntimeError("rule #{0} contains neither a rule or source key".format(idx))
-			rule['permanent'] = rule.get('permanent', True)
-		signals.request_handle.connect(self.on_request_handle)
-		self.logger.info("initialized with {0:,} redirect rules".format(len(self.rules)))
-
-		rpc_api_base = '/plugins/request_redirect/'
-		server_rpc.register_rpc(rpc_api_base + 'entries/insert')(self._rpc_request_entries_insert)
-		server_rpc.register_rpc(rpc_api_base + 'entries/list')(self._rpc_request_entries_list)
-		server_rpc.register_rpc(rpc_api_base + 'entries/remove')(self._rpc_request_entries_remove)
-		server_rpc.register_rpc(rpc_api_base + 'entries/set')(self._rpc_request_entries_set)
-		server_rpc.register_rpc(rpc_api_base + 'permissions')(self._rpc_request_permissions)
-		server_rpc.register_rpc(rpc_api_base + 'rule_symbols')(self._rpc_request_symbols)
+		self._pending = set()
+		signals.server_initialized.connect(self.on_server_initialized)
+		signals.rpc_user_logged_out.connect(self.on_rpc_user_logged_out)
 		return True
 
-	def _process_rule(self, rule, index=None):
-		if 'rule' in rule:
-			rule['rule'] = rule_engine.Rule(rule['rule'], context=self._context)
-		elif 'source' in rule:
-			rule['source'] = ipaddress.ip_network(rule['source'])
+	def _entry_from_raw(self, entry, index=None):
+		entry = entry.copy()
+		if 'rule' in entry:
+			entry['rule'] = rule_engine.Rule(entry['rule'], context=self._context)
+		elif 'source' in entry:
+			entry['source'] = ipaddress.ip_network(entry['source'])
 		else:
-			raise RuntimeError("rule {}contains neither a rule or source key".format('' if index is None else '#' + str(index)))
-		return rule
+			raise RuntimeError("rule {}contains neither a rule or source key".format('' if index is None else '#' + str(index) + ' '))
+		entry['permanent'] = entry.get('permanent', True)
+		return entry
+
+	def _entry_to_raw(self, entry):
+		entry = entry.copy()
+		if 'rule' in entry:
+			entry['rule'] = str(entry['rule'])
+		if 'source' in entry:
+			entry['source'] = str(entry['source'])
+		return entry
 
 	@check_access_level
 	def _rpc_request_entries_insert(self, handler, index, rule):
-		rule = self._process_rule(rule, index)
-		self.rules.insert(index, rule)
+		rule = self._entry_from_raw(rule, index)
+		self.entries.insert(index, rule)
+		self._pending.add(handler.rpc_session_id)
 
 	def _rpc_request_entries_list(self, handler):
 		rules = []
-		for rule in self.rules:
+		for rule in self.entries:
 			rule = dict(rule)  # shallow copy
 			if 'rule' in rule:
 				rule['rule'] = rule['rule'].text
@@ -150,15 +139,24 @@ class Plugin(plugins.ServerPlugin):
 
 	@check_access_level
 	def _rpc_request_entries_remove(self, handler, index):
-		del self.rules[index]
+		del self.entries[index]
+		self._pending.add(handler.rpc_session_id)
 
 	@check_access_level
 	def _rpc_request_entries_set(self, handler, index, rule):
-		rule = self._process_rule(rule, index)
-		self.rules[index] = rule
+		rule = self._entry_from_raw(rule, index)
+		self.entries[index] = rule
+		self._pending.add(handler.rpc_session_id)
 
 	def _rpc_request_symbols(self, handler):
 		return {key: value.name for key, value in self.rule_types.items()}
+
+	def _store_entries(self):
+		self.logger.info("storing {:,} request redirect entries to the database storage".format(len(self.entries)))
+		self.storage['entries'] = [self._entry_to_raw(entry) for entry in self.entries]
+
+	def finalize(self):
+		self._store_entries()
 
 	def handler_has_write_access(self, handler):
 		access_level = self.config.get('access_level_write')
@@ -166,28 +164,51 @@ class Plugin(plugins.ServerPlugin):
 			return True
 		return handler.rpc_session.user_access_level <= access_level
 
-	@property
-	def rules(self):
-		if not 'rules' in self.config:
-			self.config['rules'] = []
-		return self.config['rules']
-
 	def on_request_handle(self, handler):
 		if handler.command == 'RPC' or handler.path.startswith('/_/'):
 			return
 		client_ip = ipaddress.ip_address(handler.client_address[0])
-		for rule in self.rules:
-			if 'rule' in rule and not rule['rule'].matches(handler):
+		for entry in self.entries:
+			if 'rule' in entry and not entry['rule'].matches(handler):
 				continue
-			if 'source' in rule and client_ip not in rule['source']:
+			if 'source' in entry and client_ip not in entry['source']:
 				continue
-			target = rule.get('target')
+			target = entry.get('target')
 			if not target:
 				self.logger.debug("request redirect rule for {0} matched exception".format(str(client_ip)))
 				break
 			self.logger.debug("request redirect rule for {0} matched target: {1}".format(str(client_ip), target))
-			self.respond_redirect(handler, rule)
+			self.respond_redirect(handler, entry)
 			raise errors.KingPhisherAbortRequestError(response_sent=True)
+
+	def on_rpc_user_logged_out(self, handler, session, name):
+		if session not in self._pending:
+			return
+		self._pending.remove(session)
+		self._store_entries()
+
+	def on_server_initialized(self, server):
+		entries = self.config.get('entries', [])
+		if entries:
+			self.logger.debug("loaded request redirect entries from the configuration".format(len(entries)))
+		else:
+			entries = self.storage.get('entries', [])
+			if entries:
+				self.logger.debug("loaded request redirect entries from the database storage".format(len(entries)))
+		self.entries = []
+		for idx, entry in enumerate(entries, 1):
+			self.entries.append(self._entry_from_raw(entry, idx))
+
+		signals.request_handle.connect(self.on_request_handle)
+		self.logger.info("initialized with {0:,} redirect entries".format(len(self.entries)))
+
+		rpc_api_base = '/plugins/request_redirect/'
+		server_rpc.register_rpc(rpc_api_base + 'entries/insert')(self._rpc_request_entries_insert)
+		server_rpc.register_rpc(rpc_api_base + 'entries/list')(self._rpc_request_entries_list)
+		server_rpc.register_rpc(rpc_api_base + 'entries/remove')(self._rpc_request_entries_remove)
+		server_rpc.register_rpc(rpc_api_base + 'entries/set')(self._rpc_request_entries_set)
+		server_rpc.register_rpc(rpc_api_base + 'permissions')(self._rpc_request_permissions)
+		server_rpc.register_rpc(rpc_api_base + 'rule_symbols')(self._rpc_request_symbols)
 
 	def respond_redirect(self, handler, rule):
 		handler.send_response(301 if rule['permanent'] else 302)
