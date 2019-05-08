@@ -30,9 +30,9 @@ def _context_resolver(handler, name):
 	if name == 'accept':
 		return handler.headers.get('Accept', '')
 	elif name == 'dst_addr':
-		return handler.socket.getsockname()[0]
+		return handler.server.socket.getsockname()[0]
 	elif name == 'dst_port':
-		return handler.socket.getsockname()[1]
+		return handler.server.socket.getsockname()[1]
 	elif name == 'path':
 		return handler.request_path
 	elif name == 'src_addr':
