@@ -1,4 +1,3 @@
-# PDF Generator
 This plugin wil take an HTML attachment and turn it into a PDF attachment when
 sending the email to a target.
 
