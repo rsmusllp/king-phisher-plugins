@@ -384,16 +384,16 @@
         "description": "Generates a PDF file from an html attachment that process client King Phisher Jinja variables allowing to embed links to your landing page so users that click the link in the PDF can be tracked when they visit.",
         "files": [
           {
-            "path-destination": "../../king-phisher-plugins/client/pdf_generator/README.md",
+            "path-destination": "pdf_generator/README.md",
             "path-source": "client/pdf_generator/README.md",
-            "signature": "AZubPmRpVi1oV1IAP5Sa3U/4qr5YP26ExVxe+fYOy3EAZCbTfMjeXisRoi831CUUuKnZZRO+6mLKBY1E59MKE9oEANxhq6Tc7ySCTqjHXGLmfHaPn9T0odurH9LNXZk09iVa9vFRNgfcxuoPw8qFZg6lPzrMYd5gAkJMnpZ+Ph5nZi1c",
-            "signed-by": "github.com/zeroSteiner"
+            "signature": "AQ4k0jiS5iFDRQCLmNm1/9Udi6NOCrlUf85+vVUOelPp7QmnpafWZDjAHo/WXacpsgc8WmYJ7gc/SLzptgfmaBUcALoNxuJYA/faGYt1h4uOAeFgNGCpIvD1llSnd59C3DJNfYda5WR5ahCPz2EPveTl3BjVVwlT4wrez3HY6DiBaFL+",
+            "signed-by": "github.com/wolfthefallen"
           },
           {
-            "path-destination": "../../king-phisher-plugins/client/pdf_generator/__init__.py",
+            "path-destination": "pdf_generator/__init__.py",
             "path-source": "client/pdf_generator/__init__.py",
-            "signature": "AbANQbOdI4V0Uv/qz8r3A4tFaCEBYOXzK1rsLYg2aZHqLUJPr4m25TWJ3P3Aei41Cc9RS3yVdEAtiVUn8WdHqrzhAGr/yL9Vvgk3zLKNtTOS2JrBoBZGXN4aZy2IIprK/v1J14ikz8lraIjVYUxNwBfD/9SEjAnt0MDCtnvygXk/QAGe",
-            "signed-by": "github.com/zeroSteiner"
+            "signature": "AcJ4b4hwwZstFWWJDBL/Hvva4MIizy3lbJNxAg9OGnLy6gOju43WAyqgWLZQMzZcy1m4bMN+AXSVKWqOafd0Up+cAe4u6chr3PTZMOxtSHslfMMrvtcl7udm5Kdikw7gW7VGr95LvmO5HTCwZ8QOnBdDZ5iXkpBqdAD/9E2UHXHuBR71",
+            "signed-by": "github.com/wolfthefallen"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -844,8 +844,8 @@
       }
     ]
   },
-  "created": "2019-05-08T15:31:10.605171+00:00",
-  "created-by": "github.com/zeroSteiner",
-  "signature": "AHSmXteRzg81ZPg4YzpXlk64UjBni5fMFVgZKn43kDh0EZs6qP6vnKje6TLsdIJ/K4dKg7vN1JZYzUrLUEmKXqE8AaXntkRkQGaLE5cUTaZy+oa2ttPV7th5DuPEaqb9SEIvquWeCJJsrKGeZo2uU/SmJP30TZRX/JWU5aK29PuhY/Pj",
-  "signed-by": "github.com/zeroSteiner"
+  "created": "2019-05-20T23:17:59.593321+00:00",
+  "created-by": "github.com/wolfthefallen",
+  "signature": "AYyQPdTHjmhk7NuHvjATLz7rScApiz8XsV5YmQUTOg/CZtTKefzrUdtci5yVUq3NXLFRPbSUlBuMxyOZyqjGfpYWAeTVMgTfrdnWOGhD2PamLHF9R1WzxE8n2BCTgEbs7LwV8rxB5n1QehnWD7vGTuLUdogZGdcJTmSndSMZJXmdJj7B",
+  "signed-by": "github.com/wolfthefallen"
 }

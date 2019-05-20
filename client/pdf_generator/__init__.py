@@ -28,8 +28,8 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	options = [
 		plugins.ClientOptionPath(
 			'css_stylesheet',
-			'css stylesheet to use for HTML to PDF',
-			display_name='css stylesheet',
+			'CSS stylesheet to use for HTML to PDF',
+			display_name='CSS stylesheet',
 			path_type='file-open'
 		)
 	]
@@ -72,8 +72,16 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		output_path, _ = os.path.splitext(output_path)
 		output_path += '.pdf'
 		formatted_message = None
-		with codecs.open(input_path, 'r', encoding='utf-8') as file_:
-			msg_template = file_.read()
+		try:
+			with codecs.open(input_path, 'r', encoding='utf-8') as file_:
+				msg_template = file_.read()
+		except UnicodeDecodeError as error:
+			gui_utilities.show_dialog_error(
+				'PDF Build Error',
+				self.application.get_active_window(),
+				"HTML template not in UTF-8 format.\n\n{error}".format(error=error)
+			)
+			return
 
 		try:
 			formatted_message = mailer.render_message_template(msg_template, self.application.config, target)
@@ -99,8 +107,12 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			)
 			return
 
-		if os.path.isfile(self.config.get('css_stylesheet')):
-			css_style = self.config['css_stylesheet']
+		css_stylesheet_path = self.config.get('css_stylesheet', '').strip()
+		if css_stylesheet_path:
+			if os.path.isfile(css_stylesheet_path) and os.access(css_stylesheet_path, os.R_OK):
+				css_style = css_stylesheet_path
+			else:
+				css_style = None
 		else:
 			css_style = None
 
@@ -110,5 +122,4 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			stylesheets=[css_style] if css_style else None,
 			presentational_hints=True
 		)
-
 		return output_path
