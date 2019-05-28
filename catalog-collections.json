@@ -375,17 +375,24 @@
       },
       {
         "authors": [
-          "Jeremy Schoeneman"
+          "Jeremy Schoeneman",
+          "Erik Daguerre"
         ],
         "classifiers": [
           "Plugin :: Client :: Email :: Attachment"
         ],
-        "description": "Generates a PDF file with a link which includes the campaign URL with the individual message_id required to track individual visits to a website. Visit https://github.com/y4utj4/pdf_generator for example template files to use with this plugin.",
+        "description": "Generates a PDF file from an html attachment that process client King Phisher Jinja variables allowing to embed links to your landing page so users that click the link in the PDF can be tracked when they visit.",
         "files": [
           {
-            "path-destination": "pdf_generator.py",
-            "path-source": "client/pdf_generator.py",
-            "signature": "APtrstsbA20r75huooSDlHv/JmJlAMErmalQZCmnFLrHkLz2sQPKHlAthEthm6sFo9/H7tizeY78qjQ/hO+5Me+lAH2Wxlp76RbKDHBB0o/ke68e9ItNzjx0U3IErYHCZ5BIDevTLlB2/Ukrezi2C5o2fW2+rCeWJ0c2KkzP2aVVmz9Z",
+            "path-destination": "pdf_generator/README.md",
+            "path-source": "client/pdf_generator/README.md",
+            "signature": "AKtgarYX/K3D8bMpkFD1RcoTXRpoMghMhnwkkexEC/GZpT2+FsZ/7gCBWpBnGPoLZ+UTcMrgxI8jAtgq+DO1awcsAcSulc7zI3MQ9cwKEKa05Z7c95KgyoPu7UFZfpZW7tczoLkxhao8J++donoZ5JvPiwK47KtbCVDeRZQWw9tKBzbX",
+            "signed-by": "github.com/zeroSteiner"
+          },
+          {
+            "path-destination": "pdf_generator/__init__.py",
+            "path-source": "client/pdf_generator/__init__.py",
+            "signature": "AYT3yrO4gmGkfzR/3XN+/krITEX06XGQ8UggKW18rMIlsiP9SOu3x4WuXW0hoaSglGqSsMtvdMBybBfyPJECzsPcATsHI8S2Xl1aGkn3LxMrTig3bkHWmSA0N9dXK2K0eYG7FvzBvS0VOC5715nI0g8UTu5tRUeUztl60Tp7H5aU5ets",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -394,11 +401,11 @@
         "requirements": {
           "minimum-version": "1.8.0",
           "packages": [
-            "reportlab"
+            "weasyprint==47"
           ]
         },
         "title": "Generate PDF",
-        "version": "1.1"
+        "version": "2.0"
       },
       {
         "authors": [
@@ -837,8 +844,8 @@
       }
     ]
   },
-  "created": "2019-05-01T15:05:21.709825+00:00",
+  "created": "2019-05-28T19:07:16.912564+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AbJTGyWj2f5Nj2jzJQzOTA8EGM8xThBw7agRcRUDp0rF7iPmvsI4VehdpZYRVi+u1FjnNeMZ9LNcFKdGXMVOKu/RAE6S0eT56S0rH5q7WuqdCV2/5hzt59wk/pNj2vBVAJbSiASKTSYsbtQrWTNB+tgtgzKWOTMSjDscGDT1djHjsXF7",
+  "signature": "AHM1tLxKe810PxiRzm6zheb/JYxOsCGtt+YzlZ8lSFu0lKJv9DoDASWezzUHKY1kkeGon0GNr/KV5NCo9jqZIyJeAUqzUabfvzSUFtF/Vot5wZDhKwz0f12ELWC/WEMjLdjkhu2hiVdNR9a0U66zQMkWwqRKN2p2FjT5rMP65fWoOhSw",
   "signed-by": "github.com/zeroSteiner"
 }
