@@ -386,14 +386,14 @@
           {
             "path-destination": "pdf_generator/README.md",
             "path-source": "client/pdf_generator/README.md",
-            "signature": "AQ4k0jiS5iFDRQCLmNm1/9Udi6NOCrlUf85+vVUOelPp7QmnpafWZDjAHo/WXacpsgc8WmYJ7gc/SLzptgfmaBUcALoNxuJYA/faGYt1h4uOAeFgNGCpIvD1llSnd59C3DJNfYda5WR5ahCPz2EPveTl3BjVVwlT4wrez3HY6DiBaFL+",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AKtgarYX/K3D8bMpkFD1RcoTXRpoMghMhnwkkexEC/GZpT2+FsZ/7gCBWpBnGPoLZ+UTcMrgxI8jAtgq+DO1awcsAcSulc7zI3MQ9cwKEKa05Z7c95KgyoPu7UFZfpZW7tczoLkxhao8J++donoZ5JvPiwK47KtbCVDeRZQWw9tKBzbX",
+            "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "pdf_generator/__init__.py",
             "path-source": "client/pdf_generator/__init__.py",
-            "signature": "AcJ4b4hwwZstFWWJDBL/Hvva4MIizy3lbJNxAg9OGnLy6gOju43WAyqgWLZQMzZcy1m4bMN+AXSVKWqOafd0Up+cAe4u6chr3PTZMOxtSHslfMMrvtcl7udm5Kdikw7gW7VGr95LvmO5HTCwZ8QOnBdDZ5iXkpBqdAD/9E2UHXHuBR71",
-            "signed-by": "github.com/wolfthefallen"
+            "signature": "AYT3yrO4gmGkfzR/3XN+/krITEX06XGQ8UggKW18rMIlsiP9SOu3x4WuXW0hoaSglGqSsMtvdMBybBfyPJECzsPcATsHI8S2Xl1aGkn3LxMrTig3bkHWmSA0N9dXK2K0eYG7FvzBvS0VOC5715nI0g8UTu5tRUeUztl60Tp7H5aU5ets",
+            "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -844,8 +844,8 @@
       }
     ]
   },
-  "created": "2019-05-20T23:17:59.593321+00:00",
-  "created-by": "github.com/wolfthefallen",
-  "signature": "AYyQPdTHjmhk7NuHvjATLz7rScApiz8XsV5YmQUTOg/CZtTKefzrUdtci5yVUq3NXLFRPbSUlBuMxyOZyqjGfpYWAeTVMgTfrdnWOGhD2PamLHF9R1WzxE8n2BCTgEbs7LwV8rxB5n1QehnWD7vGTuLUdogZGdcJTmSndSMZJXmdJj7B",
-  "signed-by": "github.com/wolfthefallen"
+  "created": "2019-05-28T18:57:47.821728+00:00",
+  "created-by": "github.com/zeroSteiner",
+  "signature": "AMSGlfYfusevOhKyuJWMt/7bWMzoGv6pFRem+I/cs1A2DYXX9+8Scf9D4ryT7nmZUoqW7U1rAfZ4rVwLkTHcbaqJADZOI5EO8RzimPCNYLyEbjlqoWQ0DENgnMYX6astsJ5jrkBoqyVqAu1HwclqCxn0Je4QbkJ7lSIJuERNAdM7wQ9L",
+  "signed-by": "github.com/zeroSteiner"
 }

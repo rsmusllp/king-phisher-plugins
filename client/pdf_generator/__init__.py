@@ -39,13 +39,15 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	}
 	version = '2.0'
 	def initialize(self):
-		mailer_tab = self.application.main_tabs['mailer']
 		self.add_menu_item('Tools > Create PDF Preview', self.make_preview)
 		return True
 
 	def make_preview(self, _):
+		mailer_tab = self.application.main_tabs['mailer']
+		config_tab = mailer_tab.tabs['config']
+		config_tab.objects_save_to_config()
 		input_path = self.application.config['mailer.attachment_file']
-		if not os.path.isfile(input_path) and os.access(input_path, os.R_OK):
+		if not (os.path.isfile(input_path) and os.access(input_path, os.R_OK)):
 			gui_utilities.show_dialog_error(
 				'PDF Build Error',
 				self.application.get_active_window(),
@@ -54,7 +56,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			return
 
 		dialog = extras.FileChooserDialog('Save Generated PDF File', self.application.get_active_window())
-		response = dialog.run_quick_save('preview.pdf')
+		response = dialog.run_quick_save('PDF Preview.pdf')
 		dialog.destroy()
 		if response is None:
 			return
@@ -71,7 +73,6 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	def process_attachment_file(self, input_path, output_path, target=None):
 		output_path, _ = os.path.splitext(output_path)
 		output_path += '.pdf'
-		formatted_message = None
 		try:
 			with codecs.open(input_path, 'r', encoding='utf-8') as file_:
 				msg_template = file_.read()
@@ -107,14 +108,12 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			)
 			return
 
-		css_stylesheet_path = self.config.get('css_stylesheet', '').strip()
-		if css_stylesheet_path:
-			if os.path.isfile(css_stylesheet_path) and os.access(css_stylesheet_path, os.R_OK):
-				css_style = css_stylesheet_path
-			else:
+		css_style = self.config.get('css_stylesheet')
+		if css_style:
+			css_style = css_style.strip()
+			if not (os.path.isfile(css_style) and os.access(css_style, os.R_OK)):
+				self.logger.warning('invalid css file path: ' + css_style)
 				css_style = None
-		else:
-			css_style = None
 
 		weasyprint_html = HTML(string=formatted_message, base_url=os.path.dirname(input_path))
 		weasyprint_html.write_pdf(
