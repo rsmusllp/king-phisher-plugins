@@ -124,6 +124,11 @@ class DirectoryBase(object):
 		self._tv_model_filter.set_visible_func(self._filter_entries)
 		self.refilter = self._tv_model_filter.refilter
 		self._tv_model_sort = Gtk.TreeModelSort(model=self._tv_model_filter)
+		self._tv_model_sort.set_sort_func(
+			_ModelNamedRow._fields.index('ts_modified'),
+			gui_utilities.gtk_treesortable_sort_func,
+			_ModelNamedRow._fields.index('ts_modified')
+		)
 		self.treeview.set_model(self._tv_model_sort)
 
 		self._wdcb_model = Gtk.ListStore(str)  # working directory combobox

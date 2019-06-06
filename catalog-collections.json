@@ -457,43 +457,43 @@
           {
             "path-destination": "sftp_client/__init__.py",
             "path-source": "client/sftp_client/__init__.py",
-            "signature": "AUwhxBZSRlb7CL+my7KuWJ3fJSdUk9WlO9a04wX3CeB6ArG+XmoK9daV/h27rB15K0UrgMKF4hwo0VYJtMxUCkvTASAdKnCQzgkGalflGCw71sD2+Rx4H1TH9AB7HRyEBclTy+v2lGK/WFGs2PSv5nEFidfJMxt7Nb7y9vrItifYUB74",
+            "signature": "ASWtv3L/oJJjbpzUTHZmQoMRYev71QB+f1ra3M/fNe+uQd9at0kgZimwbj8gHUUKTV9naejHaBOpvnUPP6BVcf7fATL5bFDH7GYTbcSaX+78w3QvAdK8yvRqgUhVJgkshhWAtO0hMGL1EJ5ULS/YisoqrHkBULPsN+9OgxJxgxKoFiTO",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/client.py",
             "path-source": "client/sftp_client/client.py",
-            "signature": "Ab+ygwZyzNfCLc/sq2umZ7eCr8KW7tzSNn/Y+agtnUH3bsYxDPIoz/bAdN5CAYmFMQep9eR0zKJlDI434GjspRZEAWfa7T7o9oD77SIIyPUzpbUeLrbIFspFVrAvuqgz3+plu24XCsM3dg+6oeTOiNmLQjdKtalV834DQWShlK+I+4mg",
+            "signature": "AUeIvztNpbfZLidbU0pi73XQGEkiwBclQRWcuZ0FyC7F1wXmXYMETRVJ7mLWIkB4ohrowFUSsDMGZh1bjSXI3ShkABZjphqHVKPQNXdkoAZqpG/9vN8f6Uv8Nrx/UA/kGNK0z7UknW1ZY7oQd3ds+a82Tf0NMAs4+PNaNxGRlvTNBRfR",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/directory.py",
             "path-source": "client/sftp_client/directory.py",
-            "signature": "ATjMg/l/KCDwJiXQtny0vBmhmwYkfIVWjElEpdi9ZEuDjXARCe2uBrsOOe92zml1aDnAMLFeQV5Es6mYz394c2GEABQHc/tufRlOeZ3zbXx3pbX9A063VPh/U00c/fLRcgw0aFt1pbEOA1Zqz/HNgZqv85Ta7yO5VWga47WObrU/KvA4",
+            "signature": "ARaHCKsowNUpZt5pClFnFmfpokmsE02khxHzpH2YGCU2N1PXorZazxAoqw+wMwIjj/F9Hs3yfaxKYbG7lwmZpGddATH3XKiBNlg/blUlxghBUa5u7OolQY8sBN99l3LgcyhYJndgeownemAC1Wr6LZiZ+Bp0yUiLQVEsbBO0tH1EbKEi",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/editor.py",
             "path-source": "client/sftp_client/editor.py",
-            "signature": "AEN8ciyUZ1B/Ota93gkyAhoV1Lu24MpiAakC1tkgH/OhrVaFXu9E+6lAEsOS0U3v9UkjeEcTwiJhMnZgUVVPw4/LAGGIrB36jbL67CkVgddPiA4rjzbo+MQHLxwrUiWOqqXbbN6IQYRr58oNV5CnOKdVsjT3w/cvWS91OeZB0nhRKhm4",
+            "signature": "AT0aYZ3wJJ7wc5ft+Ct415kdPj9LLY/3KOe6BIJkBbdfCTTrVfYsvfgn+8qjXeqrnZf+u5que+NoXDDhPFYN3uJVAGKpEzsH9xHWijgmQuEnRH/Plxp5+kYNkwrhOgXkJVYBNMvmYUSNn2F/T5uaf/m1TvvdX/z1dj0a11QMLnswDcpD",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_client.ui",
             "path-source": "client/sftp_client/sftp_client.ui",
-            "signature": "AdXcjyDojfg+s8iygTov7s+l4c4fXTQy/idumO0aNHA4gpcHaHioxWEclW9tN8oi+DqCayr3K4ozQ4dUYGpwlKn8ACUkmbFGDf286qvVNuZcWV5yixqphfSXn3Phd9K4edJMEDC2E2w33Rxjk+d+LN8FSrLRohpdklJsQPdUEPYGK1Rk",
+            "signature": "AYDZbwZLh/6zNrCMJLS8IOQZhClA26kQKk64P1amuOaBku1kdaII19vqjb/L2sAd//7jXx5baGqa05Q5tGJ8PTDXARhdpq+jl6DgLiaC21AfG3srUOarC87PKTl8VpOt0VnJLIQ3j53me+zbtA8J0ZMFADUW7zDcSI0sCKtMPs++hkuD",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/sftp_utilities.py",
             "path-source": "client/sftp_client/sftp_utilities.py",
-            "signature": "AFLQ/6JFWT0BjW4rrTqmBZU3MGyRpesYw9k9iMz2aWiinFwvRbqaqYk4TDaa47zRYzUBfx8cvJUTKDJbpg6wTGzgANOUt5zH0sQHMq9NcOWKeXqasMx9uCjKxeNdLlMXHmznpl4HHgGK8RVXscXpFCEof0JcZeDwYCpfG+Dmg7Cu9LTJ",
+            "signature": "AVLosE0VqH/w6uiES9RevWyoA7uwTMuoa15Rq3YxqmqfHtYr/XfuWmKSPdagPvLZ5BCLYoczsMGswqQkDCIRaalUAECPnB3h1tBAS7Wy5fbiCuxLqc2vOpSf3Ta8i9pjBUo6sfC4RZ+fdoYAen8zWfBS1mT7yPWKSmkXpYJpRB44H/eH",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "sftp_client/tasks.py",
             "path-source": "client/sftp_client/tasks.py",
-            "signature": "ACggf1qpp95/X6sQypXRV7zcyaZiEbUGuhl7yFYjPhxHBPzNQ/bT2kEARmkWS5ajX3GimF+nZaZNlLMYZ5WytVyZABlRlFxfhxEaYMBn0+l9Em4+6BUBSiumjqCR9wwuh2MSy/D+fD2ilFh/sv2K2FjggrazDSk5+Uq8cGHC80E4XwHy",
+            "signature": "AOWJjGOT94VOAhN8XPz/YU7wTt3cw+xKDelrwyUs/JbWqFVdXBebbGH6DgiCftifyQVt63mloC4d3zFuN/7/qQseAVkZgYdKnC6OZaXr0u6gUDespe8UzbcooSPX4A0f8Y3NTBOOrONWIJwlDjAJCjuUV3UC+K1CkoJa4qPxMwVuq1cl",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -503,7 +503,7 @@
           "minimum-version": "1.13.0"
         },
         "title": "SFTP Client",
-        "version": "1.3.5"
+        "version": "1.3.6"
       },
       {
         "authors": [
@@ -844,8 +844,8 @@
       }
     ]
   },
-  "created": "2019-05-28T19:07:16.912564+00:00",
+  "created": "2019-06-06T13:16:48.194587+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AHM1tLxKe810PxiRzm6zheb/JYxOsCGtt+YzlZ8lSFu0lKJv9DoDASWezzUHKY1kkeGon0GNr/KV5NCo9jqZIyJeAUqzUabfvzSUFtF/Vot5wZDhKwz0f12ELWC/WEMjLdjkhu2hiVdNR9a0U66zQMkWwqRKN2p2FjT5rMP65fWoOhSw",
+  "signature": "AEmf2oYRn2i5kyM8Y7NLZGr5s391cawL6SaT1gal3p2SPNvrKtL6IM+cqyhcDABTyM3ilXs2lK7p7aGBy52AnkAAAH+FDD3W0A+41vc3JtyeMy7S/QqjpOAGPSZ4HOAwyaJUamqq0MDGIGZzHbZxjgKztYlcxI1OfZAIX59CYr61X/B9",
   "signed-by": "github.com/zeroSteiner"
 }
