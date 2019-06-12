@@ -32,7 +32,7 @@ class LogInformation(object):
 class Plugin(plugins.ServerPlugin):
     authors = ['Skyler Knecht']
     classifiers = ['Plugin :: Server']
-    title = 'Message Details'
+    title = 'Message Information'
     description = """
     A plugin that analyzes message information to provide clients 
     message status and details.
