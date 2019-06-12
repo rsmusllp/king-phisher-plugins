@@ -1,7 +1,8 @@
 import collections
 import re
-import threading
 import os
+import time
+import threading
 
 import king_phisher.server.database.manager as db_manager
 import king_phisher.server.database.models as db_models
@@ -9,7 +10,7 @@ import king_phisher.server.fs_utilities as fs_utilities
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.plugins as plugins
 import king_phisher.server.signals as signals
-
+import king_phisher.utilities as utilities
 
 EXAMPLE_CONFIG = """\
   log_file_location: /var/log/mail.log
@@ -32,7 +33,7 @@ class LogInformation(object):
 class Plugin(plugins.ServerPlugin):
     authors = ['Skyler Knecht']
     classifiers = ['Plugin :: Server']
-    title = 'Message Information'
+    title = 'Postfix Message Information'
     description = """
     A plugin that analyzes message information to provide clients 
     message status and details.
@@ -59,48 +60,60 @@ class Plugin(plugins.ServerPlugin):
         return True
 
     def on_server_initialized(self, server):
-        parse_thread = threading.Thread(target=self.check_file_change)
-        parse_thread.start()
+        self._worker_thread = utilities.Thread(target=self.check_file_change, args=(self.config['log_file_location'],))
+        self._worker_thread.start()
 
-    def check_file_change(self):
-        old_file_contents = self.get_log_contents()
-        while True:
-            new_file_contents = self.get_log_contents()
-            if old_file_contents != new_file_contents:
+    def finalize(self):
+        self._worker_thread.stop()
+        self._worker_thread.join()
+
+    def check_file_change(self, file):
+        old_modified_time = self.get_modified_time(file)
+        old_file_contents = self.get_file_contents(file)
+        while self._worker_thread.stop_flag.is_clear():
+            new_modified_time = self.get_modified_time(file)
+            if old_modified_time < new_modified_time:
+                new_file_contents = self.get_file_contents(file)
                 self.post_to_database(self.parse_logs(new_file_contents))
-                old_file_contents = new_file_contents
-
-    def get_log_contents(self):
-        with open(self.config['log_file_location'], 'r') as log_file:
-            data = log_file.read()
-            return data.split('\n')
+                old_modified_time = new_modified_time
+            time.sleep(5)
 
     @staticmethod
-    def parse_logs(log_file):
+    def get_modified_time(file):
+        return os.stat(file).st_mtime
+
+    @staticmethod
+    def get_file_contents(file):
+        with open(file, 'r') as log_file:
+            return log_file.readlines()
+
+    def parse_logs(self, log_lines):
         results = {}
-        for line in log_file:
+        for line_number, line in enumerate(log_lines, 1):
             log_id = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<log_id>[0-9A-Z]{7,12}):\s+', line)
-            if log_id:
-                log_id = log_id.group('log_id')
-                message_id = re.search(r'message-id=<(?P<mid>[0-9A-Za-z]{12,20})@', line)
-                status = re.search(r'status=(?P<status>[a-z]+)\s', line)
-                details = re.search(r'status=[a-z]+\s\((?P<details>.+)\)', line)
-                if log_id not in results and message_id:
-                    results[log_id] = LogInformation(message_id=message_id.group('mid'))
-                if log_id in results and status:
-                    results[log_id].statuses.append(status.group('status'))
-                if log_id in results and details:
-                    results[log_id].message_details = details.group('details')
+            if not log_id:
+                self.logger.warning('failed to parse postfix log line: ' + str(line_number))
+                continue
+            log_id = log_id.group('log_id')
+            message_id = re.search(r'message-id=<(?P<mid>[0-9A-Za-z]{12,20})@', line)
+            status = re.search(r'status=(?P<status>[a-z]+)\s', line)
+            details = re.search(r'status=[a-z]+\s\((?P<details>.+)\)', line)
+            if log_id not in results and message_id:
+                results[log_id] = LogInformation(message_id=message_id.group('mid'))
+            if log_id in results and status:
+                results[log_id].statuses.append(status.group('status'))
+            if log_id in results and details:
+                results[log_id].message_details = details.group('details')
         return results
 
     @staticmethod
     def post_to_database(results):
         session = db_manager.Session
-        for line in results.values():
-            message = session.query(db_models.Message).filter_by(id=line.message_id).first()
+        for log_info in results.values():
+            message = session.query(db_models.Message).filter_by(id=log_info.message_id).first()
             if message:
-                if line.message_status:
-                    message.delivery_status = line.message_status
-                    message.delivery_details = line.message_details
+                if log_info.message_status:
+                    message.delivery_status = log_info.message_status
+                    message.delivery_details = log_info.message_details
                     session.add(message)
         session.commit()
