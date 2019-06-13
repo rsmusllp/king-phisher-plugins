@@ -58,7 +58,7 @@ class Plugin(plugins.ClientPlugin):
 	Edit entries for the server "Request Redirect" plugin.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher'
-	req_min_version = '1.14.0b0'
+	req_min_version = '1.14.0b1'
 	version = '1.0.0'
 	def initialize(self):
 		self.window = None

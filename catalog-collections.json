@@ -360,34 +360,34 @@
         "description": "Edit entries for the server \"Request Redirect\" plugin.",
         "files": [
           {
-            "path-destination": "../../king-phisher-plugins/client/request_redirect/README.md",
+            "path-destination": "request_redirect/README.md",
             "path-source": "client/request_redirect/README.md",
-            "signature": "AJ1SfPwZDUsNo5xLOFJzYWCuKuRA+w0U+NMbczn8Ue49V3hJsoPeDGUj+w905BwNhwneIMoWr+Ph4p3X0EuLq/1iAGGpVuJOM9zq3bboQl/mM/LV5FCfx9Sde0DLQMu194i05KZxur228Eole1ftMxuhDfvnPhG/n4X3d6hc+i1iweLc",
+            "signature": "Afqh6544pgSNp4JI6aL1KpnimZXpAjmorT2akNwsLOMoYS5RGJNYSvwljlO7+uKiw9DBJooNQPOAyTrRS4zIzvtAAdXSO047RZVOkI7rBYt4D5bbClwuDwCoNC3p9UeKlUe1TB3LkTSzZyR3jPC05strSFKWliYhTTbD8HRTvGII0/U3",
             "signed-by": "github.com/zeroSteiner"
           },
           {
-            "path-destination": "../../king-phisher-plugins/client/request_redirect/__init__.py",
+            "path-destination": "request_redirect/__init__.py",
             "path-source": "client/request_redirect/__init__.py",
-            "signature": "AA3UGbxzpBht0AmSo5gHzWQDiq9hfYdH5NNTP83jBDBv7GZCViDui/Ui5tvgj9cSfPR4OktlKR0Bl0p7AEVIsTdYAJV9xjrunZ5VVqbPAy7JWdPBrC4yjKPUMxw3gTr+RR4h9VSFtYDDb2pnm5Rifslc07lA5vey7T/BXiPLWapFj6Ah",
+            "signature": "ARSVyR0TwFCM2OwfguSILENRZkO1yd47AWkCOOI0zQavuF3sOVjabEAUxxiUJh5EKlkrFiOhjOfGb+aUU1KIvFAoAeHFJ0A7Cx+l8M+eaQUhD+cEw81YsA4M1Tde0Q6U/Jv9h5il3fuXnFDknKOqYPXxdRjyeRgM4tQZyDTmwB89ZFCA",
             "signed-by": "github.com/zeroSteiner"
           },
           {
-            "path-destination": "../../king-phisher-plugins/client/request_redirect/request_redirect.ui",
+            "path-destination": "request_redirect/request_redirect.ui",
             "path-source": "client/request_redirect/request_redirect.ui",
-            "signature": "AZV0z1UzXu/uEzzKEq1ctOlPsv1G7BdmI1VYc4zuF+HJ84VD0RNRoVyZ9J/HKfjjs/9so4c0dTUW/kB3vVmYsc4uASRmITMc2Wvi8lJnT3G7NX7JqGHYpvt6M3Sx1GnaIQt36CreLCoSF50rD5kg9BBPov9zGM1uMd0n9uw0vsn2b5SK",
+            "signature": "AFvJQdxPaiab5nN3qEijVEzNc0vsQHWS8x1/76kmBhlqz6PkWcfwnVvRbzuA5/G4aHoZjI355l8eurWwdY4/HBpcAfWYc79GHLikcMpLmnqTlLxPVxbgbo6Sq6uEyoK+yU5AhKfkdQojguK6sxKgASjOVpvVdtg1OnX0FdZtcl2oYiQL",
             "signed-by": "github.com/zeroSteiner"
           },
           {
-            "path-destination": "../../king-phisher-plugins/client/request_redirect/schema.json",
+            "path-destination": "request_redirect/schema.json",
             "path-source": "client/request_redirect/schema.json",
-            "signature": "AQMxQ1Ydpfwfo93eDP7Bm2AUemdsx0lcEAi4O90x81D7w9/oHvLcL5tCB16S3+oiqD5s1sEqa8fxVjYLtr8B2D+yAXsM2lgXn277NrFAnmV9AqSmC+W6zEy3Y9LfSbrKb9zTkHXK1dR/g/bPrUhWmnlsZ23U9JmgotXnZ03TBC6R0K8b",
+            "signature": "AQWoEYwTh6lnOgknB1476EMxFAcifFHbitSuSqjqxSoEnLP9TeoJz1gbAlkcgivSql87551xRVTlY1Wm4adulwoMARriN8WpMmKA/SDWxyusNRvbMFfHm0JboxgR42+W5DfXID8eO1Kr1i9h+q8IOX84fVxDZSZ76aCPOJHnIDfvmENZ",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher",
         "name": "request_redirect",
         "requirements": {
-          "minimum-version": "1.14.0b0"
+          "minimum-version": "1.14.0b1"
         },
         "title": "Request Redirect",
         "version": "1.0.0"
@@ -748,8 +748,8 @@
       }
     ]
   },
-  "created": "2019-05-08T14:02:03.151317+00:00",
+  "created": "2019-06-13T13:47:07.839031+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "ATw5O6xASTwAJd2UH6ifkWHUYKJU3JnoELDBkxmcUrsc60qE0wveS3zsQl7ue1nVkjcmjzViPvHaBribFxWnhH3iAcKSu1nUxfVaFu25e9gyFjRIFnGBvfBmETWABgPfmzvM+Fmly1JaItOVHe6EqNnSY1f2j9yEP7fJ27Vnk01n+NzM",
+  "signature": "AJ55XEcHtDNwzan6vdZw1Qx0ZrcdI3k31/fbW2O1Wmafa5LfNR0EvkAv/vUqQCGppfRUo3H8QDzDlJySh91joaOpAJteYhe/nB6hTsBiF5SL1KBu1EMnBl4uO0bcrnF55rMpMpkD6NdpUNgOpgoQqmvDhSZcJcddREDVv8TUqOSQaAFs",
   "signed-by": "github.com/zeroSteiner"
 }
