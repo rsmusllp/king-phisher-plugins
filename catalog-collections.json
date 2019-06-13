@@ -766,6 +766,30 @@
       },
       {
         "authors": [
+          "Skyler Knecht"
+        ],
+        "classifiers": [
+          "Plugin :: Server"
+        ],
+        "description": "A plugin that analyzes message information from the postfix logs to provide King Phisher clients message status and detail information.",
+        "files": [
+          {
+            "path-destination": "postfix_message_info.py",
+            "path-source": "server/postfix_message_info.py",
+            "signature": "AETt3gfoBwQuh94l1qf9CQ8uRZd+eesqH/Vwhp+1lgoyDoschAe2BJKOUSwPa+zFpHuLvapIPSoIGOF9C47JZ9U0ACUnvUlFj4kWVvOwZD8K5NLoqIuKivQS2YXaB/jt7JQC5s4WsqRMY/DrL61XCL0yKQohfVM5ypb93dk0NnoNuDHs",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "postfix_message_info",
+        "requirements": {
+          "minimum-version": "1.14.0b1"
+        },
+        "title": "Postfix Message Information",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Brandan Geise"
         ],
         "classifiers": [
@@ -844,8 +868,8 @@
       }
     ]
   },
-  "created": "2019-06-06T13:16:48.194587+00:00",
+  "created": "2019-06-13T13:32:25.286737+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AEmf2oYRn2i5kyM8Y7NLZGr5s391cawL6SaT1gal3p2SPNvrKtL6IM+cqyhcDABTyM3ilXs2lK7p7aGBy52AnkAAAH+FDD3W0A+41vc3JtyeMy7S/QqjpOAGPSZ4HOAwyaJUamqq0MDGIGZzHbZxjgKztYlcxI1OfZAIX59CYr61X/B9",
+  "signature": "ACyhTzqkUqIvrRCRAQDh6WdMQ9twSfX/TQWP8luwseWPnls68Y7ZhcdRGkEehcomoy4d6usGFK+WFC4TbgvV1sRXAbfHwIkf+q1bDFvX8bPY7tMRvuXsBhQCxOrhxJ9dHPFzmWxMaTj7IlKZ79jyn5vOZWDIIQIIZzuUKuDq2vz5HTHX",
   "signed-by": "github.com/zeroSteiner"
 }
