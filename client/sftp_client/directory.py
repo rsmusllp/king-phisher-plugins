@@ -384,7 +384,10 @@ class DirectoryBase(object):
 
 	def signal_tv_button_press(self, _, event):
 		if event.button == Gdk.BUTTON_SECONDARY:
-			_, treeiter = self.treeview.get_selection().get_selected()
+			model, treeiter = self.treeview.get_selection().get_selected()
+			if treeiter:
+				named_row = _ModelNamedRow(*model[treeiter])
+				self.menu_item_edit.set_sensitive((named_row.st_mode & stat.S_IFDIR) == 0)
 			sensitive = treeiter is not None
 			for menu_item in self._menu_items_req_selection:
 				menu_item.set_sensitive(sensitive)
