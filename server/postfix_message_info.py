@@ -2,7 +2,6 @@ import collections
 import re
 import os
 import time
-import threading
 
 import king_phisher.plugins as plugin_opts
 import king_phisher.server.database.manager as db_manager
@@ -50,6 +49,7 @@ class Plugin(plugins.ServerPlugin):
 			default='/var/log/mail.log'
 		)
 	]
+
 	def initialize(self):
 		log_file = self.config['log_file']
 		setuid_username = self.root_config.get('server.setuid_username')
@@ -88,6 +88,10 @@ class Plugin(plugins.ServerPlugin):
 	def parse_logs(self, log_lines):
 		results = {}
 		for line_number, line in enumerate(log_lines, 1):
+			# Checks for SMTP connects/disconnects and suppresses them from being logged to prevent log spam.
+			smtp_connections = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<connection_status>[a-z]{7,12}):\s+', line)
+			if smtp_connections.connection_status == 'connect' or smtp_connections.connection_status == 'disconnect':
+				continue
 			log_id = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<log_id>[0-9A-Z]{7,12}):\s+', line)
 			if not log_id:
 				self.logger.warning('failed to parse postfix log line: ' + str(line_number))
