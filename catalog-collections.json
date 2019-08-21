@@ -361,7 +361,7 @@
           {
             "path-destination": "office_metadata_remover.py",
             "path-source": "client/office_metadata_remover.py",
-            "signature": "AQnJ+PF2EWjxRK4G3/fKbDTI3ByBi5Xbolr3dH6V5GNB8z+WGOhF1E5+WSeaOif6vOHQPp2CJkq9w3Js2qWVpVEIAQ95OVklWDRBzIEIDnkwuvQ5FJC729vdua2qM2qDLJLmWNYDWDOEmmoee+vzbUyRyOBFt1mRfJze6UyvuqGmrpBS",
+            "signature": "ATAax/hK7Q8pI1Z5iHdPnW4W3OVt0/l48tvaLbJpmUpwpv/BdBvIoY94riBpk09EJ6yga6/LOuJsZobV92xgWGdUAdk8+VFGs7U+g33ija3Ux17ca35kUgVmBcBkjY5bnyzJhJgffhFs+OF6N7gmqs2EacQh7Iw4jyLZxNFlXQzFM2w7",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -371,7 +371,7 @@
           "minimum-version": "1.9.0"
         },
         "title": "Office 2007+ Document Metadata Remover",
-        "version": "1.0"
+        "version": "1.0.1"
       },
       {
         "authors": [
@@ -916,8 +916,8 @@
       }
     ]
   },
-  "created": "2019-08-21T15:55:30.060186+00:00",
+  "created": "2019-08-21T17:15:37.744528+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AbabcSs6j+12T7AZPo/8iCt/rJv+QQjRFYlDAp2JTfKI+GNSIs+HGJMGRueBGQmx/sf2mmeNxYSKsRX5Sj5SbBgpAe2/9YQKXKK+B7/Kw7dO0cTEUenSKs4EXMz0OqDHFvA/U5OCZjvl/sfvkfFKUKBwzKlwI05JjhycPhwlvRK83saW",
+  "signature": "ASo9qjAtP7NL8A2hLPLTYXzq4eopXTYvKMxLwNjY01Gnu4KW6NAwrdK5KiHQJv/fXORXVhjR2tq7VNEG8M3dHQyqAJaaNzzn7UcnyKH3QuHHIEwSUlMtKhPKUwpMgzjwWYpXFuWZ/tU0UzH0W7Sbb9TS1f20eAgk883e382hHGnBGq2K",
   "signed-by": "github.com/zeroSteiner"
 }

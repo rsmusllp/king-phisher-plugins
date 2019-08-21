@@ -57,7 +57,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	req_min_version = '1.9.0'
-	version = '1.0'
+	version = '1.0.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
@@ -78,8 +78,9 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 
 def main():
 	parser = argparse.ArgumentParser(description='Office 2007+ Document Metadata Remover Utility', conflict_handler='resolve')
-	parser.add_argument('-i', '--input', dest='input_file', required=True, help='the input file whose metadata is to be removed')
+	parser.add_argument('input_file', help='the input file whose metadata is to be removed')
 	parser.add_argument('-o', '--output', dest='output_file', help='the output file to write')
+	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: ' + Plugin.version)
 	parser.epilog = PARSER_EPILOG
 	arguments = parser.parse_args()
 
