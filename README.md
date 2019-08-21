@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2019-08-20 21:55:21 -->
+<!-- generated at: 2019-08-21 15:55:30 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's

