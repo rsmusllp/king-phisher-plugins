@@ -15,6 +15,9 @@ EXAMPLE_CONFIG = """\
   log_file: /var/log/mail.log
 """
 
+#Reduce debuging log lines L96:L98
+#LOG_LINE_BLACKLIST = ['connect from localhost', 'disconnect from localhost', 'daemon started --']
+
 def get_modified_time(path):
 	return os.stat(path).st_mtime
 
@@ -40,7 +43,7 @@ class Plugin(plugins.ServerPlugin):
 	King Phisher clients message status and detail information.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
-	version = '1.0'
+	version = '1.0.1'
 	req_min_version = '1.14.0b1'
 	options = [
 		plugin_opts.OptionString(
@@ -89,13 +92,10 @@ class Plugin(plugins.ServerPlugin):
 		results = {}
 		for line_number, line in enumerate(log_lines, 1):
 			log_id = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<log_id>[0-9A-Z]{7,12}):\s+', line)
-			# check blacklist strings to not spam log files
-			blacklist = ['connect from localhost', 'disconnect from localhost', 'daemon started --']
 			if not log_id:
-				for string in blacklist:
-					if string in line:
-						continue
-				self.logger.warning('failed to parse postfix log line: ' + str(line_number))
+			# check blacklist strings to not spam log files
+			#	if not any(string in line for string in LOG_LINE_BLACKLIST):
+			#		self.logger.warning('failed to parse postfix log line: ' + str(line_number))
 				continue
 			log_id = log_id.group('log_id')
 			message_id = re.search(r'message-id=<(?P<mid>[0-9A-Za-z]{12,20})@', line)
