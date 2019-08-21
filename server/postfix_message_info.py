@@ -88,12 +88,13 @@ class Plugin(plugins.ServerPlugin):
 	def parse_logs(self, log_lines):
 		results = {}
 		for line_number, line in enumerate(log_lines, 1):
-			# Checks for SMTP connects/disconnects and suppresses them from being logged to prevent log spam.
-			smtp_connections = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<connection_status>[a-z]{7,12}):\s+', line)
-			if smtp_connections.connection_status == 'connect' or smtp_connections.connection_status == 'disconnect':
-				continue
 			log_id = re.search(r'postfix/[a-z]+\[\d+\]:\s+(?P<log_id>[0-9A-Z]{7,12}):\s+', line)
+			# check blacklist strings to not spam log files
+			blacklist = ['connect from localhost', 'disconnect from localhost', 'daemon started --']
 			if not log_id:
+				for string in blacklist:
+					if string in line:
+						continue
 				self.logger.warning('failed to parse postfix log line: ' + str(line_number))
 				continue
 			log_id = log_id.group('log_id')
