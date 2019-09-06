@@ -150,8 +150,8 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "AbfLtVBSYP02RMJlCvzt4+5GTRWLQZTTihWUopGKj93TicTJmMp8kH+st4a5NJbBXgiXzanXG6/LYY3H/W0Esk3dALVmPjAZMC7MsjrhhjecbILqXWa2vkyCatq97kPH7n3uTbZRe1NUgWyTTYMSLEwOlKa7/dFhbAyhpq+UBH25Z15z",
-            "signed-by": "github.com/zeroSteiner"
+            "signature": "Aa+0w2hZ2Y5oYACx/u77Ha3FCJO6C2lP9pehWFZJIJTaY5yZQV6rSeOh9zgJMWbhWwzkSnQ1Pksg2K+BqkRtfDOoAd4p/CxqLFOeQkqR6lPQ3NpxsPc1kUytSDj+zQV9ux+NBolRVqJEtApqjGCeL3fm3e71BWEiytQJgS/+eWncXKfb",
+            "signed-by": "github.com/wolfthefallen"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -386,14 +386,14 @@
           {
             "path-destination": "pdf_generator/README.md",
             "path-source": "client/pdf_generator/README.md",
-            "signature": "ATD/9xFvgxo6APUf8ifo72NRhwBnhC2cDEdhy2if6n9jswJPQX9IeDEwZGW+Y4j5jDLccTbeCYGxgYqASxhO8/vqANRp+dk3NfKyWVqzKV8XQ95IGbjW7B2hGBVc25GkDiAdSaa3/qE+Un/LNStQWr4K9GQO1QOY40ExuMAaIB5MEaiC",
-            "signed-by": "github.com/zeroSteiner"
+            "signature": "AISTlQLpi92D0aKMJFS2n/NHPkKKkFAAuAEUcVwegpUToZMPSSJvH9oAZHBw25aah9jd93Rc1J8hjHk03abtCUesAe05evwbHQJMVEhG7OIc2vZLq0HHB4EKc45oCujEHf2FLczOM8uhFWZ71/unHYgo3jx3lHReZMNlmCeDXhPx8VlX",
+            "signed-by": "github.com/wolfthefallen"
           },
           {
             "path-destination": "pdf_generator/__init__.py",
             "path-source": "client/pdf_generator/__init__.py",
-            "signature": "Af/KDPCznPyBX05TvLcBMFl3cWdmKmBLO1ktYv6C0z+YCOeUmHKk06EtHrGhpILLDOaCspNhoDcu7v1Vd+xPtcwVAcjKFvA5MDM1GAk9sUbjYGaTvWoEJxsuVOSM+rJtmm7uRYPqUx5G0U+Qs5IjFciVCGfUkZFR2b0P/l7BlMNV1BCP",
-            "signed-by": "github.com/zeroSteiner"
+            "signature": "AabdiAUcUJVUPr4J2vOUuxiCsmDdhmIdUqjpQFJlaqk4XsxquyLHTyGybYdCAo/NpyfwHWwqmc2jkISEX/Jiw/pgAXL76sijX609mdQ8+TbfiyJi/gp2XOLMJ27h+gBf9XnI0NmdJXc06tlJtvkmJ7dKphdmlth3U+Cy5WMtvf1LO6JF",
+            "signed-by": "github.com/wolfthefallen"
           }
         ],
         "homepage": "https://github.com/securestate/king-phisher-plugins",
@@ -402,6 +402,9 @@
           "minimum-version": "1.8.0",
           "packages": [
             "weasyprint==47"
+          ],
+          "platforms": [
+            "Linux"
           ]
         },
         "title": "Generate PDF",
@@ -916,8 +919,8 @@
       }
     ]
   },
-  "created": "2019-08-21T20:20:10.339646+00:00",
-  "created-by": "github.com/zeroSteiner",
-  "signature": "AXj/kY/3gPz0tVpRVHYsG7blWHlCZJPk+yCyJjP8i5n5nLEKigJgWY6r/z5L6aAIR0jS4SJ5In/WIkIEuQen22CBAV3fIngWCm/9IyCSv5rj1lzYPg/uD6sJXb0NCjx+rLF6JR/d/YFTkjnvboyQJb6fqqqBJIf+A6sXgisSvHjbjp8y",
-  "signed-by": "github.com/zeroSteiner"
+  "created": "2019-09-06T11:55:21.626586+00:00",
+  "created-by": "github.com/wolfthefallen",
+  "signature": "AAB2v9kP3PtDbkry+3Vu4G2pLGi+xz+swB+nFFVik8og1SyiN+HFhpmS4Rnm9MgciAT8zgb5dqZMESiVnmk2AhaCAIod2kejAXs2X+oQUiZ/MRLId/vtGmFPUBlMJfQ4/rSJIjOk3MxBSYxeptqw8Cw5GAzQmmUPi/CATwh8Ez6HLBXY",
+  "signed-by": "github.com/wolfthefallen"
 }

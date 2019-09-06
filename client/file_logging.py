@@ -2,9 +2,7 @@ import datetime
 import logging
 import os
 
-import king_phisher.client.application as application
 import king_phisher.client.dialogs.exception as exception
-import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.plugins as plugins
 
 # logger name value
@@ -28,7 +26,7 @@ class Plugin(plugins.ClientPlugin):
 	# this is the primary plugin entry point which is executed when the plugin is enabled
 	def initialize(self):
 		# ensure the directory for the logs exists
-		log_dir = application.USER_DATA_PATH
+		log_dir = self.application.user_data_path
 		if not os.path.exists(log_dir):
 			os.mkdir(log_dir)
 

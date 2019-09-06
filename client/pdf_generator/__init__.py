@@ -37,6 +37,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	req_packages = {
 		'weasyprint==47': has_weasyprint
 	}
+	req_platforms = ('Linux',)
 	version = '2.0'
 	def initialize(self):
 		self.add_menu_item('Tools > Create PDF Preview', self.make_preview)
