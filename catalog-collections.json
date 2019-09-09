@@ -150,7 +150,7 @@
           {
             "path-destination": "file_logging.py",
             "path-source": "client/file_logging.py",
-            "signature": "Aa+0w2hZ2Y5oYACx/u77Ha3FCJO6C2lP9pehWFZJIJTaY5yZQV6rSeOh9zgJMWbhWwzkSnQ1Pksg2K+BqkRtfDOoAd4p/CxqLFOeQkqR6lPQ3NpxsPc1kUytSDj+zQV9ux+NBolRVqJEtApqjGCeL3fm3e71BWEiytQJgS/+eWncXKfb",
+            "signature": "AfxiulxwPJicQ8DT8OLjWzEsORoM5ohv5mDtrUsjqTKU5TVzyj/5HRqoh4/1yWvpBKBNAKxq3rzR/7yBcTXtcaDTAKd0T4Pe7sjP4UqeWbCDbcuEOtAvrBuL1REGb8VeIH8r8aG0XGX0A9+GGrXXp9b3V0xB+sijx14GfawKVnzp1b83",
             "signed-by": "github.com/wolfthefallen"
           }
         ],
@@ -160,7 +160,7 @@
           "minimum-version": "1.6.0"
         },
         "title": "File Logging",
-        "version": "2.0"
+        "version": "2.1"
       },
       {
         "authors": [
@@ -919,8 +919,8 @@
       }
     ]
   },
-  "created": "2019-09-06T11:55:21.626586+00:00",
+  "created": "2019-09-09T13:09:02.261508+00:00",
   "created-by": "github.com/wolfthefallen",
-  "signature": "AAB2v9kP3PtDbkry+3Vu4G2pLGi+xz+swB+nFFVik8og1SyiN+HFhpmS4Rnm9MgciAT8zgb5dqZMESiVnmk2AhaCAIod2kejAXs2X+oQUiZ/MRLId/vtGmFPUBlMJfQ4/rSJIjOk3MxBSYxeptqw8Cw5GAzQmmUPi/CATwh8Ez6HLBXY",
+  "signature": "AHTVrQ+hFPGjQz4ydUnu7td8ikWE329wpgVP+R4LVZ7LyPdBTwqC8UHs9liJNfkZxjezNlX4JYlQR4rK0RDZbcfZABhbeb4EdKzLK6+gEuOo+oSZh+cQyeLwYbGdXXd2LGnDjYv5P8wQd4DEx+pYd5dDNSzW6z0dxkT82GhXiTcetYZI",
   "signed-by": "github.com/wolfthefallen"
 }
