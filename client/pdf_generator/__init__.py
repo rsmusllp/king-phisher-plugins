@@ -10,7 +10,7 @@ import jinja2.exceptions
 
 try:
 	from weasyprint import HTML
-except ImportError:
+except (ImportError, FileNotFoundError):
 	has_weasyprint = False
 else:
 	has_weasyprint = True
