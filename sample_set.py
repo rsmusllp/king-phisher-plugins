@@ -1,5 +1,6 @@
 import csv
 import os
+import pandas
 import random
 
 import king_phisher.client.gui_utilities as gui_utilities
@@ -34,13 +35,13 @@ class Plugin(plugins.ClientPlugin):
 			display_name='Sample CSV File',
 			default='~/sampled.csv'
 		),
-		plugins.ClientOptionString(
+		plugins.ClientOptionInteger(
 			'sample_size',
 			'How many targets to sample',
 			display_name='Sample Size',
 		)
 	]
-	version = '1.1'
+	version = '1.0'
 	def initialize(self):
 		self.add_menu_item('Tools > Create Sample Set', self.sample_setup)
 		return True
@@ -68,7 +69,6 @@ class Plugin(plugins.ClientPlugin):
 				'Please configure the "Sample Size" option.'
 			)	
 			return	
-
 		self.logger.info('Config passed')
 		
 		outfile = self.expand_path(self.config['sample_file'])
@@ -78,14 +78,9 @@ class Plugin(plugins.ClientPlugin):
 		
 		try:
 			with open(self.config['master_csv']) as f:
-				csv_in = csv.reader(f)
-				for self.config['sample_size'], row in enumerate(csv_in):
-					if self.config['sample_size'] == 0:
-						sample_set.append(row)
-					else:
-						r = random.randint(0, self.config['sample_size'])
-						if r == 0:
-							sample_set.append(row)
+				lines_in = enumerate(f)
+				skip = sorted(random.sample(xrange(lines_in), lines_in-self.config[sample_size]))
+				sample_set.append(pandas.read_csv(f, skiprows=skip))
 			f.close()	
 		except IOError as e:
 			self.logger.error('outputting file error', e)	
