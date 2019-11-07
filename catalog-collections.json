@@ -892,6 +892,33 @@
       },
       {
         "authors": [
+          "Sebastian Reitenbach"
+        ],
+        "classifiers": [
+          "Plugin :: Server :: Notifications"
+        ],
+        "description": "A plugin that uses Slack Webhooks to send notifications \ton new website visits and submitted credentials to a slack channel.         Notifications about credentials are sent with @here.",
+        "files": [
+          {
+            "path-destination": "slack_notifications.py",
+            "path-source": "server/slack_notifications.py",
+            "signature": "ATLEkfw1hhAQIa0LCpjfK4Ow79yYgoIv3Td3CoqeAVfBM627uFpEsGRp33VwK1SvgMxRA78N8uU8AiroTmYnqHoyAasfNJGbzPwKisyEnhN9hH0ekNQkq9mWuYjIvS4tj+1AKgQvp7smGphZKAbYNQZ17S9sMg/6RA8vsulQH4UJMW5G",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "slack_notifications",
+        "requirements": {
+          "minimum-version": "1.4.0",
+          "packages": [
+            "requests"
+          ]
+        },
+        "title": "Slack Notifications",
+        "version": "0.1"
+      },
+      {
+        "authors": [
           "Spencer McIntyre"
         ],
         "classifiers": [
@@ -919,8 +946,8 @@
       }
     ]
   },
-  "created": "2019-09-26T13:22:16.442929+00:00",
-  "created-by": "github.com/wolfthefallen",
-  "signature": "AK4CbL3gU1w4qv/guBbRqxJNXu/mkUpq4rNbT5lOIjVSCf/9bywsTFvaxGsvbWrKnsLbjKEQ+gJL5c4iin5u0NXwATMWGq2hruc4ypH/U7qPe+KR5HphjvyqetZVFsm0/8LfKUh//ZzAEdTvfjW+0LkzY4/QkfZM21CE08Q2HeoC2CRF",
-  "signed-by": "github.com/wolfthefallen"
+  "created": "2019-11-07T20:02:03.438890+00:00",
+  "created-by": "github.com/zeroSteiner",
+  "signature": "AID0QoyOJFfth9LYDwJJDLynNjLmD4VlrgZoNfb56Fym7vV2fE2jeFciUQGq48govkasfsvOty1iSGbN1ITwbD0BAFYqMKhV9swgqqhOewNvrvXsAgYKDqr3wbldHzWl77VXuvjC+V35+mO2c1rhi9Tz7OfXiEuO1PQdL6UEoghop2Kg",
+  "signed-by": "github.com/zeroSteiner"
 }
