@@ -15,6 +15,7 @@ else:
 	has_requests = True
 
 EXAMPLE_CONFIG = """\
+  # Documentation on obtaining a slack webhook url can be found here https://api.slack.com/messaging/webhooks.
   webhookurl: https://hooks.slack.com/services/....
   channel: <slack channel name>
 """
@@ -66,7 +67,7 @@ class Plugin(plugins.ServerPlugin):
 			self.send_notification(message)
 
 	def send_notification(self, message):
-                slack_data = { 'text': message, 'channel': self.config['channel'] }
+                slack_data = {'text': message, 'channel': self.config['channel']}
                 response = requests.post(
                         self.config['webhookurl'], data=json.dumps(slack_data),
                         headers={'Content-Type': 'application/json'}
