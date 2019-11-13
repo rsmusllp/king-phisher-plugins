@@ -81,7 +81,7 @@ class Plugin(getattr(plugins, 'ClientPluginMailerAttachment', plugins.ClientPlug
 	]
 	reference_urls = ['https://github.com/ryhanson/phishery']
 	req_min_version = min_version
-	version = '2.2.1'
+	version = '2.2.2'
 	def initialize(self):
 		mailer_tab = self.application.main_tabs['mailer']
 		self.text_insert = mailer_tab.tabs['send_messages'].text_insert

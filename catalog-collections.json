@@ -425,19 +425,19 @@
           {
             "path-destination": "phishery_docx/README.md",
             "path-source": "client/phishery_docx/README.md",
-            "signature": "AGAj87ghspAHPrlDcTNzk7BpF5ZFtJ5ErK4Y3CimV4FXYbptxQvoQwMowO3eCAT5ILvDazCU7yzKWjsB2lul3etmAfx7hGywfKGLACc73+pmm0svr238ZFbOb8hwT/5zUhcX+k8II1cEKUr0CJn0YtZKPWlmU/NnxB7oLWVVNTT94dRP",
+            "signature": "AKxqrkhdUlclkFy5asE6hUa1qupWmIPxZTmf73xvIeH05tDnkLGDc8ydYuXE1ewnu44y+o/wNg13p+81DghhbhHDADzzw29Mk62Du3AbXswppF+FSkHFnIve01gKZHQ4vvSaGmAZkftDIc3tmlXjHlcEWzDXrm9IOpJVIzgKeikW8Uv7",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "phishery_docx/__init__.py",
             "path-source": "client/phishery_docx/__init__.py",
-            "signature": "AEcnOkWiC/RtL9QRZkBt+elcsnvOCZGOEBK0+ItjIhFdtfXtKeCCAFmc/4RbfKTbzrUEF0fFcm+MNWCpDN/ofEftAIjk+V3TQPCFcOAGAiEi1JMjBOed/yT1AU2+DDzuQEOrBIseVBfdBhZ9drVP06BahY+8+kzQgAN6HhnGVYcmXzO4",
+            "signature": "AA9gAeIYVzVqx+j5MYWgycc9B8GWxOZSTlRey+zYY0Te+bOJfwgUhKaJFq/0GE2zoaJ+NKF02UH9zVwXRrKluiSZAJ2bqWaZvOPvQqaPVmjz0GDgC/bcuHzz+3tDbUTA38g+L5vjwZ/T7l0KtJucC44gUfW0SkykxJQEhjo6K7HuhISB",
             "signed-by": "github.com/zeroSteiner"
           },
           {
             "path-destination": "phishery_docx/__main__.py",
             "path-source": "client/phishery_docx/__main__.py",
-            "signature": "AL8DHQ3J8XAemTaNbDLYJ49PbeuusIlZf7hXBPoAFOrO59/DmQ4HHtKMeuJhUweK+i/OaxcKaqHxs1w5s9MvXwPAAAKeQw7a7oindQEWih5TSxNUzAoRfCaldMyK+KHMUtNQrvyJQSLBRJz8ExqtoCRqK6Nnes16WpSbfOUyeAOZKXe4",
+            "signature": "ATuGJXlq0tDcGf3Z007JzuxPhtOMqjepFuJ1uXRL/VC7D7bmNnCy9QszQqkplR9TJe+IyrMeu6W2DaLciPLIO7b+AEcQep+ZHjxgKJ9VKGGeUQYxkr2ovcJDj14z09O4uH8aD6UtanTT51EPMdias9EHHAWah1w04jLhw1BQBWkC0cb/",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -450,7 +450,7 @@
           "minimum-version": "1.9.0"
         },
         "title": "Phishery DOCX URL Injector",
-        "version": "2.2.1"
+        "version": "2.2.2"
       },
       {
         "authors": [
@@ -946,8 +946,8 @@
       }
     ]
   },
-  "created": "2019-11-07T20:02:03.438890+00:00",
+  "created": "2019-11-13T17:11:10.740257+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AID0QoyOJFfth9LYDwJJDLynNjLmD4VlrgZoNfb56Fym7vV2fE2jeFciUQGq48govkasfsvOty1iSGbN1ITwbD0BAFYqMKhV9swgqqhOewNvrvXsAgYKDqr3wbldHzWl77VXuvjC+V35+mO2c1rhi9Tz7OfXiEuO1PQdL6UEoghop2Kg",
+  "signature": "AEIJBqLIH60FvcCd/580OkixHnRClPejYdbhd8dohO0LacaGn4IrAIiWOZAj3gxcUFuUg80ca8lxgoKBP9InizMqADBCwi28zoUsDqSPG1HjC9MLzuBpHS8zrGlvYgs3/vmzUr+j/7d1FKmzIe1lFR8Q3HvPbsItMkMwki1SDh4aIaeL",
   "signed-by": "github.com/zeroSteiner"
 }
