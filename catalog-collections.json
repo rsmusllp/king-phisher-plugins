@@ -95,7 +95,7 @@
           {
             "path-destination": "dmarc.py",
             "path-source": "client/dmarc.py",
-            "signature": "AeZAJsYvPEtVk4+jS7lPItGhRgxw9u1XotA472dp/EcJOr5DDcEfT0J3vERsDvdRfDYKebohwdvSFsFBAfZsxNTIAPPZK1kPnGv4ouUCOHcdymJCx/hAIffwQEWfAkBTnH084pWQ0A1Y1SIxRvTVmwSZHVikuTS0QvFVa17TFAh+US3X",
+            "signature": "ATqXhUiBVfyu9h8ujzeFA+gz5xy7lf6azYc9DjJOpdOMk1Xn4RgdVCHTmUO5UKNv5p/Pn17GDhytet9wxJ3mVX/NAXOfWBX9ZrUBd5kt9vIaebp6CFpJPzvoioZN9/3e0/1/W6jQD+1oTd4CpwgHqBZpaEXKqNznIbL3LfWqfLYwkV0Z",
             "signed-by": "github.com/zeroSteiner"
           }
         ],
@@ -108,7 +108,7 @@
           "minimum-version": "1.5.0"
         },
         "title": "DMARC Check",
-        "version": "1.1"
+        "version": "1.2"
       },
       {
         "authors": [
@@ -946,8 +946,8 @@
       }
     ]
   },
-  "created": "2019-11-13T17:11:10.740257+00:00",
+  "created": "2019-11-14T22:01:06.238088+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "AEIJBqLIH60FvcCd/580OkixHnRClPejYdbhd8dohO0LacaGn4IrAIiWOZAj3gxcUFuUg80ca8lxgoKBP9InizMqADBCwi28zoUsDqSPG1HjC9MLzuBpHS8zrGlvYgs3/vmzUr+j/7d1FKmzIe1lFR8Q3HvPbsItMkMwki1SDh4aIaeL",
+  "signature": "APO8S3VCr6jLW3hlJwn5WFaBs4N83ksHXrZgE0E5Bp4U2jbDROr0tiXz0YSDcowfv0fQyF2B8XGipxuLUhFgffveARucXE2Vbtr1vbNLDN1TsxLtl3nqk36Y2MN3vyyg+4Md2pwLvIIspfxeJODGLH6e8sYCaGVI3zMhSpB7zqQcT7Yt",
   "signed-by": "github.com/zeroSteiner"
 }

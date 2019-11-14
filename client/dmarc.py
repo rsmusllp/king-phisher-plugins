@@ -1,6 +1,7 @@
 import argparse
 import collections
 
+import king_phisher.color as color
 import king_phisher.constants as constants
 import king_phisher.spf as spf
 import king_phisher.client.mailer as mailer
@@ -81,7 +82,7 @@ class DMARCPolicy(object):
 		try:
 			answers = dns.resolver.query(domain, 'TXT')
 		except dns.exception.DNSException:
-			raise DMARCNoRecordError("DNS resolution error for: {0} TXT".format(domain))
+			raise DMARCNoRecordError("DNS resolution error for: {0} TXT".format(domain)) from None
 		answers = list(answer for answer in answers if isinstance(answer, dns.rdtypes.ANY.TXT.TXT))
 
 		answers = [answer for answer in answers if answer.strings[0].decode('utf-8').startswith('v=DMARC')]
@@ -119,7 +120,7 @@ class Plugin(plugins.ClientPlugin):
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	reference_urls = ['https://dmarc.org/overview/']
 	req_min_version = '1.5.0'
-	version = '1.1'
+	version = '1.2'
 	def initialize(self):
 		self.signal_connect('send-precheck', self.signal_send_precheck, gobject=self.application.main_tabs['mailer'])
 		return True
@@ -185,10 +186,16 @@ def main():
 	parser.add_argument('domain', help='the name of the domain to check')
 	arguments = parser.parse_args()
 
-	policy = DMARCPolicy.from_domain(arguments.domain)
-	print('record:  ' + policy.record)
-	print('version: ' + policy.version)
-	print('policy:  ' + policy.policy)
+	try:
+		policy = DMARCPolicy.from_domain(arguments.domain)
+	except DMARCNoRecordError:
+		color.print_error('dmarc policy not found')
+		return
+
+	color.print_status('dmarc policy found')
+	color.print_status('record:  ' + policy.record)
+	color.print_status('version: ' + policy.version)
+	color.print_status('policy:  ' + policy.policy)
 
 if __name__ == '__main__':
 	main()
