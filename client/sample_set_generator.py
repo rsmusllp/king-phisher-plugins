@@ -89,7 +89,7 @@ class Plugin(plugins.ClientPlugin):
 					random.shuffle(sample_set)
 			f.close()	
 		except IOError as e:
-			self.logger.error('outputting file error', e)	
+			self.logger.error('outputting file error', exc_info=True)	
 
 		try:
 			# Writes to file
@@ -100,7 +100,7 @@ class Plugin(plugins.ClientPlugin):
 			self.logger.info('Sample set exported successfully')
 			
 		except IOError as e:
-			self.logger.error('outputting file error', e)
+			self.logger.error('outputting file error', exc_info=True)
 		return 
 
 	def expand_path(self, output_file, *args, **kwargs):
