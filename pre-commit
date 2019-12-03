@@ -32,6 +32,28 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# This file is used by the development team in order to ensure that the catalog
+# is properly updated with a valid signature. This file should be symlinked to
+# .git/hooks/pre-commit and assumes that King Phisher exists in a directory
+# at the same level as the plugins, such that:
+#
+#   some/path/king-phisher
+#   some/path/king-phisher-plugins
+#
+# The King Phisher development dependencies must have been installed with
+# `pipenv install --dev`, and the operator should have a valid King Phisher
+# signing key.
+#
+# Commands to merge a Pull Request:
+#
+#   1. git checkout master
+#   2. git merge --edit --no-commit --no-ff pr/##
+#   3. git commit
+#
+# The third command will run the pre-commit script and properly sign the
+# necessary files. In Git v2.24 a new pre-merge-commit hook was made available
+# which may streamline this process, but this has not been tested.
+
 import argparse
 import collections
 import datetime
