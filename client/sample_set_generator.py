@@ -1,11 +1,10 @@
-import csv
+import collections
 import os
 import random
 
 import king_phisher.client.gui_utilities as gui_utilities
 import king_phisher.client.mailer as mailer
 import king_phisher.client.plugins as plugins
-
 
 def _expand_path(output_file, *joins, pathmod=os.path):
 	output_file = pathmod.expandvars(output_file)
@@ -17,27 +16,29 @@ class Plugin(plugins.ClientPlugin):
 	authors = ['Jeremy Schoeneman']
 	title = 'Sample Set Generator'
 	classifiers = ['Plugin :: Client :: Tool']
-
 	description = """
-	Brings in a master list and generates a sample set from said list. 
+	Brings in a master list and generates a sample set from said list.
 	"""
 	homepage = 'https://github.com/securestate/king-phisher-plugins'
 	options = [
-		plugins.ClientOptionString(
+		plugins.ClientOptionPath(
 			'master_csv',
 			'Master list of targets to sample',
-			display_name='Master CSV File'
+			display_name='Master CSV File',
+			path_type='file-open'
 		),
-		plugins.ClientOptionString(
+		plugins.ClientOptionPath(
 			'sample_file',
 			'CSV file to write the sample set to',
 			display_name='Sample CSV File',
-			default='~/sampled.csv'
+			default='~/sampled.csv',
+			path_type='file-save'
 		),
 		plugins.ClientOptionInteger(
 			'sample_size',
 			'How many targets to sample',
 			display_name='Sample Size',
+			default=1
 		)
 	]
 	version = '1.0'
@@ -66,41 +67,28 @@ class Plugin(plugins.ClientPlugin):
 				'Missing Option',
 				self.application.get_active_window(),
 				'Please configure the "Sample Size" option.'
-			)	
-			return	
-		self.logger.info('Config passed')
-		
+			)
+			return
+		self.logger.info('configuration check passed')
+
 		outfile = self.expand_path(self.config['sample_file'])
-		infile = self.expand_path(self.config['master_csv'])
-		
+
 		try:
 			# Reads line locations into memory. Takes less memory than reading the whole file at once
-			s = [0]
-			linelocs = [s.append(s[0]+len(n)) or s.pop(0) for n in open(self.config['master_csv'])]
+			linelocs = collections.deque([0])
+			with open(self.config['master_csv'], 'r') as in_file_h, open(outfile, 'w') as out_file_h:
+				# Reads line locations into memory. Takes less memory than reading the whole file at once
+				for line in in_file_h:
+					linelocs.append(linelocs[-1] + len(line))
 
-			# Pulls the random samples based off the line locations and random
-			with open(self.config['master_csv']) as f:
-				file_len = sum(1 for l in f)
-				chosen = sorted(random.sample(linelocs, self.config['sample_size']))
-				sample_set = []
+				# Pulls the random samples based off the line locations and random
+				chosen = random.sample(linelocs, self.config['sample_size'])
+				random.shuffle(chosen)
 				for offset in chosen:
-					f.seek(offset)
-					sample_set.append(f.readline().strip('\n'))
-					random.shuffle(sample_set)
-			f.close()	
-		except IOError as e:
-			self.logger.error('outputting file error', exc_info=True)	
-
-		try:
-			# Writes to file
-			with open (outfile, 'w', newline="\n") as of:			
-				for sample in sample_set:
-					of.write(sample + '\n')
-			of.close()	
-			self.logger.info('Sample set exported successfully')
-			
-		except IOError as e:
-			self.logger.error('outputting file error', exc_info=True)
+					in_file_h.seek(offset)
+					out_file_h.write(in_file_h.readline())
+		except IOError:
+			self.logger.error('encountered io error while generating the sample set', exc_info=True)
 		return 
 
 	def expand_path(self, output_file, *args, **kwargs):
