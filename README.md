@@ -1,5 +1,5 @@
 ![alt text](https://github.com/securestate/king-phisher/raw/master/data/king-phisher-logo.png "King Phisher")
-<!-- generated at: 2019-11-14 22:01:06 -->
+<!-- generated at: 2019-12-03 20:31:29 -->
 # King Phisher Plugins
 Plugins to extend the [King Phisher][king-phisher-repo] Phishing Campaign
 Toolkit. For more information regarding King Phisher, see the project's
@@ -25,6 +25,7 @@ Toolkit. For more information regarding King Phisher, see the project's
 | [Generate PDF](/client/pdf_generator.py) | Generates a PDF file from an html attachment that process client King Phisher Jinja variables allowing to embed links to your landing page so users that click the link in the PDF can be tracked when they visit. |
 | [Phishery DOCX URL Injector](/client/phishery_docx.py) | Inject Word Document Template URLs into DOCX files. The Phishery technique is used to place multiple document template URLs into the word document (one per-line from the plugin settings). |
 | [Request Redirect](/client/request_redirect.py) | Edit entries for the server "Request Redirect" plugin. |
+| [Sample Set Generator](/client/sample_set_generator.py) | Brings in a master list and generates a sample set from said list. |
 | [SFTP Client](/client/sftp_client.py) | Secure File Transfer Protocol Client that can be used to upload, download, create, and delete local and remote files on the King Phisher Server.<br /><br />The editor allows you edit files on remote or local system. It is primarily designed for the use of editing remote web pages on the King Phisher Server. |
 | [Spell Check](/client/spell_check.py) | Add spell check capabilities to the message editor. This requires GtkSpell to be available with the correct Python GObject Introspection bindings. On Ubuntu and Debian based systems, this is provided by the 'gir1.2-gtkspell3-3.0' package.<br /><br />After being loaded, the language can be changed from the default of en_US via the context menu (available when right clicking in the text view). |
 | [TOTP Self Enrollment](/client/totp_enrollment.py) | This plugin allows users to manage the two factor authentication settings on their account. This includes setting a new and removing an existing TOTP secret. The two factor authentication used by King Phisher is compatible with free mobile applications such as Google Authenticator. |

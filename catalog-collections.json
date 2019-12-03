@@ -493,6 +493,30 @@
       },
       {
         "authors": [
+          "Jeremy Schoeneman"
+        ],
+        "classifiers": [
+          "Plugin :: Client :: Tool"
+        ],
+        "description": "Brings in a master list and generates a sample set from said list.",
+        "files": [
+          {
+            "path-destination": "sample_set_generator.py",
+            "path-source": "client/sample_set_generator.py",
+            "signature": "AeBN3IH0y9Yo6Kp8dqroButQ1lpODsjaxge7tc4CBp8MDQLsK8NJP7ZP4F0s2Ols73hgke/WeNHUMy06SGG/XmvuADsD+Yp+D37LiRkEg+3HjGRqfuH6McbD/boP3Rj6U2xUh1Lx9zFMg351oj2lNNGKvOgZ+sLn0goKlBAP6QvF9+Uv",
+            "signed-by": "github.com/zeroSteiner"
+          }
+        ],
+        "homepage": "https://github.com/securestate/king-phisher-plugins",
+        "name": "sample_set_generator",
+        "requirements": {
+          "minimum-version": "1.3.0b0"
+        },
+        "title": "Sample Set Generator",
+        "version": "1.0"
+      },
+      {
+        "authors": [
           "Josh Jacob",
           "Spencer McIntyre",
           "Erik Daguerre"
@@ -946,8 +970,8 @@
       }
     ]
   },
-  "created": "2019-11-14T22:01:06.238088+00:00",
+  "created": "2019-12-03T20:31:29.037904+00:00",
   "created-by": "github.com/zeroSteiner",
-  "signature": "APO8S3VCr6jLW3hlJwn5WFaBs4N83ksHXrZgE0E5Bp4U2jbDROr0tiXz0YSDcowfv0fQyF2B8XGipxuLUhFgffveARucXE2Vbtr1vbNLDN1TsxLtl3nqk36Y2MN3vyyg+4Md2pwLvIIspfxeJODGLH6e8sYCaGVI3zMhSpB7zqQcT7Yt",
+  "signature": "ATrq75FodB1bqcYWGD1Jx1LmpBkbPSS1CwNmzsvyU4j1tFfooL5mtAATKaL5glQVRDh86NVQx/ZLW6H1Q26bs0KcAUt0vQxULiYKc9OtZcquRjCPwjzCC6h1XvOe5EW74Io8K9m9xkOc6YMuSx3CJbs4UD2LUddKUYRH+xO03wG/aJ0t",
   "signed-by": "github.com/zeroSteiner"
 }
